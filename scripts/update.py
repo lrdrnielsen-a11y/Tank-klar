@@ -3,7 +3,7 @@
 Tank klar – opdateringsscript.
 
 Kører hver aften via GitHub Actions og:
-  1. henter dagens listepriser fra selskaberne i sources.json
+  1. henter dagens priser for alle kæder fra BenzinSignals åbne data
   2. henter benzin-/dieselfutures og dollarkursen og beregner morgendagens prognose
   3. henter morgendagens elpriser (spotpris) fra Energi Data Service
   4. gemmer det hele i data/latest.json og data/history.json
@@ -14,6 +14,7 @@ import html
 import json
 import re
 import statistics
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -79,35 +80,46 @@ def r2(v):
 
 # ---------- 1. selskabernes priser ----------
 
-def hent_selskaber(kilder, advarsler):
-    resultater = []
-    for k in kilder:
-        if not k.get("aktiv", True):
+BENZINSIGNAL = "https://benzinsignal.dk/data/priser.json"
+
+
+def hent_benzinsignal(advarsler):
+    """Åbne data fra BenzinSignal (benzinsignal.dk/data). Priser i øre pr. liter."""
+    try:
+        data = json.loads(hent(BENZINSIGNAL))
+    except Exception as e:
+        print(f"  ! BenzinSignal: {e}")
+        advarsler.append("Priserne fra BenzinSignal kunne ikke hentes")
+        return []
+    ud = []
+    for k in data.get("by_brand", []):
+        b, d = k.get("avg_benzin95"), k.get("avg_diesel")
+        if not k.get("reporting_currently", True) or (b is None and d is None):
             continue
-        navn = k["navn"]
-        try:
-            tekst = ren_tekst(hent(k["url"]))
-        except Exception as e:
-            advarsler.append(f"{navn}: siden kunne ikke hentes ({type(e).__name__})")
-            print(f"  ! {navn}: {e}")
-            continue
-        b = find_pris(tekst, k.get("benzin_ord", STANDARD_ORD["benzin"]))
-        d = find_pris(tekst, k.get("diesel_ord", STANDARD_ORD["diesel"]))
-        if b is None and d is None:
-            advarsler.append(f"{navn}: ingen priser fundet på siden")
-            print(f"  ! {navn}: ingen priser fundet")
-            continue
-        print(f"  {navn}: benzin {b}, diesel {d}")
-        resultater.append({"navn": navn, "benzin": b, "diesel": d})
-    return resultater
+        ud.append({"navn": k["brand"],
+                   "benzin": round(b / 100, 2) if b else None,
+                   "diesel": round(d / 100, 2) if d else None})
+        print(f"  {k['brand']}: benzin {ud[-1]['benzin']}, diesel {ud[-1]['diesel']}")
+    if not ud:
+        advarsler.append("BenzinSignal leverede ingen priser")
+    return ud
 
 
 # ---------- 2. markedet ----------
 
 def lukkekurser(symbol):
-    url = ("https://query1.finance.yahoo.com/v8/finance/chart/"
-           f"{urllib.parse.quote(symbol)}?range=1mo&interval=1d")
-    res = json.loads(hent(url))["chart"]["result"][0]
+    fejl = None
+    for vaert in ("query1", "query2", "query1"):
+        url = (f"https://{vaert}.finance.yahoo.com/v8/finance/chart/"
+               f"{urllib.parse.quote(symbol)}?range=1mo&interval=1d")
+        try:
+            res = json.loads(hent(url))["chart"]["result"][0]
+            break
+        except Exception as e:
+            fejl = e
+            time.sleep(3)
+    else:
+        raise fejl
     par = [(t, c) for t, c in zip(res["timestamp"], res["indicators"]["quote"][0]["close"]) if c is not None]
     (_, p0), (t1, p1) = par[-2], par[-1]
     dato = datetime.fromtimestamp(t1, tz=timezone.utc).astimezone(NY).date()
@@ -121,6 +133,7 @@ def markedsdata(idag, advarsler):
         for brændstof, symbol in (("benzin", "RB=F"), ("diesel", "HO=F")):
             p0, p1, dato = lukkekurser(symbol)
             aendring = (p1 * fx1 - p0 * fx0) / LITER_PR_GALLON * MOMS
+            ud[brændstof + "_pct"] = round((p1 - p0) / p0 * 100, 2)
             if dato != idag:  # markedet har ikke handlet i dag (weekend/helligdag)
                 aendring = 0.0
                 ud["handlet_i_dag"] = False
@@ -130,7 +143,9 @@ def markedsdata(idag, advarsler):
         advarsler.append("Markedsdata kunne ikke hentes, så prognosen viser uændret pris")
         return None
     try:
-        ud["brent_usd"] = round(lukkekurser("BZ=F")[1], 2)
+        b0, b1, _ = lukkekurser("BZ=F")
+        ud["brent_usd"] = round(b1, 2)
+        ud["brent_pct"] = round((b1 - b0) / b0 * 100, 2)
     except Exception:
         pass
     return ud
@@ -196,13 +211,12 @@ def main():
     imorgen = idag + timedelta(days=1)
     advarsler = []
 
-    kilder = lad_json(ROD / "sources.json", {"selskaber": []})["selskaber"]
     override = lad_json(ROD / "override.json", {})
     historik = lad_json(DATA / "history.json", [])
     historik = [h for h in historik if not h.get("demo")]
 
-    print("Henter selskabernes priser ...")
-    selskaber = hent_selskaber(kilder, advarsler)
+    print("Henter selskabernes priser fra BenzinSignal ...")
+    selskaber = hent_benzinsignal(advarsler)
     print("Henter markedsdata ...")
     marked = markedsdata(idag, advarsler)
     print("Henter elpriser ...")
@@ -243,6 +257,7 @@ def main():
         "imorgen": imorgen.isoformat(),
         "braendstof": braendstof,
         "selskaber": selskaber,
+        "kilde": "BenzinSignal (benzinsignal.dk/data)",
         "marked": marked,
         "el": el,
         "advarsler": advarsler,
@@ -252,7 +267,10 @@ def main():
         historik = [h for h in historik if h["dato"] != idag.isoformat()]
         historik.append({"dato": idag.isoformat(),
                          "benzin": braendstof["benzin"]["idag"],
-                         "diesel": braendstof["diesel"]["idag"]})
+                         "diesel": braendstof["diesel"]["idag"],
+                         # prognosen for næste dag – bruges til at måle, hvor præcis appen er
+                         "prognose_benzin": braendstof["benzin"]["imorgen"],
+                         "prognose_diesel": braendstof["diesel"]["imorgen"]})
         historik = sorted(historik, key=lambda h: h["dato"])[-90:]
 
     gem_json(DATA / "latest.json", latest)
