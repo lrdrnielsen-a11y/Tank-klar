@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "dato": "2026-10-25",
+    "benzin": 17.1,
+    "diesel": 18.9,
+    "prognose_benzin": 17.1,
+    "prognose_diesel": 18.9
+  }
+]

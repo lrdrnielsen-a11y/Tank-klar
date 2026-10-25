@@ -1,27 +1,85 @@
 {
   "demo": false,
-  "opdateret": "2026-10-25T21:23+01:00",
+  "opdateret": "2026-10-25T21:32+01:00",
   "idag": "2026-10-25",
   "imorgen": "2026-10-26",
   "braendstof": {
     "benzin": {
-      "idag": null,
-      "imorgen": null,
+      "idag": 17.1,
+      "imorgen": 17.1,
       "aendring": 0.0,
-      "anbefaling": "ukendt",
-      "kilde_idag": "ingen data",
+      "anbefaling": "lige_meget",
+      "kilde_idag": "selskaberne",
       "metode": "uændret"
     },
     "diesel": {
-      "idag": null,
-      "imorgen": null,
+      "idag": 18.9,
+      "imorgen": 18.9,
       "aendring": 0.0,
-      "anbefaling": "ukendt",
-      "kilde_idag": "ingen data",
+      "anbefaling": "lige_meget",
+      "kilde_idag": "selskaberne",
       "metode": "uændret"
     }
   },
-  "selskaber": [],
+  "selskaber": [
+    {
+      "navn": "OK",
+      "benzin": 17.09,
+      "diesel": 18.89,
+      "benzin_imorgen": 17.09,
+      "diesel_imorgen": 18.89
+    },
+    {
+      "navn": "INGO",
+      "benzin": 17.09,
+      "diesel": 18.89,
+      "benzin_imorgen": 17.09,
+      "diesel_imorgen": 18.89
+    },
+    {
+      "navn": "Go'on",
+      "benzin": 17.1,
+      "diesel": 18.9,
+      "benzin_imorgen": 17.1,
+      "diesel_imorgen": 18.9
+    },
+    {
+      "navn": "Uno-X",
+      "benzin": 17.1,
+      "diesel": 18.9,
+      "benzin_imorgen": 17.1,
+      "diesel_imorgen": 18.9
+    },
+    {
+      "navn": "F24",
+      "benzin": 17.1,
+      "diesel": 18.9,
+      "benzin_imorgen": 17.1,
+      "diesel_imorgen": 18.9
+    },
+    {
+      "navn": "Shell",
+      "benzin": 17.13,
+      "diesel": 18.92,
+      "benzin_imorgen": 17.13,
+      "diesel_imorgen": 18.92
+    },
+    {
+      "navn": "Circle K",
+      "benzin": 17.19,
+      "diesel": 18.97,
+      "benzin_imorgen": 17.19,
+      "diesel_imorgen": 18.97
+    },
+    {
+      "navn": "Q8",
+      "benzin": 17.27,
+      "diesel": 19.04,
+      "benzin_imorgen": 17.27,
+      "diesel_imorgen": 19.04
+    }
+  ],
+  "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": null,
   "el": {
     "dato": "2026-10-26",
@@ -89,13 +147,6 @@
     }
   },
   "advarsler": [
-    "OK: ingen priser fundet på siden",
-    "Circle K: ingen priser fundet på siden",
-    "Q8: ingen priser fundet på siden",
-    "Shell: siden kunne ikke hentes (HTTPError)",
-    "F24: ingen priser fundet på siden",
-    "Ingo: ingen priser fundet på siden",
-    "Uno-X: ingen priser fundet på siden",
     "Markedsdata kunne ikke hentes, så prognosen viser uændret pris"
   ]
 }
