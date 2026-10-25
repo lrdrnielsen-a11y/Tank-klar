@@ -698,7 +698,7 @@ function elKort() {
     <p class="under">Spotpris pr. kWh ${esc(dato(data.el.dato, { weekday: "long", day: "numeric", month: "long" }))}, uden nettarif, afgifter og moms. De grønne søjler er din billigste ladetid.</p>
     <div class="el-valg">${kort}</div>
     <svg class="el-søjler" viewBox="0 0 240 100" preserveAspectRatio="none" role="img" aria-label="Elpris time for time i ${omr[st.el]}">${søjler}</svg>${akse}
-    ${elAlarmDel()}
+
   </div></section>`;
 }
 
@@ -928,12 +928,16 @@ function ladeKort() {
   </div></section>`;
 }
 
+const ALARM_NAVN = { benzin: "Benzin 95", diesel: "Diesel", el: "El" };
+function alarmEmne(b) { return b === "el" ? `${ALARM_PREFIX}-el-${st.el}-${st.alarmTid}` : emne(b); }
 function alarmKort() {
   const tider = ["2000", "2030", "2100", "2130", "2200"], fmt = t => "kl. " + t.slice(0, 2) + ":" + t.slice(2);
   const niv = [["10", "10 øre"], ["20", "20 øre"], ["30", "30 øre"], ["alle", "Besked hver aften"]];
-  const valgte = alarmFuels();
-  const bokse = Object.keys(NAVN).map(b => `<label class="al-boks"><input type="checkbox" data-alfuel="${b}" ${valgte.includes(b) ? "checked" : ""}> ${NAVN[b]}</label>`).join("");
-  const emner = valgte.map(b => `<div class="emne"><code>${emne(b)}</code><button type="button" class="knap" data-kopi="${emne(b)}">Kopiér</button>${valgte.length > 1 ? `<span class="st-sub">${NAVN[b]}</span>` : ""}</div>`).join("");
+  const mulige = st.valgt.filter(b => ALARM_NAVN[b]), valgte = alarmFuels();
+  const harBrændstof = valgte.some(b => b !== "el"), harElValgt = valgte.includes("el");
+  const bokse = mulige.length > 1 ? `<div class="al-bokse" style="grid-template-columns:repeat(${mulige.length}, 1fr)">${mulige.map(b =>
+    `<label class="al-boks"><input type="checkbox" data-alfuel="${b}" ${valgte.includes(b) ? "checked" : ""}> ${ALARM_NAVN[b]}</label>`).join("")}</div>` : "";
+  const emner = valgte.map(b => `<div class="emne"><code>${alarmEmne(b)}</code><button type="button" class="knap" data-kopi="${alarmEmne(b)}">Kopiér</button>${valgte.length > 1 ? `<span class="st-sub">${ALARM_NAVN[b]}</span>` : ""}</div>`).join("");
   const trin = st.alarmVis && valgte.length ? `<div class="al-trin" style="margin-top:16px"><ol>
       <li><b>Hent den gratis app ntfy</b>, som leverer beskederne.
         <div class="butikker"><a class="knap" href="https://apps.apple.com/app/ntfy/id1625396347" target="_blank" rel="noopener">App Store (iPhone)</a><a class="knap" href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" rel="noopener">Google Play (Android)</a></div></li>
@@ -941,33 +945,42 @@ function alarmKort() {
       <li><b>Tjek, at det virker.</b><br><button type="button" class="knap" data-act="test" style="margin-top:8px">Send en testbesked</button>
         ${alStatus ? `<div class="al-status">${esc(alStatus)}</div>` : ""}</li>
     </ol>
-    <p class="fod">Ændrer du brændstof, grænse eller tidspunkt, får du et nyt navn. Så skal du abonnere på det nye i ntfy og slette det gamle.</p></div>` : "";
+    <p class="fod">Ændrer du valg, grænse${harElValgt ? ", elområde" : ""} eller tidspunkt, får du et nyt navn. Så skal du abonnere på det nye i ntfy og slette det gamle.</p></div>` : "";
+  const tekst = harBrændstof && harElValgt ? "Få en besked på telefonen, når prisen på brændstof stiger i morgen – og om morgendagens billigste ladetimer."
+    : harElValgt ? `Få en besked på telefonen om aftenen med morgendagens billigste ladetimer i ${OMR[st.el]}.`
+    : "Få en besked på telefonen, når prognosen viser, at prisen stiger i morgen.";
   return `<section><div class="kort">
     <h2>Prisalarm</h2>
-    <p class="under">Få en besked på telefonen, når prognosen viser, at prisen stiger i morgen.</p>
-    <div class="al-bokse">${bokse}</div>
-    <div class="al-kontrol">
-      <div class="felt"><label for="alarmNiv">Stigning på mindst</label><select id="alarmNiv">${niv.map(([v, t]) => `<option value="${v}" ${v === st.alarmNiv ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+    <p class="under">${tekst}</p>
+    ${bokse}
+    <div class="al-kontrol"${harBrændstof ? "" : ' style="grid-template-columns:1fr"'}>
+      ${harBrændstof ? `<div class="felt"><label for="alarmNiv">Stigning på mindst</label><select id="alarmNiv">${niv.map(([v, t]) => `<option value="${v}" ${v === st.alarmNiv ? "selected" : ""}>${t}</option>`).join("")}</select></div>` : ""}
       <div class="felt"><label for="alarmTid">Send besked</label><select id="alarmTid">${tider.map(t => `<option value="${t}" ${t === st.alarmTid ? "selected" : ""}>${fmt(t)}</option>`).join("")}</select></div>
     </div>
     <button type="button" class="knap primær bred" data-act="alarm" ${valgte.length ? "" : "disabled"}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-      ${!valgte.length ? "Vælg mindst ét brændstof" : st.alarmVis ? "Skjul opsætning" : "Slå prisalarm til"}</button>
+      ${!valgte.length ? "Vælg mindst én" : st.alarmVis ? "Skjul opsætning" : "Slå prisalarm til"}</button>
     ${trin}
   </div></section>`;
 }
 function alarmFuels() {
-  try { const v = JSON.parse(hentL("alarmFuels")); if (Array.isArray(v)) return v.filter(b => NAVN[b]); } catch {}
-  return mine();
+  const mulige = st.valgt.filter(b => ALARM_NAVN[b]);
+  try {
+    const v = JSON.parse(hentL("alarmFuels"));
+    if (Array.isArray(v)) { const f = v.filter(b => mulige.includes(b)); if (f.length || hentL("alarmFuelsTom") === mulige.join()) return f; }
+  } catch {}
+  return mulige;
 }
 async function sendTest() {
   alStatus = "Sender …"; vis();
+  const kl = `${st.alarmTid.slice(0, 2)}:${st.alarmTid.slice(2)}`;
   try {
     for (const b of alarmFuels()) {
       const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({
-        topic: emne(b), title: "Tank klar virker 🎉",
-        message: `Du får besked kl. ${st.alarmTid.slice(0, 2)}:${st.alarmTid.slice(2)} om ${NAVN[b].toLowerCase()}${st.alarmNiv === "alle" ? " hver aften" : `, når prisen stiger mindst ${st.alarmNiv} øre`}.`,
-        tags: ["fuelpump"], click: location.origin + location.pathname }) });
+        topic: alarmEmne(b), title: "Tank klar virker 🎉",
+        message: b === "el" ? `Du får besked kl. ${kl} om de billigste ladetimer i ${OMR[st.el]}.`
+          : `Du får besked kl. ${kl} om ${NAVN[b].toLowerCase()}${st.alarmNiv === "alle" ? " hver aften" : `, når prisen stiger mindst ${st.alarmNiv} øre`}.`,
+        tags: [b === "el" ? "electric_plug" : "fuelpump"], click: location.origin + location.pathname }) });
       if (!r.ok) throw new Error(r.status);
     }
     alStatus = "Testbeskeden er sendt. Den skulle dukke op på telefonen om et øjeblik.";
@@ -1215,7 +1228,7 @@ function elOmKort() {
 function visEl() {
   let html = "";
   if (data.demo) html += `<div class="demo">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
-  html += elHelt() + elPrisKort() + elRådKort() + elSparKort() + stationKort() + elAlarmKort() + dagbogKort()
+  html += elHelt() + elPrisKort() + elRådKort() + elSparKort() + stationKort() + alarmKort() + dagbogKort()
     + `<section>${grafKort()}</section>` + ugedagKort() + (data.el ? elKort() : "") + elOmKort()
     + `<div class="note"><p>Elpriser fra Energi Data Service (Energinet). Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p></div>`;
   document.getElementById("indhold").innerHTML = html;
@@ -1263,7 +1276,6 @@ function vis() {
     ${medEl ? elSparKort() : ""}
     ${stationKort()}
     ${alarmKort()}
-    ${medEl ? elAlarmKort() : ""}
     ${dagbogKort()}
     <section class="grid2">${selskabKort()}${grafKort(false)}</section>
     ${medEl ? `<section>${grafKort(true)}</section>` : ""}
@@ -1319,7 +1331,7 @@ document.getElementById("indhold").addEventListener("click", e => {
 document.getElementById("indhold").addEventListener("change", e => {
   if (e.target.dataset && e.target.dataset.alfuel) {
     const v = [...document.querySelectorAll("[data-alfuel]")].filter(x => x.checked).map(x => x.dataset.alfuel);
-    gemL("alarmFuels", JSON.stringify(v)); alStatus = ""; return vis();
+    gemL("alarmFuels", JSON.stringify(v)); gemL("alarmFuelsTom", v.length ? "" : st.valgt.filter(b => ALARM_NAVN[b]).join()); alStatus = ""; return vis();
   }
   if (e.target.id === "elTid") { st.elTid = e.target.value; gemL("elTid", st.elTid); elAlStatus = ""; return vis(); }
   if (e.target.id === "alarmTid" || e.target.id === "alarmNiv") { st[e.target.id] = e.target.value; gemL(e.target.id, e.target.value); alStatus = ""; return vis(); }
