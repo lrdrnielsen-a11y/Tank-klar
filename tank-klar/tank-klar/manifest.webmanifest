@@ -1,0 +1,16 @@
+{
+  "name": "Tank klar",
+  "short_name": "Tank klar",
+  "description": "Morgendagens forventede priser på benzin og diesel – og om du skal tanke i dag eller i morgen.",
+  "lang": "da",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2F6F8",
+  "theme_color": "#F2F6F8",
+  "icons": [
+    { "src": "ikoner/ikon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "ikoner/ikon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "ikoner/ikon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

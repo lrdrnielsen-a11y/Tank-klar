@@ -1,0 +1,148 @@
+{
+  "demo": true,
+  "opdateret": "2026-10-24T20:30+02:00",
+  "idag": "2026-10-24",
+  "imorgen": "2026-10-25",
+  "braendstof": {
+    "benzin": {
+      "idag": 13.96,
+      "imorgen": 13.84,
+      "aendring": -0.12,
+      "anbefaling": "vent",
+      "kilde_idag": "selskaberne",
+      "metode": "marked"
+    },
+    "diesel": {
+      "idag": 12.51,
+      "imorgen": 12.58,
+      "aendring": 0.07,
+      "anbefaling": "tank_i_dag",
+      "kilde_idag": "selskaberne",
+      "metode": "marked"
+    }
+  },
+  "selskaber": [
+    {
+      "navn": "OK",
+      "benzin": 13.96,
+      "diesel": 12.51,
+      "benzin_imorgen": 13.84,
+      "diesel_imorgen": 12.58
+    },
+    {
+      "navn": "Circle K",
+      "benzin": 14.06,
+      "diesel": 12.61,
+      "benzin_imorgen": 13.94,
+      "diesel_imorgen": 12.68
+    },
+    {
+      "navn": "Q8",
+      "benzin": 14.06,
+      "diesel": 12.61,
+      "benzin_imorgen": 13.94,
+      "diesel_imorgen": 12.68
+    },
+    {
+      "navn": "Shell",
+      "benzin": 14.06,
+      "diesel": 12.56,
+      "benzin_imorgen": 13.94,
+      "diesel_imorgen": 12.63
+    },
+    {
+      "navn": "F24",
+      "benzin": 13.91,
+      "diesel": 12.46,
+      "benzin_imorgen": 13.79,
+      "diesel_imorgen": 12.53
+    },
+    {
+      "navn": "Ingo",
+      "benzin": 13.91,
+      "diesel": 12.46,
+      "benzin_imorgen": 13.79,
+      "diesel_imorgen": 12.53
+    },
+    {
+      "navn": "Uno-X",
+      "benzin": 13.96,
+      "diesel": 12.56,
+      "benzin_imorgen": 13.84,
+      "diesel_imorgen": 12.63
+    }
+  ],
+  "marked": {
+    "usd_dkk": 6.42,
+    "handlet_i_dag": true,
+    "benzin": -0.12,
+    "diesel": 0.07,
+    "brent_usd": 71.2
+  },
+  "el": {
+    "dato": "2026-10-25",
+    "DK1": {
+      "gennemsnit": 0.594,
+      "billigst_start": 21,
+      "billigst_gennemsnit": 0.305,
+      "timer": [
+        0.32,
+        0.4,
+        0.444,
+        0.512,
+        0.57,
+        0.585,
+        0.663,
+        0.739,
+        0.755,
+        0.807,
+        0.782,
+        0.787,
+        0.754,
+        0.724,
+        0.659,
+        0.6,
+        0.568,
+        0.81,
+        0.773,
+        0.753,
+        0.335,
+        0.317,
+        0.312,
+        0.287
+      ]
+    },
+    "DK2": {
+      "gennemsnit": 0.662,
+      "billigst_start": 21,
+      "billigst_gennemsnit": 0.372,
+      "timer": [
+        0.414,
+        0.417,
+        0.52,
+        0.563,
+        0.616,
+        0.666,
+        0.741,
+        0.802,
+        0.845,
+        0.843,
+        0.859,
+        0.882,
+        0.849,
+        0.783,
+        0.75,
+        0.706,
+        0.597,
+        0.931,
+        0.832,
+        0.765,
+        0.395,
+        0.353,
+        0.398,
+        0.366
+      ]
+    }
+  },
+  "advarsler": []
+}
