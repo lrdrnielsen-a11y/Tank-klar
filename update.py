@@ -374,6 +374,7 @@ def main():
     marked = markedsdata(idag, advarsler)
     print("Henter elpriser ...")
     el = elpriser(imorgen, advarsler)
+    el_idag = elpriser(idag, [])
 
     braendstof = {}
     for b in ("benzin", "diesel"):
@@ -413,12 +414,16 @@ def main():
         "kilde": "BenzinSignal (benzinsignal.dk/data)",
         "marked": marked,
         "el": el,
+        "el_idag": el_idag,
         "advarsler": advarsler,
     }
 
-    if braendstof["benzin"]["idag"] is not None or braendstof["diesel"]["idag"] is not None:
+    if braendstof["benzin"]["idag"] is not None or braendstof["diesel"]["idag"] is not None or el_idag:
         historik = [h for h in historik if h["dato"] != idag.isoformat()]
         historik.append({"dato": idag.isoformat(),
+                         # dagens gennemsnitlige elpris (spotpris) pr. område
+                         "el_DK1": (el_idag or {}).get("DK1", {}).get("gennemsnit"),
+                         "el_DK2": (el_idag or {}).get("DK2", {}).get("gennemsnit"),
                          "benzin": braendstof["benzin"]["idag"],
                          "diesel": braendstof["diesel"]["idag"],
                          # prognosen for næste dag – bruges til at måle, hvor præcis appen er
