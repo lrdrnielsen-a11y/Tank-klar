@@ -164,9 +164,31 @@ def cnbc(symbol):
     return p0, p1, dato
 
 
+# --- kilde 3: Nasdaq's offentlige kursdata ---
+NASDAQ_SYMBOL = {"RB=F": "RB:NMX", "HO=F": "HO:NMX", "BZ=F": "BZ:NMX"}
+
+
+def nasdaq(symbol):
+    url = f"https://api.nasdaq.com/api/quote/{urllib.parse.quote(NASDAQ_SYMBOL[symbol])}/info?assetclass=commodities"
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json, text/plain, */*",
+                                               "Origin": "https://www.nasdaq.com", "Referer": "https://www.nasdaq.com/"})
+    with urllib.request.urlopen(req, timeout=25) as r:
+        d = json.loads(r.read().decode("utf-8"))["data"]["primaryData"]
+    p1 = _tal(str(d.get("lastSalePrice", "")).replace("$", ""))
+    ch = _tal(d.get("netChange"))
+    if p1 is None or ch is None:
+        raise ValueError("ingen kurs")
+    dato = None
+    try:
+        dato = datetime.strptime(str(d.get("lastTradeTimestamp", ""))[:12].strip(), "%b %d, %Y").date()
+    except ValueError:
+        pass
+    return p1 - ch, p1, dato
+
+
 def lukkekurser(symbol):
     """Prøver kilderne efter tur og returnerer (forrige, seneste, handelsdato, kilde)."""
-    for navn, fn in (("Yahoo", yahoo), ("CNBC", cnbc)):
+    for navn, fn in (("Yahoo", yahoo), ("CNBC", cnbc), ("Nasdaq", nasdaq)):
         try:
             p0, p1, dato = fn(symbol)
             return p0, p1, dato, navn
@@ -195,10 +217,27 @@ def lukkekurser_fx():
 
 
 def markedsdata(idag, advarsler):
+    ud = {"handlet_i_dag": True}
     try:
         fx0, fx1 = dollarkurs(idag)
-        ud = {"usd_dkk": round(fx1, 4), "handlet_i_dag": True}
-        kilder = set()
+        ud["usd_dkk"] = round(fx1, 4)
+        print(f"  Dollarkurs: {fx1:.4f}")
+    except Exception as e:
+        print(f"  ! dollarkurs: {e}")
+        fx0 = fx1 = None
+    try:
+        b0, b1, _, kilde = lukkekurser("BZ=F")
+        ud["brent_usd"] = round(b1, 2)
+        ud["brent_pct"] = round((b1 - b0) / b0 * 100, 2)
+        print(f"  Brent: {b1:.2f} USD ({kilde})")
+    except Exception:
+        pass
+    if fx1 is None:
+        advarsler.append("Dollarkursen kunne ikke hentes, så prognosen viser uændret pris")
+        ud["fejl"] = True
+        return ud
+    kilder = set()
+    try:
         for brændstof, symbol in (("benzin", "RB=F"), ("diesel", "HO=F")):
             p0, p1, dato, kilde = lukkekurser(symbol)
             kilder.add(kilde)
@@ -212,14 +251,8 @@ def markedsdata(idag, advarsler):
         print(f"  Markedsdata hentet fra {ud['kilde']}")
     except Exception as e:
         print(f"  ! markedsdata: {e}")
-        advarsler.append("Markedsdata kunne ikke hentes, så prognosen viser uændret pris")
-        return None
-    try:
-        b0, b1, _, _ = lukkekurser("BZ=F")
-        ud["brent_usd"] = round(b1, 2)
-        ud["brent_pct"] = round((b1 - b0) / b0 * 100, 2)
-    except Exception:
-        pass
+        advarsler.append("Benzin- og dieselkurserne kunne ikke hentes, så prognosen viser uændret pris")
+        ud["fejl"] = True
     return ud
 
 
@@ -384,8 +417,9 @@ def main():
         else:
             tidligere = [h[b] for h in historik if h.get(b) is not None]
             pris_idag, kilde = (tidligere[-1], "sidst kendte pris") if tidligere else (None, "ingen data")
-        aendring = marked[b] if marked else 0.0
-        metode = "marked" if marked else "uændret"
+        ok = bool(marked) and not marked.get("fejl") and marked.get(b) is not None
+        aendring = marked[b] if ok else 0.0
+        metode = "marked" if ok else "uændret"
         if override.get("dato") == imorgen.isoformat() and override.get(b) is not None:
             if pris_idag is not None:
                 aendring = float(override[b]) - pris_idag
