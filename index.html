@@ -307,7 +307,7 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
     <div class="logo" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="#CFE89A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
     </div>
-    <div class="navn"><h1>Tank klar<span class="prik">.</span></h1><p>Benzin- og dieselpris i Danmark</p></div>
+    <div class="navn"><h1>Tank klar<span class="prik">.</span></h1><p>Benzin, diesel og el i Danmark</p></div>
     <div class="handlinger">
       <button class="knap ikon" id="opdater" type="button" aria-label="Hent priser igen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"/></svg>
@@ -360,10 +360,15 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
     </div>
     <div class="felter" style="margin-top:16px">
       <div class="felt" id="bilLiterFelt"><label for="bilLiter">Tankstørrelse (liter)</label><input id="bilLiter" type="number" min="5" max="200" inputmode="numeric"></div>
-      <div class="felt" id="bilKwhFelt"><label for="bilKwh">Opladning (kWh)</label><input id="bilKwh" type="number" min="1" max="200" inputmode="numeric"></div>
+      <div class="felt" id="bilBatFelt"><label for="bilBat">Batteri (kWh)</label><input id="bilBat" type="number" min="10" max="200" inputmode="numeric"></div>
+      <div class="felt" id="bilKwFelt"><label for="bilKw">Lader med (kW)</label>
+        <select id="bilKw"><option value="2.3">2,3 (stikkontakt)</option><option value="3.7">3,7</option><option value="7.4">7,4</option><option value="11">11</option><option value="22">22</option></select></div>
+      <div class="felt" id="bilProcFelt"><label for="bilFra">Lader fra – til (%)</label>
+        <div style="display:flex;gap:6px;align-items:center"><input id="bilFra" type="number" min="0" max="95" step="5" inputmode="numeric" style="min-width:0"><span>–</span><input id="bilTil" type="number" min="5" max="100" step="5" inputmode="numeric" style="min-width:0"></div></div>
       <div class="felt" id="bilElFelt"><label for="bilEl">Elområde</label>
         <select id="bilEl"><option value="DK1">Vestdanmark (DK1)</option><option value="DK2">Østdanmark (DK2)</option></select></div>
     </div>
+    <p class="st-sub" id="bilKwTip" style="margin:-4px 0 4px">Kan bilen ikke lade så hurtigt som laderen, så vælg bilens tal (det laveste af de to).</p>
     <div class="felt tema-valg" style="margin-bottom:20px"><label>Udseende</label>
       <div class="faner" id="temaValg">
         <button type="button" data-tema="auto">Automatisk</button>
@@ -435,7 +440,10 @@ let stationer = null, stStatus = "", alStatus = "", delStatus = "", elAlStatus =
 st.tema = hentL("tema") || "auto";
 st.stType = hentL("stType") || "fuel";
 st.dbType = hentL("dbType") || "fuel";
-st.kwh = +hentL("kwh") || 40;
+st.batteri = +hentL("batteri") || 60;
+st.laderKw = +hentL("laderKw") || 11;
+st.fra = hentL("fra") != null ? +hentL("fra") : 20;
+st.til = +hentL("til") || 80;
 st.sted = (() => { try { return JSON.parse(hentL("sted")); } catch { return null; } })();
 st.stedTekst = st.sted ? st.sted.navn : "";
 st.ugedag = hentL("ugedag") || "benzin";
@@ -679,13 +687,14 @@ function elKort() {
   const e = data.el[st.el], t = e.timer, maks = Math.max(...t.filter(v => v != null), 0.01);
   const søjler = t.map((v, h) => {
     if (v == null) return "";
-    const hh = Math.max(2, Math.max(v, 0) / maks * 100), bil = h >= e.billigst_start && h < e.billigst_start + 3;
+    const pl = ladeplan(), hh = Math.max(2, Math.max(v, 0) / maks * 100);
+    const bil = pl ? (h + 1 > pl.start && h < pl.slut) : (h >= e.billigst_start && h < e.billigst_start + 3);
     return `<rect x="${h * 10 + 1}" y="${100 - hh}" width="8" height="${hh}" style="fill:${bil ? "var(--green)" : "var(--el-bar)"}"><title>kl. ${h}: ${kr(v)} kr./kWh</title></rect>`;
   }).join("");
   const akse = `<div class="el-akse">${[0, 6, 12, 18, 23].map(h => `<span style="left:${(h * 10 + 5) / 2.4}%">${String(h).padStart(2, "0")}</span>`).join("")}</div>`;
   return `<section><div class="kort">
     <h2>Strøm til elbilen i morgen</h2>
-    <p class="under">Spotpris pr. kWh ${esc(dato(data.el.dato, { weekday: "long", day: "numeric", month: "long" }))}, uden nettarif, afgifter og moms. De grønne søjler er de billigste tre timer.</p>
+    <p class="under">Spotpris pr. kWh ${esc(dato(data.el.dato, { weekday: "long", day: "numeric", month: "long" }))}, uden nettarif, afgifter og moms. De grønne søjler er din billigste ladetid.</p>
     <div class="el-valg">${kort}</div>
     <svg class="el-søjler" viewBox="0 0 240 100" preserveAspectRatio="none" role="img" aria-label="Elpris time for time i ${omr[st.el]}">${søjler}</svg>${akse}
     ${elAlarmDel()}
@@ -1059,7 +1068,9 @@ function ugedagKort(elT = erEl()) {
 /* ---------- del ---------- */
 async function del() {
   const e = harEl() && data.el ? elInfo() : null;
-  const elTekst = e ? `Billigste strøm i morgen: kl. ${to(e.start)}–${to(e.start + 3)} (${kr(e.billig)} kr./kWh i ${OMR[st.el]})` : "";
+  const pl = e ? ladeplan() : null;
+  const elTekst = pl ? `Billigste tid at lade elbilen i morgen: kl. ${tid(pl.start)}–${tid(pl.slut)} (${OMR[st.el]})`
+    : e ? `Billigste strøm i morgen: kl. ${to(e.start)}–${to(e.start + 3)} (${kr(e.billig)} kr./kWh i ${OMR[st.el]})` : "";
   const opsum = [mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
     if (x.idag == null) return null;
     return r === "flad" ? `${NAVN[b]} ventes uændret i morgen` : `${NAVN[b]} ${r === "op" ? "stiger" : "falder"} ${ø} øre i morgen – ${r === "op" ? "tank i dag" : "vent til i morgen"}`; }).filter(Boolean).join(". "), elTekst].filter(Boolean).join(". ");
@@ -1087,10 +1098,39 @@ function elInfo() {
   return { imorgen: t.gennemsnit, idag: i ? i.gennemsnit : null, aendring: i ? t.gennemsnit - i.gennemsnit : null,
     start: t.billigst_start, billig: t.billigst_gennemsnit, dyrStart, dyrGns, dyrTime };
 }
+const LADETAB = 0.9; // ca. 10 % går tabt ved opladning
+function tid(t) { const m = Math.round(t * 60 / 5) * 5; return `${to(Math.floor(m / 60))}:${to(m % 60)}`; }
+function varighed(t) { const m = Math.round(t * 60 / 5) * 5, h = Math.floor(m / 60), r = m % 60; return h ? `${h} t${r ? " " + r + " min" : ""}` : `${r} min`; }
+function ladeplan() {
+  const tim = data.el?.[st.el]?.timer;
+  if (!tim) return null;
+  const kwhBil = Math.max(0, st.batteri * (st.til - st.fra) / 100), kwhNet = kwhBil / LADETAB;
+  if (kwhNet <= 0) return null;
+  const varig = Math.min(24, kwhNet / st.laderKw), hele = Math.floor(varig), rest = varig - hele;
+  const pris = s0 => {
+    let c = 0;
+    for (let i = 0; i < hele; i++) { const v = tim[s0 + i]; if (v == null) return null; c += v * st.laderKw; }
+    if (rest > 1e-6) { const v = tim[s0 + hele]; if (v == null) return null; c += v * st.laderKw * rest; }
+    return c;
+  };
+  let bedst = null, værst = null;
+  for (let s0 = 0; s0 <= 24 - Math.ceil(varig); s0++) {
+    const c = pris(s0); if (c == null) continue;
+    if (!bedst || c < bedst.c) bedst = { s: s0, c };
+    if (!værst || c > værst.c) værst = { s: s0, c };
+  }
+  if (!bedst) return null;
+  const gyldige = tim.filter(v => v != null), snit = gyldige.reduce((a, v) => a + v, 0) / gyldige.length;
+  const kwhLadet = varig * st.laderKw; // hvis opladningen er kappet til 24 timer
+  return { kwhBil, kwhNet: kwhLadet, varig, kappet: kwhNet / st.laderKw > 24, start: bedst.s, slut: bedst.s + varig,
+    pris: bedst.c, prisKwh: bedst.c / kwhLadet, snitPris: snit * kwhLadet, værst: værst.c, værstStart: værst.s, værstSlut: værst.s + varig };
+}
+
 function elHelt() {
   const e = elInfo();
   const opsum = !e ? "Morgendagens elpriser bliver offentliggjort omkring kl. 13."
-    : `Billigst kl. ${to(e.start)}–${to(e.start + 3)} i ${OMR[st.el]}: ${kr(e.billig)} kr./kWh. Døgnets gennemsnit ${kr(e.imorgen)} kr.`;
+    : (pl => pl ? `Lad kl. ${tid(pl.start)}–${tid(pl.slut)} i ${OMR[st.el]}. Din opladning på ${kr(pl.kwhBil, 0)} kWh koster så ca. ${kr(pl.pris, 0)} kr.`
+      : `Billigst kl. ${to(e.start)}–${to(e.start + 3)} i ${OMR[st.el]}: ${kr(e.billig)} kr./kWh. Døgnets gennemsnit ${kr(e.imorgen)} kr.`)(ladeplan());
   return `<div class="helt">
       <div class="helt-top"><div class="helt-etiket"><i></i>Elpris for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
@@ -1115,20 +1155,28 @@ function elPrisKort() {
         ${e.aendring != null ? `<div class="mono ${r === "op" ? "op-tekst" : r === "ned" ? "ned-tekst" : ""}">${fortegn(e.aendring)}${kr(Math.abs(e.aendring))} kr. (${fortegn(e.aendring)}${kr(Math.abs(pct))}%)</div>` : ""}
       </div>
     </div>
-    <div class="kort">
+    ${(pl => pl ? `<div class="kort">
+      <div class="pris-top"><h2>Din opladning</h2><span class="mærke ned">kl. ${tid(pl.start)}–${tid(pl.slut)}</span></div>
+      <div class="etiket">${kr(pl.kwhBil, 0)} kWh (${st.fra} % → ${st.til} % af ${st.batteri} kWh) koster</div>
+      <div class="stor"><span class="tal">${kr(pl.pris)}</span><span class="enhed">kr.</span></div>
+      <div class="idag">
+        <div><div class="etiket" style="margin:0">Ladetid med ${kr(st.laderKw, st.laderKw % 1 ? 1 : 0)} kW</div><div class="mono">${varighed(pl.varig)}</div></div>
+        <div><div class="etiket" style="margin:0">Pr. kWh</div><div class="mono">${kr(pl.prisKwh)} kr.</div></div>
+      </div>
+    </div>` : `<div class="kort">
       <div class="pris-top"><h2>Billigste 3 timer</h2><span class="mærke ned">kl. ${to(e.start)}–${to(e.start + 3)}</span></div>
       <div class="etiket">Gennemsnit i de billigste timer</div>
       <div class="stor"><span class="tal">${kr(e.billig)}</span><span class="enhed">kr./kWh</span></div>
-      <div class="idag">
-        <div><div class="etiket" style="margin:0">Dyreste time</div><div class="mono">${e.dyrTime ? `kl. ${to(e.dyrTime[0])}: ${kr(e.dyrTime[1])} kr.` : "–"}</div></div>
-      </div>
-    </div>
+    </div>`)(ladeplan())}
   </div>`;
 }
 function elRådKort() {
   const e = elInfo();
   if (!e) return "";
-  const kort1 = `<div class="råd ned"><h3>Lad kl. ${to(e.start)}–${to(e.start + 3)}</h3><p>Det er de billigste timer i morgen${e.dyrStart != null ? `. Undgå helst kl. ${to(e.dyrStart)}–${to(e.dyrStart + 3)}, hvor strømmen er dyrest` : ""}.</p></div>`;
+  const pl = ladeplan();
+  const kort1 = pl
+    ? `<div class="råd ned"><h3>Lad kl. ${tid(pl.start)}–${tid(pl.slut)}</h3><p>Så er bilen ladet fra ${st.fra} % til ${st.til} % for ca. ${kr(pl.pris, 0)} kr. Den dyreste tid at lade er kl. ${tid(pl.værstStart)}–${tid(pl.værstSlut)}, hvor det ville koste ca. ${kr(pl.værst, 0)} kr.${pl.kappet ? " Opladningen tager over et døgn, så der er regnet med 24 timer." : ""}</p></div>`
+    : `<div class="råd ned"><h3>Lad kl. ${to(e.start)}–${to(e.start + 3)}</h3><p>Det er de billigste timer i morgen.</p></div>`;
   let kort2 = `<div class="råd"><h3>Nogenlunde samme pris</h3><p>Strømmen koster omtrent det samme i morgen som i dag.</p></div>`;
   if (e.aendring != null && e.aendring <= -0.03) kort2 = `<div class="råd ned"><h3>Billigere i morgen</h3><p>Strømmen bliver ${kr(Math.abs(e.aendring) * 100, 0)} øre billigere pr. kWh i gennemsnit. Kan bilen vente, så lad i morgen.</p></div>`;
   if (e.aendring != null && e.aendring >= 0.03) kort2 = `<div class="råd op"><h3>Dyrere i morgen</h3><p>Strømmen bliver ${kr(e.aendring * 100, 0)} øre dyrere pr. kWh i gennemsnit. Lad gerne i aften eller i nat, hvis du kan.</p></div>`;
@@ -1137,16 +1185,16 @@ function elRådKort() {
 function elSparKort() {
   const e = elInfo();
   if (!e) return "";
-  const k = st.kwh;
+  const pl = ladeplan();
+  if (!pl) return "";
   return `<section><div class="kort">
     <h2>Hvad sparer du?${blandet() ? ' <span style="color:var(--muted);font-weight:500">· El</span>' : ""}</h2>
-    <p class="under">Regn ud, hvad det betyder at lade i de billigste timer derhjemme.</p>
-    <div class="spar-række"><div class="felt"><label for="kwh">Opladning (kWh)</label><input id="kwh" type="number" min="1" max="200" inputmode="numeric" value="${k}"></div></div>
+    <p class="under">Din opladning på ${kr(pl.kwhBil, 0)} kWh (${st.fra} % → ${st.til} %), ladet kl. ${tid(pl.start)}–${tid(pl.slut)}. <a href="#" data-act="minbil" style="color:inherit">Ret bil og lader</a></p>
     <div class="bokse">
-      <div class="boks grøn"><div class="bt">Mod døgnets gennemsnit</div><div class="stor-sum">${kr((e.imorgen - e.billig) * k)} kr.</div><div class="lille">${kr(e.imorgen - e.billig)} kr./kWh × ${k} kWh</div></div>
-      ${e.dyrGns != null ? `<div class="boks blå"><div class="bt">Mod de dyreste 3 timer (kl. ${to(e.dyrStart)}–${to(e.dyrStart + 3)})</div><div class="stor-sum">${kr((e.dyrGns - e.billig) * k)} kr.</div><div class="lille">${kr(e.dyrGns - e.billig)} kr./kWh forskel</div></div>` : ""}
+      <div class="boks grøn"><div class="bt">Mod en tilfældig tid på døgnet</div><div class="stor-sum">${kr(pl.snitPris - pl.pris)} kr.</div><div class="lille">${kr(pl.snitPris)} kr. ved døgnets gennemsnitspris</div></div>
+      <div class="boks blå"><div class="bt">Mod den dyreste tid (kl. ${tid(pl.værstStart)}–${tid(pl.værstSlut)})</div><div class="stor-sum">${kr(pl.værst - pl.pris)} kr.</div><div class="lille">${kr(pl.værst)} kr. hvis du lader på det dyreste tidspunkt</div></div>
     </div>
-    <p class="fod">Beregnet på spotprisen. Nettarif og afgifter kommer oveni og er ofte højest om eftermiddagen og aftenen, så forskellen er typisk endnu større.</p>
+    <p class="fod">Der er regnet med, at ca. 10 % af strømmen går tabt under opladningen. Beregnet på spotprisen. Nettarif og afgifter kommer oveni og er ofte højest om eftermiddagen og aftenen, så forskellen er typisk endnu større.</p>
   </div></section>`;
 }
 function elAlarmKort() {
@@ -1196,7 +1244,8 @@ function vis() {
     if (x.idag == null) return `Ingen pris på ${NAVN[b].toLowerCase()} endnu`;
     return r === "flad" ? `${NAVN[b]} ventes uændret` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; });
   const ei = medEl ? elInfo() : null;
-  if (ei) opsum.push(`billigste strøm kl. ${to(ei.start)}–${to(ei.start + 3)}`);
+  const pl = ei ? ladeplan() : null;
+  if (ei) opsum.push(pl ? `lad elbilen kl. ${tid(pl.start)}–${tid(pl.slut)}` : `billigste strøm kl. ${to(ei.start)}–${to(ei.start + 3)}`);
   const opsumTekst = opsum.join(" · ");
   html += `<div class="helt">
       <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
@@ -1249,6 +1298,7 @@ document.getElementById("indhold").addEventListener("click", e => {
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
+  if (act && act.dataset.act === "minbil") { e.preventDefault(); return document.getElementById("minbil").click(); }
   if (act && act.dataset.act === "tankning") return åbnDagbog();
   if (act && act.dataset.act === "elalarm") { st.elAlarm = !st.elAlarm; return vis(); }
   if (act && act.dataset.act === "eltest") return elTest();
@@ -1270,7 +1320,6 @@ document.getElementById("indhold").addEventListener("change", e => {
     const v = [...document.querySelectorAll("[data-alfuel]")].filter(x => x.checked).map(x => x.dataset.alfuel);
     gemL("alarmFuels", JSON.stringify(v)); alStatus = ""; return vis();
   }
-  if (e.target.id === "kwh") { st.kwh = Math.min(200, Math.max(1, Math.round(+e.target.value) || 40)); gemL("kwh", st.kwh); return vis(); }
   if (e.target.id === "elTid") { st.elTid = e.target.value; gemL("elTid", st.elTid); elAlStatus = ""; return vis(); }
   if (e.target.id === "alarmTid" || e.target.id === "alarmNiv") { st[e.target.id] = e.target.value; gemL(e.target.id, e.target.value); alStatus = ""; return vis(); }
   if (e.target.id === "radius") { st.radius = +e.target.value; gemL("radius", st.radius); if (stationer) findStationer(); else vis(); return; }
@@ -1306,7 +1355,7 @@ const vælgBokse = () => [...bDlg.querySelectorAll("[data-vælg]")];
 function opdaterBilFelter() {
   const v = vælgBokse().filter(x => x.checked).map(x => x.dataset.vælg);
   document.getElementById("bilLiterFelt").hidden = !v.some(b => b !== "el");
-  document.getElementById("bilKwhFelt").hidden = !v.includes("el");
+  ["bilBatFelt", "bilKwFelt", "bilProcFelt", "bilKwTip"].forEach(id => document.getElementById(id).hidden = !v.includes("el"));
   document.getElementById("bilElFelt").hidden = !v.includes("el");
   document.getElementById("vælgFejl").hidden = v.length > 0;
   bDlg.querySelector('button[value="gem"]').disabled = !v.length;
@@ -1317,7 +1366,10 @@ const markérTema = () => bDlg.querySelectorAll("[data-tema]").forEach(k => k.se
 bDlg.querySelectorAll("[data-tema]").forEach(k => k.onclick = () => { valgtTema = k.dataset.tema; markérTema(); });
 document.getElementById("minbil").onclick = () => {
   vælgBokse().forEach(x => x.checked = st.valgt.includes(x.dataset.vælg));
-  document.getElementById("bilKwh").value = st.kwh;
+  document.getElementById("bilBat").value = st.batteri;
+  document.getElementById("bilKw").value = String(st.laderKw);
+  document.getElementById("bilFra").value = st.fra;
+  document.getElementById("bilTil").value = st.til;
   opdaterBilFelter(); valgtTema = st.tema; markérTema();
   document.getElementById("bilLiter").value = st.liter;
   document.getElementById("bilEl").value = st.el;
@@ -1330,7 +1382,11 @@ bDlg.addEventListener("close", () => {
   const v = vælgBokse().filter(x => x.checked).map(x => x.dataset.vælg);
   if (v.length) { st.valgt = v; gemL("valgt", JSON.stringify(v)); }
   if (før !== laderVises()) { stationer = null; stStatus = ""; }
-  st.kwh = Math.min(200, Math.max(1, Math.round(+document.getElementById("bilKwh").value) || 40)); gemL("kwh", st.kwh);
+  st.batteri = Math.min(200, Math.max(10, Math.round(+document.getElementById("bilBat").value) || 60)); gemL("batteri", st.batteri);
+  st.laderKw = +document.getElementById("bilKw").value || 11; gemL("laderKw", st.laderKw);
+  let fra = Math.min(95, Math.max(0, Math.round(+document.getElementById("bilFra").value))), til = Math.min(100, Math.max(5, Math.round(+document.getElementById("bilTil").value)));
+  if (!isFinite(fra)) fra = 20; if (!isFinite(til)) til = 80; if (til <= fra) til = Math.min(100, fra + 10);
+  st.fra = fra; st.til = til; gemL("fra", fra); gemL("til", til);
   st.tema = valgtTema; gemL("tema", st.tema); anvendTema();
   st.liter = Math.min(200, Math.max(5, Math.round(+document.getElementById("bilLiter").value) || 50)); gemL("liter", st.liter);
   st.el = document.getElementById("bilEl").value; gemL("el", st.el);
