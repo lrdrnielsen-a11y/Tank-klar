@@ -1,0 +1,30 @@
+name: Opdater priser
+
+on:
+  schedule:
+    - cron: "30 18 * * *"   # hver aften kl. 18:30 UTC (19:30 vintertid / 20:30 sommertid)
+  workflow_dispatch:         # giver knappen "Run workflow"
+
+permissions:
+  contents: write
+
+jobs:
+  opdater:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Hent priser og beregn prognose
+        run: python scripts/update.py
+
+      - name: Gem de nye data (Cloudflare henter dem selv)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "Opdater priser $(date -u +%F)"
+          git push
