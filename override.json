@@ -1,0 +1,6 @@
+{
+  "_forklaring": "Vil du selv bestemme morgendagens pris? Skriv morgendagens dato (ÅÅÅÅ-MM-DD) og prisen. Lad feltet være null for at bruge den automatiske prognose.",
+  "dato": "",
+  "benzin": null,
+  "diesel": null
+}

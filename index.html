@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tank klar</title>
+<meta name="description" content="Morgendagens forventede priser på benzin og diesel i Danmark – og om du skal tanke i dag eller i morgen.">
+<meta name="theme-color" content="#F2F6F8">
+<link rel="icon" href="ikoner/ikon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="ikoner/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tank klar">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F6F8;
+    --surface: #FFFFFF;
+    --ink: #13212B;
+    --muted: #5A6A75;
+    --streg: #D9E2E8;
+    --op: #C23B0E;
+    --op-lys: #FCE9E1;
+    --ned: #0E7A43;
+    --ned-lys: #DDF3E6;
+    --flad: #5A6A75;
+    --flad-lys: #E7ECEF;
+    --gul: #FFC21A;
+    --font: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font); font-size: 17px; line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+    padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 20px 18px 48px; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--gul); outline-offset: 2px; border-radius: 6px; }
+
+  /* top */
+  .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px; }
+  .navn { font-weight: 800; font-size: 18px; letter-spacing: -0.01em; display: flex; gap: 8px; align-items: center; }
+  .navn span { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--gul); font-size: 17px; }
+  .valg { display: inline-flex; background: var(--surface); border: 1px solid var(--streg); border-radius: 999px; padding: 3px; }
+  .valg button { border: 0; background: none; padding: 7px 16px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 15px; color: var(--muted); }
+  .valg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+  /* hero */
+  .hero { padding: 6px 0 26px; }
+  .dag { color: var(--muted); font-size: 15px; margin: 0 0 10px; }
+  .svar { font-size: clamp(34px, 9vw, 52px); line-height: 1.02; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+  .svar .pil { display: inline-grid; place-items: center; width: 0.9em; height: 0.9em; border-radius: 50%; font-size: 0.72em; vertical-align: 0.06em; margin-right: 0.12em; }
+  .op .pil { background: var(--op-lys); color: var(--op); }
+  .ned .pil { background: var(--ned-lys); color: var(--ned); }
+  .flad .pil { background: var(--flad-lys); color: var(--flad); }
+  .tal { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 18px; align-items: baseline; }
+  .tal .stor { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; }
+  .tal .lille { color: var(--muted); font-size: 15px; }
+
+  .råd { margin: 0 0 30px; padding: 16px 18px; border-radius: 14px; border-left: 6px solid var(--flad); background: var(--surface); }
+  .råd.op { border-left-color: var(--op); }
+  .råd.ned { border-left-color: var(--ned); }
+  .råd strong { display: block; font-size: 19px; }
+  .råd p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+
+  section { margin-top: 34px; }
+  h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .under { color: var(--muted); font-size: 15px; margin: 0 0 14px; }
+
+  .graf { background: var(--surface); border-radius: 14px; padding: 14px 12px 8px; }
+  .graf svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 14px; overflow: hidden; }
+  th, td { text-align: right; padding: 11px 14px; border-bottom: 1px solid var(--streg); }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-weight: 600; font-size: 14px; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  tr.landsdæk td { font-weight: 800; background: #F7FAFB; }
+  .billigst { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--gul); font-size: 12px; font-weight: 600; vertical-align: 2px; }
+
+  .el { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .el-kort { background: var(--surface); border-radius: 14px; padding: 14px 16px; border: 2px solid transparent; cursor: pointer; text-align: left; }
+  .el-kort[aria-pressed="true"] { border-color: var(--ink); }
+  .el-kort .omr { font-size: 14px; color: var(--muted); }
+  .el-kort .pris { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .el-kort .tid { font-size: 14px; }
+  .el-graf { margin-top: 10px; }
+
+  .note { margin-top: 40px; color: var(--muted); font-size: 13.5px; }
+  .note p { margin: 0 0 8px; }
+  .demo { background: var(--gul); color: var(--ink); border-radius: 12px; padding: 12px 14px; font-size: 15px; margin-bottom: 22px; }
+  .fejl { background: var(--op-lys); color: var(--op); border-radius: 12px; padding: 14px; }
+
+  @media (max-width: 420px) {
+    .navn { font-size: 16px; }
+    .valg button { padding: 7px 12px; }
+    th, td { padding: 10px 9px; }
+    .el { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero { animation: ind .5s ease-out both; }
+    @keyframes ind { from { opacity: 0; transform: translateY(6px); } }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div class="navn"><span aria-hidden="true">⛽</span>Tank klar</div>
+    <div class="valg" role="group" aria-label="Vælg brændstof">
+      <button type="button" data-b="benzin">Benzin</button>
+      <button type="button" data-b="diesel">Diesel</button>
+    </div>
+  </header>
+
+  <div id="indhold" aria-live="polite"><p class="under">Henter priser …</p></div>
+</main>
+
+<script>
+const NAVNE = { benzin: "Benzin", diesel: "Diesel" };
+const RÅD = {
+  vent: ["Vent med at tanke til i morgen", "Prisen ventes at falde. Kan tanken holde en dag mere, sparer du lidt."],
+  tank_i_dag: ["Tank hellere i dag", "Prisen ventes at stige i morgen."],
+  lige_meget: ["Det er lige meget", "Prisen ventes at være næsten den samme i morgen."],
+  ukendt: ["Ingen anbefaling i dag", "Der mangler priser til at lave en prognose."]
+};
+let data = null, historik = [], valgt = gemt("brændstof") || "benzin", elOmr = gemt("elområde") || "DK2";
+
+function gemt(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function gem(k, v) { try { localStorage.setItem(k, v); } catch {} }
+const kr = (v, d = 2) => v == null ? "–" : v.toLocaleString("da-DK", { minimumFractionDigits: d, maximumFractionDigits: d });
+const dato = (s, o) => new Date(s + "T12:00:00").toLocaleDateString("da-DK", o);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const retning = a => a == null || Math.abs(a) < 0.005 ? "flad" : a > 0 ? "op" : "ned";
+
+async function hent() {
+  try {
+    const t = Date.now();
+    const [l, h] = await Promise.all([
+      fetch("data/latest.json?t=" + t).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch("data/history.json?t=" + t).then(r => r.ok ? r.json() : []).catch(() => [])
+    ]);
+    data = l; historik = h;
+    vis();
+  } catch (e) {
+    document.getElementById("indhold").innerHTML =
+      `<div class="fejl">Priserne kunne ikke indlæses (data/latest.json mangler). Kør workflowet “Opdater priser” under fanen Actions på GitHub, og genindlæs siden.</div>`;
+  }
+}
+
+function vis() {
+  document.querySelectorAll(".valg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b === valgt));
+  const b = data.braendstof[valgt];
+  const r = retning(b.aendring);
+  const øre = Math.round(Math.abs(b.aendring || 0) * 100);
+  const svar = b.idag == null ? `Ingen pris på ${NAVNE[valgt].toLowerCase()} endnu`
+    : r === "flad" ? `${NAVNE[valgt]} holder prisen i morgen`
+    : `${NAVNE[valgt]} bliver ${øre} øre ${r === "op" ? "dyrere" : "billigere"} i morgen`;
+  const pil = { op: "↑", ned: "↓", flad: "→" }[r];
+  const [rådOverskrift, rådTekst] = RÅD[b.anbefaling] || RÅD.ukendt;
+  const metode = b.metode === "manuel" ? "Prognosen er sat manuelt." : b.metode === "uændret" ? "Markedsdata manglede, så prognosen viser dagens pris." : "";
+
+  let html = "";
+  if (data.demo) html += `<div class="demo">Dette er eksempeldata. Rigtige priser vises, når workflowet “Opdater priser” har kørt første gang.</div>`;
+  html += `
+    <div class="hero ${r}">
+      <p class="dag">${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</p>
+      <h1 class="svar"><span class="pil" aria-hidden="true">${pil}</span>${esc(svar)}</h1>
+      <div class="tal">
+        <div><span class="stor">${kr(b.imorgen)} kr</span> <span class="lille">pr. liter i morgen (forventet)</span></div>
+        <div class="lille">I dag ${kr(b.idag)} kr</div>
+      </div>
+    </div>
+    <div class="råd ${b.anbefaling === "vent" ? "ned" : b.anbefaling === "tank_i_dag" ? "op" : ""}">
+      <strong>${rådOverskrift}</strong>
+      <p>${rådTekst} ${metode} Standerprisen er ofte lavest om aftenen og før kl. 10.</p>
+    </div>`;
+
+  html += `<section><h2>De sidste 14 dage</h2><p class="under">Vejledende landspris for ${NAVNE[valgt].toLowerCase()}. Den stiplede linje er prognosen for i morgen.</p><div class="graf">${graf()}</div></section>`;
+
+  const rækker = (data.selskaber || []).filter(s => s[valgt] != null);
+  if (rækker.length) {
+    const min = Math.min(...rækker.map(s => s[valgt + "_imorgen"] ?? Infinity));
+    html += `<section><h2>Selskaberne</h2><p class="under">Listepriser i dag og forventet i morgen, kr pr. liter.</p>
+      <table><thead><tr><th>Selskab</th><th>I dag</th><th>I morgen</th></tr></thead><tbody>
+      <tr class="landsdæk"><td>Landsdækkende</td><td>${kr(b.idag)}</td><td>${kr(b.imorgen)}</td></tr>
+      ${rækker.sort((a, c) => (a[valgt + "_imorgen"] ?? 99) - (c[valgt + "_imorgen"] ?? 99)).map(s =>
+        `<tr><td>${esc(s.navn)}${s[valgt + "_imorgen"] === min ? '<span class="billigst">billigst</span>' : ""}</td><td>${kr(s[valgt])}</td><td>${kr(s[valgt + "_imorgen"])}</td></tr>`).join("")}
+      </tbody></table></section>`;
+  }
+
+  if (data.el) html += elSektion();
+
+  html += `<div class="note">
+    <p>Prognosen er et skøn baseret på dagens ændring i markedsprisen på benzin og diesel og dollarkursen. Selskaberne kan ændre priserne anderledes.</p>
+    <p>Listepriser er selskabernes officielle priser. Prisen ved standeren er ofte lavere.</p>
+    <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p>
+    ${(data.advarsler || []).length ? `<p>Mangler: ${data.advarsler.map(esc).join(". ")}.</p>` : ""}
+  </div>`;
+
+  document.getElementById("indhold").innerHTML = html;
+  document.querySelectorAll(".el-kort").forEach(k => k.onclick = () => { elOmr = k.dataset.o; gem("elområde", elOmr); vis(); });
+}
+
+function graf() {
+  const pkt = historik.filter(h => h[valgt] != null).slice(-14).map(h => ({ d: h.dato, v: h[valgt] }));
+  const b = data.braendstof[valgt];
+  if (pkt.length < 2) return `<p class="under">Grafen fyldes ud, efterhånden som der kommer data.</p>`;
+  const prog = b.imorgen != null ? { d: data.imorgen, v: b.imorgen } : null;
+  const alle = prog ? [...pkt, prog] : pkt;
+  const W = 420, H = 170, L = 8, R = 48, T = 14, B = 26;
+  const vs = alle.map(p => p.v);
+  let lo = Math.min(...vs), hi = Math.max(...vs);
+  if (hi - lo < 0.2) { const m = (hi + lo) / 2; lo = m - 0.1; hi = m + 0.1; }
+  const x = i => L + i * (W - L - R) / (alle.length - 1);
+  const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const linje = pkt.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
+  const n = pkt.length - 1;
+  const farve = { op: "var(--op)", ned: "var(--ned)", flad: "var(--flad)" }[retning(b.aendring)];
+  const kort = d => dato(d, { day: "numeric", month: "short" });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Prisudvikling de sidste ${pkt.length} dage">
+    <line x1="${L}" x2="${W - R}" y1="${y(hi)}" y2="${y(hi)}" stroke="var(--streg)"/>
+    <line x1="${L}" x2="${W - R}" y1="${y(lo)}" y2="${y(lo)}" stroke="var(--streg)"/>
+    <text x="${W - R + 6}" y="${y(hi) + 4}" font-size="13" fill="var(--muted)">${kr(hi)}</text>
+    <text x="${W - R + 6}" y="${y(lo) + 4}" font-size="13" fill="var(--muted)">${kr(lo)}</text>
+    <path d="${linje}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${prog ? `<path d="M${x(n)},${y(pkt[n].v)}L${x(n + 1)},${y(prog.v)}" stroke="${farve}" stroke-width="2.5" stroke-dasharray="5 5" fill="none"/>
+      <circle cx="${x(n + 1)}" cy="${y(prog.v)}" r="6" fill="${farve}"/>` : ""}
+    <circle cx="${x(n)}" cy="${y(pkt[n].v)}" r="4.5" fill="var(--ink)"/>
+    <text x="${L}" y="${H - 4}" font-size="13" fill="var(--muted)">${esc(kort(pkt[0].d))}</text>
+    <text x="${x(n)}" y="${H - 4}" font-size="13" fill="var(--muted)" text-anchor="middle">I dag</text>
+  </svg>`;
+}
+
+function elSektion() {
+  const omr = { DK1: "Vestdanmark", DK2: "Østdanmark" };
+  const kort = Object.keys(omr).filter(k => data.el[k]).map(k => {
+    const e = data.el[k], s = e.billigst_start;
+    return `<button type="button" class="el-kort" data-o="${k}" aria-pressed="${k === elOmr}">
+      <div class="omr">${omr[k]} (${k})</div>
+      <div class="pris">${kr(e.gennemsnit)} kr</div>
+      <div class="tid">Billigst kl. ${String(s).padStart(2, "0")}–${String(s + 3).padStart(2, "0")}: ${kr(e.billigst_gennemsnit)} kr</div>
+    </button>`;
+  }).join("");
+  if (!data.el[elOmr]) elOmr = Object.keys(omr).find(k => data.el[k]);
+  const e = data.el[elOmr];
+  const t = e.timer, maks = Math.max(...t.filter(v => v != null), 0.01), W = 420, H = 100, bw = W / 24;
+  const søjler = t.map((v, h) => {
+    if (v == null) return "";
+    const hh = Math.max(2, Math.max(v, 0) / maks * (H - 22));
+    const billig = h >= e.billigst_start && h < e.billigst_start + 3;
+    return `<rect x="${(h * bw + 2).toFixed(1)}" y="${(H - 18 - hh).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="${hh.toFixed(1)}" rx="3" fill="${billig ? "var(--ned)" : "var(--streg)"}"><title>kl. ${h}: ${kr(v)} kr/kWh</title></rect>`;
+  }).join("");
+  const akse = [0, 6, 12, 18].map(h => `<text x="${h * bw + 2}" y="${H - 2}" font-size="13" fill="var(--muted)">${String(h).padStart(2, "0")}</text>`).join("");
+  return `<section><h2>Strøm til elbilen i morgen</h2>
+    <p class="under">Gennemsnitlig spotpris pr. kWh, ${esc(dato(data.el.dato, { weekday: "long" }))}. Uden nettarif, afgifter og moms.</p>
+    <div class="el">${kort}</div>
+    <div class="graf el-graf"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Elpris time for time i ${omr[elOmr]}">${søjler}${akse}</svg></div>
+  </section>`;
+}
+
+document.querySelectorAll(".valg button").forEach(b => b.onclick = () => { valgt = b.dataset.b; gem("brændstof", valgt); if (data) vis(); });
+hent();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+name: Opdater priser
+
+on:
+  schedule:
+    - cron: "30 18 * * *"   # hver aften kl. 18:30 UTC (19:30 vintertid / 20:30 sommertid)
+  workflow_dispatch:         # giver knappen "Run workflow"
+  push:
+    branches: [main]         # udgiver siden igen, når du retter i filerne
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  opdater-og-udgiv:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Hent priser og beregn prognose
+        if: github.event_name != 'push'
+        run: python scripts/update.py
+
+      - name: Gem de nye data
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "Opdater priser $(date -u +%F)"
+          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+      - id: deploy
+        uses: actions/deploy-pages@v4

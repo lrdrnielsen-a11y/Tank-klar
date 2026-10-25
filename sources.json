@@ -1,0 +1,12 @@
+{
+  "_forklaring": "Selskaber der hentes priser fra. Sæt \"aktiv\": false for at slå et selskab fra. Virker et selskab ikke, så åbn adressen i din browser og ret den til selskabets side med dagens priser. benzin_ord og diesel_ord er de ord, scriptet leder efter lige før prisen.",
+  "selskaber": [
+    { "navn": "OK", "url": "https://www.ok.dk/privat/produkter/ok-kort/prisudvikling", "aktiv": true },
+    { "navn": "Circle K", "url": "https://www.circlek.dk/priser", "aktiv": true },
+    { "navn": "Q8", "url": "https://www.q8.dk/priser/", "aktiv": true },
+    { "navn": "Shell", "url": "https://www.shell.dk/kunder/priser.html", "aktiv": true },
+    { "navn": "F24", "url": "https://www.f24.dk/priser/", "aktiv": true },
+    { "navn": "Ingo", "url": "https://www.ingo.dk/br%C3%A6ndstofpriser/aktuelle-br%C3%A6ndstofpriser", "aktiv": true },
+    { "navn": "Uno-X", "url": "https://www.unox.dk/priser", "aktiv": true }
+  ]
+}
