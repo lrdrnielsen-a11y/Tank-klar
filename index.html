@@ -361,14 +361,15 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
     <div class="felter" style="margin-top:16px">
       <div class="felt" id="bilLiterFelt"><label for="bilLiter">Tankstørrelse (liter)</label><input id="bilLiter" type="number" min="5" max="200" inputmode="numeric"></div>
       <div class="felt" id="bilBatFelt"><label for="bilBat">Batteri (kWh)</label><input id="bilBat" type="number" min="10" max="200" inputmode="numeric"></div>
-      <div class="felt" id="bilKwFelt"><label for="bilKw">Lader med (kW)</label>
-        <select id="bilKw"><option value="2.3">2,3 (stikkontakt)</option><option value="3.7">3,7</option><option value="7.4">7,4</option><option value="11">11</option><option value="22">22</option></select></div>
+      <div class="felt" id="bilKwFelt"><label for="bilKw">Hjemmelader (kW)</label>
+        <select id="bilKw"><option value="2.3">2,3 (stikkontakt)</option><option value="3.7">3,7</option><option value="7.4">7,4</option><option value="11">11</option><option value="22">22</option><option value="andet">Andet …</option></select>
+        <input id="bilKwAndet" type="text" inputmode="decimal" autocomplete="off" placeholder="fx 9,6" style="margin-top:8px" hidden></div>
       <div class="felt" id="bilProcFelt"><label for="bilFra">Lader fra – til (%)</label>
         <div style="display:flex;gap:6px;align-items:center"><input id="bilFra" type="number" min="0" max="95" step="5" inputmode="numeric" style="min-width:0"><span>–</span><input id="bilTil" type="number" min="5" max="100" step="5" inputmode="numeric" style="min-width:0"></div></div>
       <div class="felt" id="bilElFelt"><label for="bilEl">Elområde</label>
         <select id="bilEl"><option value="DK1">Vestdanmark (DK1)</option><option value="DK2">Østdanmark (DK2)</option></select></div>
     </div>
-    <p class="st-sub" id="bilKwTip" style="margin:-4px 0 4px">Kan bilen ikke lade så hurtigt som laderen, så vælg bilens tal (det laveste af de to).</p>
+    <p class="st-sub" id="bilKwTip" style="margin:-4px 0 4px">Hjemmeladeren bruges kun til at regne ladetiden ud derhjemme. Kan bilen ikke lade så hurtigt som laderen, så vælg bilens tal (det laveste af de to). Ved du det ikke, er 11 et godt bud.</p>
     <div class="felt tema-valg" style="margin-bottom:20px"><label>Udseende</label>
       <div class="faner" id="temaValg">
         <button type="button" data-tema="auto">Automatisk</button>
@@ -1361,13 +1362,19 @@ function opdaterBilFelter() {
   bDlg.querySelector('button[value="gem"]').disabled = !v.length;
 }
 vælgBokse().forEach(x => x.addEventListener("change", opdaterBilFelter));
+document.getElementById("bilKw").addEventListener("change", e => {
+  const f = document.getElementById("bilKwAndet"); f.hidden = e.target.value !== "andet"; if (!f.hidden) f.focus();
+});
 let valgtTema = st.tema;
 const markérTema = () => bDlg.querySelectorAll("[data-tema]").forEach(k => k.setAttribute("aria-pressed", k.dataset.tema === valgtTema));
 bDlg.querySelectorAll("[data-tema]").forEach(k => k.onclick = () => { valgtTema = k.dataset.tema; markérTema(); });
 document.getElementById("minbil").onclick = () => {
   vælgBokse().forEach(x => x.checked = st.valgt.includes(x.dataset.vælg));
   document.getElementById("bilBat").value = st.batteri;
-  document.getElementById("bilKw").value = String(st.laderKw);
+  const std = ["2.3", "3.7", "7.4", "11", "22"].includes(String(st.laderKw));
+  document.getElementById("bilKw").value = std ? String(st.laderKw) : "andet";
+  document.getElementById("bilKwAndet").value = std ? "" : String(st.laderKw).replace(".", ",");
+  document.getElementById("bilKwAndet").hidden = std;
   document.getElementById("bilFra").value = st.fra;
   document.getElementById("bilTil").value = st.til;
   opdaterBilFelter(); valgtTema = st.tema; markérTema();
@@ -1383,7 +1390,10 @@ bDlg.addEventListener("close", () => {
   if (v.length) { st.valgt = v; gemL("valgt", JSON.stringify(v)); }
   if (før !== laderVises()) { stationer = null; stStatus = ""; }
   st.batteri = Math.min(200, Math.max(10, Math.round(+document.getElementById("bilBat").value) || 60)); gemL("batteri", st.batteri);
-  st.laderKw = +document.getElementById("bilKw").value || 11; gemL("laderKw", st.laderKw);
+  const kwValg = document.getElementById("bilKw").value;
+  const andet = parseFloat(String(document.getElementById("bilKwAndet").value).replace(",", "."));
+  st.laderKw = kwValg === "andet" ? (isFinite(andet) && andet > 0 ? Math.min(50, Math.round(andet * 10) / 10) : 11) : (+kwValg || 11);
+  gemL("laderKw", st.laderKw);
   let fra = Math.min(95, Math.max(0, Math.round(+document.getElementById("bilFra").value))), til = Math.min(100, Math.max(5, Math.round(+document.getElementById("bilTil").value)));
   if (!isFinite(fra)) fra = 20; if (!isFinite(til)) til = 80; if (til <= fra) til = Math.min(100, fra + 10);
   st.fra = fra; st.til = til; gemL("fra", fra); gemL("til", til);
