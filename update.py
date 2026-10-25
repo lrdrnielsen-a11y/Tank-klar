@@ -30,6 +30,14 @@ LITER_PR_GALLON = 3.78541
 MOMS = 1.25
 TAERSKEL = 0.03  # kr/l: mindre ændringer end dette regnes som "uændret"
 
+# Prisalarm via den gratis tjeneste ntfy.sh. Skal passe med ALARM_PREFIX i index.html.
+NTFY = "https://ntfy.sh/"
+ALARM_PREFIX = "tankklar-q7m4"
+ALARM_TIDER = ["2000", "2030", "2100", "2130", "2200"]
+ALARM_NIVEAUER = ["alle", "10", "20", "30"]  # "alle" = hver aften, ellers kun ved stigning på mindst X øre
+APP_URL = "https://tank-klar.pages.dev"
+NAVNE = {"benzin": "Benzin 95", "diesel": "Diesel"}
+
 STANDARD_ORD = {
     "benzin": ["Blyfri 95", "Benzin 95", "Oktan 95", "95 E10", "Blyfri"],
     "diesel": ["Diesel"],
@@ -107,43 +115,107 @@ def hent_benzinsignal(advarsler):
 
 # ---------- 2. markedet ----------
 
-def lukkekurser(symbol):
+def _tal(v):
+    if v is None:
+        return None
+    try:
+        return float(str(v).replace(",", "").replace("%", "").strip())
+    except ValueError:
+        return None
+
+
+# --- kilde 1: Yahoo Finance ---
+def yahoo(symbol):
     fejl = None
-    for vaert in ("query1", "query2", "query1"):
+    for vaert in ("query2", "query1"):
         url = (f"https://{vaert}.finance.yahoo.com/v8/finance/chart/"
                f"{urllib.parse.quote(symbol)}?range=1mo&interval=1d")
         try:
             res = json.loads(hent(url))["chart"]["result"][0]
-            break
+            par = [(t, c) for t, c in zip(res["timestamp"], res["indicators"]["quote"][0]["close"]) if c is not None]
+            (_, p0), (t1, p1) = par[-2], par[-1]
+            return p0, p1, datetime.fromtimestamp(t1, tz=timezone.utc).astimezone(NY).date()
         except Exception as e:
             fejl = e
-            time.sleep(3)
-    else:
-        raise fejl
-    par = [(t, c) for t, c in zip(res["timestamp"], res["indicators"]["quote"][0]["close"]) if c is not None]
-    (_, p0), (t1, p1) = par[-2], par[-1]
-    dato = datetime.fromtimestamp(t1, tz=timezone.utc).astimezone(NY).date()
+            time.sleep(2)
+    raise fejl
+
+
+# --- kilde 2: CNBC's offentlige kursdata ---
+CNBC_SYMBOL = {"RB=F": "@RB.1", "HO=F": "@HO.1", "BZ=F": "@LCO.1"}
+
+
+def cnbc(symbol):
+    s = CNBC_SYMBOL[symbol]
+    url = ("https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols="
+           + urllib.parse.quote(s) + "&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json")
+    q = json.loads(hent(url))["FormattedQuoteResult"]["FormattedQuote"][0]
+    p1 = _tal(q.get("last"))
+    p0 = _tal(q.get("previous_day_closing"))
+    if p0 is None and p1 is not None and _tal(q.get("change")) is not None:
+        p0 = p1 - _tal(q.get("change"))
+    if p0 is None or p1 is None:
+        raise ValueError(f"ingen kurs for {s}")
+    dato = None
+    try:
+        dato = datetime.fromisoformat(str(q.get("last_time", ""))[:19]).date()
+    except ValueError:
+        pass
     return p0, p1, dato
+
+
+def lukkekurser(symbol):
+    """Prøver kilderne efter tur og returnerer (forrige, seneste, handelsdato, kilde)."""
+    for navn, fn in (("Yahoo", yahoo), ("CNBC", cnbc)):
+        try:
+            p0, p1, dato = fn(symbol)
+            return p0, p1, dato, navn
+        except Exception as e:
+            print(f"  ! {navn} {symbol}: {e}")
+    raise RuntimeError(f"ingen kilde virkede for {symbol}")
+
+
+# --- dollarkurs: Den Europæiske Centralbank via Frankfurter (gratis, åben) ---
+def dollarkurs(idag):
+    start = (idag - timedelta(days=10)).isoformat()
+    for url in (f"https://api.frankfurter.dev/v1/{start}..?from=USD&to=DKK",
+                f"https://api.frankfurter.app/{start}..?from=USD&to=DKK"):
+        try:
+            rater = json.loads(hent(url))["rates"]
+            datoer = sorted(rater)
+            return rater[datoer[-2]]["DKK"], rater[datoer[-1]]["DKK"]
+        except Exception as e:
+            print(f"  ! dollarkurs ({url.split('/')[2]}): {e}")
+    p0, p1, _, _ = lukkekurser_fx()
+    return p0, p1
+
+
+def lukkekurser_fx():
+    return yahoo("DKK=X") + ("Yahoo",)
 
 
 def markedsdata(idag, advarsler):
     try:
-        fx0, fx1, _ = lukkekurser("DKK=X")
+        fx0, fx1 = dollarkurs(idag)
         ud = {"usd_dkk": round(fx1, 4), "handlet_i_dag": True}
+        kilder = set()
         for brændstof, symbol in (("benzin", "RB=F"), ("diesel", "HO=F")):
-            p0, p1, dato = lukkekurser(symbol)
+            p0, p1, dato, kilde = lukkekurser(symbol)
+            kilder.add(kilde)
             aendring = (p1 * fx1 - p0 * fx0) / LITER_PR_GALLON * MOMS
             ud[brændstof + "_pct"] = round((p1 - p0) / p0 * 100, 2)
-            if dato != idag:  # markedet har ikke handlet i dag (weekend/helligdag)
+            if dato is not None and dato != idag:  # markedet har ikke handlet i dag (weekend/helligdag)
                 aendring = 0.0
                 ud["handlet_i_dag"] = False
             ud[brændstof] = round(aendring, 3)
+        ud["kilde"] = " + ".join(sorted(kilder))
+        print(f"  Markedsdata hentet fra {ud['kilde']}")
     except Exception as e:
         print(f"  ! markedsdata: {e}")
         advarsler.append("Markedsdata kunne ikke hentes, så prognosen viser uændret pris")
         return None
     try:
-        b0, b1, _ = lukkekurser("BZ=F")
+        b0, b1, _, _ = lukkekurser("BZ=F")
         ud["brent_usd"] = round(b1, 2)
         ud["brent_pct"] = round((b1 - b0) / b0 * 100, 2)
     except Exception:
@@ -193,7 +265,88 @@ def elpriser(dag, advarsler):
     return ud if len(ud) > 1 else None
 
 
-# ---------- 4. saml det hele ----------
+# ---------- 4. prisalarmer ----------
+
+def kr_tekst(v):
+    return f"{v:.2f}".replace(".", ",")
+
+
+def alarm_tekst(b, x):
+    n, ø = NAVNE[b], round(abs(x["aendring"] or 0) * 100)
+    if x["anbefaling"] == "tank_i_dag":
+        return (f"Tank i dag – {n.lower()} stiger {ø} øre",
+                f"{n} ventes at koste {kr_tekst(x['imorgen'])} kr. i morgen (i dag {kr_tekst(x['idag'])} kr.). Tank i aften, hvis du kan.")
+    if x["anbefaling"] == "vent":
+        return (f"Vent med at tanke – {n.lower()} falder {ø} øre",
+                f"{n} ventes at koste {kr_tekst(x['imorgen'])} kr. i morgen (i dag {kr_tekst(x['idag'])} kr.).")
+    return (f"{n} ventes uændret i morgen",
+            f"Prisen ligger på ca. {kr_tekst(x['idag'])} kr. Tank, når det passer dig.")
+
+
+def post_ntfy(data):
+    req = urllib.request.Request(NTFY, data=json.dumps(data).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", "User-Agent": UA})
+    urllib.request.urlopen(req, timeout=20).read()
+    time.sleep(1)
+
+
+def planlæg(data, maal, nu):
+    """Sender en ntfy-besked, forsinket til tidspunktet maal. Returnerer True hvis sendt."""
+    if maal < nu - timedelta(minutes=15):
+        return False  # tidspunktet er gået
+    if maal > nu + timedelta(minutes=1):
+        data["delay"] = str(int(maal.timestamp()))
+    try:
+        post_ntfy(data)
+        return True
+    except Exception as e:
+        print(f"  ! besked {data['topic']}: {e}")
+        return False
+
+
+def send_el_alarmer(el, nu):
+    if not el:
+        return 0
+    sendt = 0
+    navne = {"DK1": "Vestdanmark", "DK2": "Østdanmark"}
+    for omr in ("DK1", "DK2"):
+        e = el.get(omr)
+        if not e:
+            continue
+        s0 = e["billigst_start"]
+        titel = f"Billigste strøm i morgen: kl. {s0:02d}–{s0 + 3:02d}"
+        besked = (f"{navne[omr]}: {kr_tekst(e['billigst_gennemsnit'])} kr./kWh i de tre billigste timer "
+                  f"(døgnets gennemsnit {kr_tekst(e['gennemsnit'])} kr.). Spotpris uden afgifter.")
+        for tid in ALARM_TIDER:
+            maal = nu.replace(hour=int(tid[:2]), minute=int(tid[2:]), second=0, microsecond=0)
+            sendt += planlæg({"topic": f"{ALARM_PREFIX}-el-{omr}-{tid}", "title": titel, "message": besked,
+                              "tags": ["electric_plug"], "click": APP_URL}, maal, nu)
+    return sendt
+
+
+def send_alarmer(braendstof, nu, el=None):
+    import os
+    if os.environ.get("GITHUB_EVENT_NAME") != "schedule":
+        print("Prisalarmer sendes kun ved den automatiske kørsel om aftenen.")
+        return
+    sendt = 0
+    for b, x in braendstof.items():
+        if x["idag"] is None or x["metode"] == "uændret":
+            continue  # ingen rigtig prognose i dag
+        øre = round((x["aendring"] or 0) * 100)
+        titel, besked = alarm_tekst(b, x)
+        for niveau in ALARM_NIVEAUER:
+            if niveau != "alle" and øre < int(niveau):
+                continue
+            for tid in ALARM_TIDER:
+                maal = nu.replace(hour=int(tid[:2]), minute=int(tid[2:]), second=0, microsecond=0)
+                sendt += planlæg({"topic": f"{ALARM_PREFIX}-{b}-{niveau}-{tid}", "title": titel, "message": besked,
+                                  "tags": ["fuelpump"], "click": APP_URL}, maal, nu)
+    print(f"Prisalarmer planlagt: {sendt}")
+    print(f"Elbil-beskeder planlagt: {send_el_alarmer(el, nu)}")
+
+
+# ---------- 5. saml det hele ----------
 
 def anbefaling(aendring):
     if aendring is None:
@@ -274,6 +427,7 @@ def main():
         historik = sorted(historik, key=lambda h: h["dato"])[-90:]
 
     gem_json(DATA / "latest.json", latest)
+    send_alarmer(braendstof, nu, el)
     gem_json(DATA / "history.json", historik)
     print(json.dumps(braendstof, ensure_ascii=False, indent=2))
     for a in advarsler:

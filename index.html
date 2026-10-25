@@ -13,6 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tank klar">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
@@ -22,11 +23,28 @@
   --blue: #1C3F2E; --blue-dark: #122C20; --blue-soft: #EEF4DD;
   --green: #3B7A1F; --green-soft: #EAF3D8; --red: #C2531B; --red-soft: #FBEADD;
   --orange: #D9822B; --yellow: #F5B800; --lime: #CFE89A;
+  --flade2: #FBFAF6; --flade3: #F1EDE2; --kant: #EAE5DA; --grøn-kant: #D3E6B3; --rød-kant: #F2D2BC;
+  --benzin: #1C3F2E; --diesel: #D9822B; --el-bar: #DCE7C6; --pille-off: #D6D1C4; --pille-off-tekst: #9AA295;
+  color-scheme: light;
   --head: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --body: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --shadow: 0 1px 2px rgba(30,40,25,.05), 0 6px 20px rgba(30,40,25,.06);
 }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0F1712; --card: #18221C; --ink: #E7ECE5; --muted: #9CAA9F; --line: #2B3930; --soft: #222E27;
+  --blue: #3F7B58; --blue-dark: #CFE89A; --blue-soft: #1E2B21;
+  --green: #A3D673; --green-soft: #1C2D1B; --red: #F2925F; --red-soft: #34221A;
+  --flade2: #141D17; --flade3: #1F2B23; --kant: #25322A; --grøn-kant: #34502C; --rød-kant: #5A3424;
+  --benzin: #A9D97B; --diesel: #F0A25A; --el-bar: #2F3F34; --pille-off: #3A473F; --pille-off-tekst: #6F7D73;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.25);
+  color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0F1712; --card: #18221C; --ink: #E7ECE5; --muted: #9CAA9F; --line: #2B3930; --soft: #222E27;
+  --blue: #3F7B58; --blue-dark: #CFE89A; --blue-soft: #1E2B21;
+  --green: #A3D673; --green-soft: #1C2D1B; --red: #F2925F; --red-soft: #34221A;
+  --flade2: #141D17; --flade3: #1F2B23; --kant: #25322A; --grøn-kant: #34502C; --rød-kant: #5A3424;
+  --benzin: #A9D97B; --diesel: #F0A25A; --el-bar: #2F3F34; --pille-off: #3A473F; --pille-off-tekst: #6F7D73;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.25);
+  color-scheme: dark; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; }
@@ -58,14 +76,14 @@ main { max-width: 1160px; margin: 0 auto; padding: 32px 20px calc(48px + env(saf
 .for { font-size: 19px; color: var(--muted); margin: 0 0 18px; }
 .for b { color: var(--ink); font-family: var(--head); font-weight: 700; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.kort { background: var(--card); border-radius: 22px; box-shadow: var(--shadow); border: 1px solid #EAE5DA; padding: 28px 30px; min-width: 0; }
+.kort { background: var(--card); border-radius: 22px; box-shadow: var(--shadow); border: 1px solid var(--kant); padding: 28px 30px; min-width: 0; }
 section { margin-top: 28px; }
 .sek-titel { font-size: 21px; font-weight: 700; margin-bottom: 14px; }
 .kort h2 { font-size: 22px; font-weight: 700; }
 .under { color: var(--muted); margin: 4px 0 18px; }
 
 /* helt */
-.helt { background: #1C3F2E; color: #F4F1E9; border-radius: 24px; padding: 28px 30px; margin-bottom: 24px; position: relative; overflow: hidden; }
+.helt { border: 1px solid #2B4A39; background: #1C3F2E; color: #F4F1E9; border-radius: 24px; padding: 28px 30px; margin-bottom: 24px; position: relative; overflow: hidden; }
 .helt::before, .helt::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(207,232,154,.18); pointer-events: none; }
 .helt::before { width: 340px; height: 340px; right: -90px; top: -120px; }
 .helt::after { width: 220px; height: 220px; right: -30px; top: -60px; }
@@ -78,8 +96,8 @@ section { margin-top: 28px; }
 .pris-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .pris-top h2 { font-size: 24px; }
 .mærke { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; font-size: 15px; font-weight: 500; border: 1px solid var(--line); background: var(--soft); color: var(--muted); white-space: nowrap; }
-.mærke.op { background: var(--red-soft); color: var(--red); border-color: #F2D2BC; }
-.mærke.ned { background: var(--green-soft); color: var(--green); border-color: #D3E6B3; }
+.mærke.op { background: var(--red-soft); color: var(--red); border-color: var(--rød-kant); }
+.mærke.ned { background: var(--green-soft); color: var(--green); border-color: var(--grøn-kant); }
 .etiket { color: var(--muted); font-size: 15px; margin-top: 22px; }
 .stor { display: flex; align-items: baseline; gap: 18px; margin-top: 2px; }
 .stor .tal { font-family: var(--mono); font-size: clamp(46px, 7vw, 64px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
@@ -89,11 +107,11 @@ section { margin-top: 28px; }
 .op-tekst { color: var(--red); } .ned-tekst { color: var(--green); }
 
 /* råd */
-.råd { background: #FBFAF6; border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; }
+.råd { background: var(--flade2); border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; }
 .råd h3 { font-size: 21px; font-weight: 700; }
 .råd p { margin: 6px 0 0; color: var(--muted); }
-.råd.ned { background: var(--green-soft); border-color: #D3E6B3; } .råd.ned h3 { color: var(--green); }
-.råd.op { background: var(--red-soft); border-color: #F2D2BC; } .råd.op h3 { color: var(--red); }
+.råd.ned { background: var(--green-soft); border-color: var(--grøn-kant); } .råd.ned h3 { color: var(--green); }
+.råd.op { background: var(--red-soft); border-color: var(--rød-kant); } .råd.op h3 { color: var(--red); }
 
 /* faner */
 .faner { display: flex; background: var(--soft); border-radius: 12px; padding: 4px; gap: 4px; }
@@ -108,7 +126,7 @@ section { margin-top: 28px; }
 .bokse { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .boks { border-radius: 16px; padding: 18px 20px; }
 .boks.grøn { background: var(--green-soft); } .boks.grøn .stor-sum, .boks.grøn .bt { color: var(--green); }
-.boks.blå { background: #F1EDE2; } .boks.blå .stor-sum, .boks.blå .bt { color: var(--blue-dark); }
+.boks.blå { background: var(--flade3); } .boks.blå .stor-sum, .boks.blå .bt { color: var(--blue-dark); }
 .boks.grå { background: var(--soft); } .boks.grå .stor-sum { color: var(--muted); }
 .boks .bt { font-size: 15.5px; }
 .stor-sum { font-family: var(--mono); font-size: 38px; font-weight: 700; line-height: 1.15; margin: 2px 0; }
@@ -129,7 +147,7 @@ td.mono.fed { color: var(--ink); font-weight: 700; }
 .forklaring { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 .pille { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 12px; font-size: 14.5px; }
 .pille i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.pille[aria-pressed="false"] { color: #9AA295; } .pille[aria-pressed="false"] i { background: #D6D1C4 !important; }
+.pille[aria-pressed="false"] { color: var(--pille-off-tekst); } .pille[aria-pressed="false"] i { background: var(--pille-off) !important; }
 svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 
 /* præcision */
@@ -162,8 +180,58 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .st-pris .lille { font-size: 13px; color: var(--muted); }
 .st-handling { grid-column: 1 / -1; display: flex; gap: 8px; }
 .st-handling .knap { padding: 6px 12px; font-size: 14px; text-decoration: none; color: var(--ink); }
-.stjerne[aria-pressed="true"] { color: #8DB843; border-color: #CFE89A; background: #F4F9E8; }
+.stjerne[aria-pressed="true"] { color: #8DB843; border-color: var(--grøn-kant); background: var(--green-soft); }
 .st-status { color: var(--muted); padding: 10px 0; }
+
+/* prisalarm */
+.al-bokse { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.al-boks { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 14px; padding: 13px 16px; cursor: pointer; font-size: 16.5px; }
+.al-boks input { width: 20px; height: 20px; accent-color: var(--blue); margin: 0; }
+.al-boks:has(input:checked) { border-color: var(--grøn-kant); background: var(--green-soft); }
+.al-kontrol { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.knap[disabled] { opacity: .5; cursor: default; }
+.al-kontrol select { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--card); }
+.al-trin { background: var(--flade2); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+.al-trin ol { margin: 0; padding-left: 20px; } .al-trin li { margin: 0 0 14px; } .al-trin li:last-child { margin: 0; }
+.butikker { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.butikker a { text-decoration: none; color: var(--ink); }
+.emne { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.emne code { font-family: var(--mono); font-size: 15px; background: var(--card); border: 1px dashed var(--grøn-kant); border-radius: 10px; padding: 8px 12px; user-select: all; word-break: break-all; }
+.al-status { font-size: 14px; margin-top: 8px; }
+
+
+/* del-knap */
+.helt-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; position: relative; z-index: 1; }
+.del-knap { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 999px; padding: 8px 14px; background: var(--lime); color: #15291F; font-weight: 700; font-size: 14.5px; flex: none; }
+.del-knap svg { width: 16px; height: 16px; }
+.del-status { font-size: 13.5px; color: var(--lime); margin-top: 8px; position: relative; }
+
+/* tankdagbog */
+.db-tal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.db-tal > div { background: var(--flade2); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.db-tal .e { font-size: 13.5px; color: var(--muted); }
+.db-tal .mono { font-size: 21px; font-weight: 700; margin-top: 2px; }
+.db-tal .l { font-size: 12.5px; color: var(--muted); }
+.db-liste { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.db-liste td { padding: 9px 6px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+.db-liste tr:last-child td { border-bottom: 0; }
+.db-slet { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 2px 8px; border-radius: 8px; }
+.db-slet:hover { background: var(--soft); color: var(--red); }
+
+/* ugedag */
+.ug-række { display: grid; grid-template-columns: 44px 1fr 74px; gap: 12px; align-items: center; padding: 6px 0; }
+.ug-række .dag { font-weight: 500; }
+.ug-bar { position: relative; height: 14px; background: var(--soft); border-radius: 7px; }
+.ug-bar span { position: absolute; top: 0; bottom: 0; border-radius: 7px; }
+.ug-bar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--line); }
+.ug-række .mono { text-align: right; font-size: 14.5px; }
+.ug-række.bedst .dag, .ug-række.bedst .mono { color: var(--green); font-weight: 700; }
+
+/* el-alarm */
+.el-alarm { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 16px; }
+
+/* tema-valg */
+.tema-valg { margin-top: 16px; }
 
 /* metode */
 .fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 6px; }
@@ -185,11 +253,11 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .note { margin-top: 30px; color: var(--muted); font-size: 13.5px; }
 .note p { margin: 0 0 6px; }
 .note a { color: inherit; }
-.demo { background: #EEF4DD; border: 1px solid #D3E6B3; border-radius: 14px; padding: 12px 16px; margin-bottom: 20px; }
+.demo { background: var(--blue-soft); border: 1px solid var(--grøn-kant); border-radius: 14px; padding: 12px 16px; margin-bottom: 20px; }
 .fejl { background: var(--red-soft); color: var(--red); border-radius: 14px; padding: 16px; }
 
 /* dialoger */
-dialog { border: 0; border-radius: 22px; padding: 26px 28px; max-width: 440px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(30,40,25,.25); color: var(--ink); }
+dialog { background: var(--card); border: 0; border-radius: 22px; padding: 26px 28px; max-width: 440px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(30,40,25,.25); color: var(--ink); }
 dialog::backdrop { background: rgba(21,41,31,.45); }
 dialog h2 { font-size: 22px; margin-bottom: 6px; }
 dialog p { color: var(--muted); margin: 0 0 16px; }
@@ -203,6 +271,7 @@ dialog select { width: 100%; border: 1px solid var(--line); border-radius: 10px;
 dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8px; }
 
 @media (max-width: 820px) {
+  .db-tal { grid-template-columns: 1fr 1fr; }
   .grid2, .bokse { grid-template-columns: 1fr; gap: 16px; }
   .fire { grid-template-columns: 1fr 1fr; }
   .kort { padding: 22px 20px; border-radius: 20px; }
@@ -223,6 +292,8 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
   .handlinger { gap: 6px; }
   .el-valg { grid-template-columns: 1fr; }
   .tre .mono { font-size: 15px; }
+  .db-liste .pl { display: none; }
+  .db-liste td { font-size: 14.5px; padding: 9px 4px; }
   th, td { padding: 10px 6px; }
 }
 </style>
@@ -289,9 +360,34 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
         <select id="bilEl"><option value="DK1">Vestdanmark (DK1)</option><option value="DK2">Østdanmark (DK2)</option></select></div>
     </div>
     <label class="tjek"><input type="checkbox" id="bilVisEl"> Vis elpris til elbil</label>
+    <div class="felt tema-valg" style="margin-bottom:20px"><label>Udseende</label>
+      <div class="faner" id="temaValg">
+        <button type="button" data-tema="auto">Automatisk</button>
+        <button type="button" data-tema="light">Lys</button>
+        <button type="button" data-tema="dark">Mørk</button>
+      </div>
+    </div>
     <div class="knapper">
       <button class="knap" value="luk">Luk</button>
       <button class="knap primær" value="gem">Gem</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dagbogDlg">
+  <form method="dialog">
+    <h2>Registrér tankning</h2>
+    <p>Gemmes kun på denne telefon eller computer.</p>
+    <div class="felter">
+      <div class="felt"><label for="dbDato">Dato</label><input id="dbDato" type="date"></div>
+      <div class="felt"><label for="dbB">Brændstof</label><select id="dbB"><option value="benzin">Benzin 95</option><option value="diesel">Diesel</option></select></div>
+      <div class="felt"><label for="dbLiter">Liter</label><input id="dbLiter" type="number" step="0.01" min="1" max="300" inputmode="decimal" placeholder="fx 45,3"></div>
+      <div class="felt"><label for="dbPris">Pris pr. liter</label><input id="dbPris" type="number" step="0.01" min="5" max="40" inputmode="decimal"></div>
+    </div>
+    <div class="felt" style="margin-bottom:18px"><label for="dbKm">Kilometertal (valgfrit)</label><input id="dbKm" type="number" min="0" inputmode="numeric" placeholder="Bruges til at regne km/l ud"></div>
+    <div class="knapper">
+      <button class="knap" value="luk">Annullér</button>
+      <button class="knap primær" value="gem">Gem tankning</button>
     </div>
   </form>
 </dialog>
@@ -306,7 +402,7 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
 
 <script>
 const NAVN = { benzin: "Benzin 95", diesel: "Diesel" };
-const FARVE = { benzin: "#1C3F2E", diesel: "#D9822B" };
+const FARVE = { benzin: "var(--benzin)", diesel: "var(--diesel)" };
 const RÅD = {
   vent: (n) => ["Vent til i morgen", `${n} ventes at falde – tank i morgen, hvis du kan`],
   tank_i_dag: (n) => ["Tank i dag", `${n} ventes at stige i morgen`],
@@ -328,7 +424,25 @@ const st = {
   auto: hentL("autoFind") === "ja",
   fav: hentL("favStation")
 };
-let stationer = null, stStatus = "";
+let stationer = null, stStatus = "", alStatus = "", delStatus = "", elAlStatus = "";
+st.tema = hentL("tema") || "auto";
+st.ugedag = hentL("ugedag") || "benzin";
+st.elAlarm = false;
+st.elTid = hentL("elTid") || "2030";
+function anvendTema() {
+  const r = document.documentElement;
+  if (st.tema === "auto") delete r.dataset.theme; else r.dataset.theme = st.tema;
+  const mørk = st.tema === "dark" || (st.tema === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", mørk ? "#0F1712" : "#F4F1E9");
+}
+anvendTema();
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", anvendTema);
+function dagbog() { try { const v = JSON.parse(hentL("dagbog")); return Array.isArray(v) ? v : []; } catch { return []; } }
+st.alarmTid = hentL("alarmTid") || "2030";
+st.alarmNiv = hentL("alarmNiv") || "20";
+st.alarmVis = false;
+const ALARM_PREFIX = "tankklar-q7m4"; // skal passe med update.py
+const emne = b => `${ALARM_PREFIX}-${b}-${st.alarmNiv}-${st.alarmTid}`;
 const mine = () => st.mit === "begge" ? ["benzin", "diesel"] : [st.mit];
 const gitter = () => mine().length === 1 ? "grid1" : "grid2";
 
@@ -457,20 +571,20 @@ function grafKort() {
     let g = "";
     for (let k = 0; k <= 4; k++) {
       const v = lo + (hi - lo) * k / 4, y = Y(v).toFixed(1);
-      g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#E4DFD3"/><text x="${L - 8}" y="${+y + 5}" text-anchor="end" font-size="14" fill="#5D6A60" font-family="DM Sans, sans-serif">${kr(v)}</text>`;
+      g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" style="stroke:var(--line)"/><text x="${L - 8}" y="${+y + 5}" text-anchor="end" font-size="14" style="fill:var(--muted)" font-family="DM Sans, sans-serif">${kr(v)}</text>`;
     }
     datoer.forEach((d, i) => {
       const sidst = i === datoer.length - 1;
       if (sidst || (i % (lille ? 4 : 3) === 0 && i < datoer.length - 3))
-        g += `<text x="${X(i)}" y="${H - 8}" text-anchor="${sidst ? "end" : "middle"}" font-size="14" fill="#5D6A60" font-family="DM Sans, sans-serif">${sidst ? "I morgen" : esc(dato(d, { day: "numeric", month: "short" }))}</text>`;
+        g += `<text x="${X(i)}" y="${H - 8}" text-anchor="${sidst ? "end" : "middle"}" font-size="14" style="fill:var(--muted)" font-family="DM Sans, sans-serif">${sidst ? "I morgen" : esc(dato(d, { day: "numeric", month: "short" }))}</text>`;
     });
     aktive.forEach(b => {
       const pts = h.map((r, i) => r[b] != null ? [X(i), Y(r[b])] : null).filter(Boolean);
       const x = bf(b);
-      g += `<path d="${glat(pts)}" fill="none" stroke="${FARVE[b]}" stroke-width="3" stroke-linecap="round"/>`;
+      g += `<path d="${glat(pts)}" fill="none" style="stroke:${FARVE[b]}" stroke-width="3" stroke-linecap="round"/>`;
       if (pts.length && x.imorgen != null) {
         const sidst = pts[pts.length - 1], p = [X(datoer.length - 1), Y(x.imorgen)];
-        g += `<path d="M${sidst[0]},${sidst[1]}L${p[0]},${p[1]}" stroke="${FARVE[b]}" stroke-width="3" stroke-dasharray="4 6" stroke-linecap="round"/><circle cx="${p[0]}" cy="${p[1]}" r="5.5" fill="#fff" stroke="${FARVE[b]}" stroke-width="3"/>`;
+        g += `<path d="M${sidst[0]},${sidst[1]}L${p[0]},${p[1]}" style="stroke:${FARVE[b]}" stroke-width="3" stroke-dasharray="4 6" stroke-linecap="round"/><circle cx="${p[0]}" cy="${p[1]}" r="5.5" style="fill:var(--card);stroke:${FARVE[b]}" stroke-width="3"/>`;
       }
     });
     svg = `<svg class="graf" viewBox="0 0 ${W} ${H}" role="img" aria-label="Landsgennemsnit de seneste dage og prognosen for i morgen">${g}</svg>`;
@@ -510,6 +624,25 @@ function præKort(b) {
   </div>`;
 }
 
+function elAlarmDel() {
+  const tider = ["2000", "2030", "2100", "2130", "2200"], t = `${ALARM_PREFIX}-el-${st.el}-${st.elTid}`;
+  const trin = st.elAlarm ? `<div class="al-trin" style="margin-top:12px"><ol>
+      <li>Vælg tidspunkt: <select id="elTid" style="margin-left:6px">${tider.map(v => `<option value="${v}" ${v === st.elTid ? "selected" : ""}>kl. ${v.slice(0, 2)}:${v.slice(2)}</option>`).join("")}</select></li>
+      <li>Hent <b>ntfy</b> (se Prisalarm ovenfor), tryk <b>+</b> og indsæt:<div class="emne"><code>${t}</code><button type="button" class="knap" data-kopi="${t}">Kopiér</button></div></li>
+      <li><button type="button" class="knap" data-act="eltest">Send en testbesked</button>${elAlStatus ? `<div class="al-status">${esc(elAlStatus)}</div>` : ""}</li>
+    </ol></div>` : "";
+  return `<div class="el-alarm"><button type="button" class="knap" data-act="elalarm">🔔 ${st.elAlarm ? "Skjul" : "Få besked om de billigste ladetimer"}</button>${trin}</div>`;
+}
+async function elTest() {
+  elAlStatus = "Sender …"; vis();
+  try {
+    const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({ topic: `${ALARM_PREFIX}-el-${st.el}-${st.elTid}`, title: "Tank klar virker 🎉",
+      message: `Du får besked kl. ${st.elTid.slice(0, 2)}:${st.elTid.slice(2)} om de billigste ladetimer i ${st.el === "DK1" ? "Vestdanmark" : "Østdanmark"}.`, tags: ["electric_plug"] }) });
+    if (!r.ok) throw 0; elAlStatus = "Testbeskeden er sendt.";
+  } catch { elAlStatus = "Testbeskeden kunne ikke sendes. Prøv igen om lidt."; }
+  vis();
+}
+
 function elKort() {
   const omr = { DK1: "Vestdanmark", DK2: "Østdanmark" };
   const findes = Object.keys(omr).filter(k => data.el[k]);
@@ -526,7 +659,7 @@ function elKort() {
   const søjler = t.map((v, h) => {
     if (v == null) return "";
     const hh = Math.max(2, Math.max(v, 0) / maks * 100), bil = h >= e.billigst_start && h < e.billigst_start + 3;
-    return `<rect x="${h * 10 + 1}" y="${100 - hh}" width="8" height="${hh}" fill="${bil ? "#3B7A1F" : "#DCE7C6"}"><title>kl. ${h}: ${kr(v)} kr./kWh</title></rect>`;
+    return `<rect x="${h * 10 + 1}" y="${100 - hh}" width="8" height="${hh}" style="fill:${bil ? "var(--green)" : "var(--el-bar)"}"><title>kl. ${h}: ${kr(v)} kr./kWh</title></rect>`;
   }).join("");
   const akse = `<div class="el-akse">${[0, 6, 12, 18, 23].map(h => `<span style="left:${(h * 10 + 5) / 2.4}%">${String(h).padStart(2, "0")}</span>`).join("")}</div>`;
   return `<section><div class="kort">
@@ -534,6 +667,7 @@ function elKort() {
     <p class="under">Spotpris pr. kWh ${esc(dato(data.el.dato, { weekday: "long", day: "numeric", month: "long" }))}, uden nettarif, afgifter og moms. De grønne søjler er de billigste tre timer.</p>
     <div class="el-valg">${kort}</div>
     <svg class="el-søjler" viewBox="0 0 240 100" preserveAspectRatio="none" role="img" aria-label="Elpris time for time i ${omr[st.el]}">${søjler}</svg>${akse}
+    ${elAlarmDel()}
   </div></section>`;
 }
 
@@ -636,6 +770,146 @@ function stationKort() {
   </div></section>`;
 }
 
+function alarmKort() {
+  const tider = ["2000", "2030", "2100", "2130", "2200"], fmt = t => "kl. " + t.slice(0, 2) + ":" + t.slice(2);
+  const niv = [["10", "10 øre"], ["20", "20 øre"], ["30", "30 øre"], ["alle", "Besked hver aften"]];
+  const valgte = alarmFuels();
+  const bokse = Object.keys(NAVN).map(b => `<label class="al-boks"><input type="checkbox" data-alfuel="${b}" ${valgte.includes(b) ? "checked" : ""}> ${NAVN[b]}</label>`).join("");
+  const emner = valgte.map(b => `<div class="emne"><code>${emne(b)}</code><button type="button" class="knap" data-kopi="${emne(b)}">Kopiér</button>${valgte.length > 1 ? `<span class="st-sub">${NAVN[b]}</span>` : ""}</div>`).join("");
+  const trin = st.alarmVis && valgte.length ? `<div class="al-trin" style="margin-top:16px"><ol>
+      <li><b>Hent den gratis app ntfy</b>, som leverer beskederne.
+        <div class="butikker"><a class="knap" href="https://apps.apple.com/app/ntfy/id1625396347" target="_blank" rel="noopener">App Store (iPhone)</a><a class="knap" href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" rel="noopener">Google Play (Android)</a></div></li>
+      <li><b>Åbn ntfy, tryk på +</b> og indsæt ${valgte.length > 1 ? "disse navne, ét ad gangen" : "dette navn"}. Lad serveren stå på ntfy.sh, og tillad notifikationer.${emner}</li>
+      <li><b>Tjek, at det virker.</b><br><button type="button" class="knap" data-act="test" style="margin-top:8px">Send en testbesked</button>
+        ${alStatus ? `<div class="al-status">${esc(alStatus)}</div>` : ""}</li>
+    </ol>
+    <p class="fod">Ændrer du brændstof, grænse eller tidspunkt, får du et nyt navn. Så skal du abonnere på det nye i ntfy og slette det gamle.</p></div>` : "";
+  return `<section><div class="kort">
+    <h2>Prisalarm</h2>
+    <p class="under">Få en besked på telefonen, når prognosen viser, at prisen stiger i morgen.</p>
+    <div class="al-bokse">${bokse}</div>
+    <div class="al-kontrol">
+      <div class="felt"><label for="alarmNiv">Stigning på mindst</label><select id="alarmNiv">${niv.map(([v, t]) => `<option value="${v}" ${v === st.alarmNiv ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+      <div class="felt"><label for="alarmTid">Send besked</label><select id="alarmTid">${tider.map(t => `<option value="${t}" ${t === st.alarmTid ? "selected" : ""}>${fmt(t)}</option>`).join("")}</select></div>
+    </div>
+    <button type="button" class="knap primær bred" data-act="alarm" ${valgte.length ? "" : "disabled"}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      ${!valgte.length ? "Vælg mindst ét brændstof" : st.alarmVis ? "Skjul opsætning" : "Slå prisalarm til"}</button>
+    ${trin}
+  </div></section>`;
+}
+function alarmFuels() {
+  try { const v = JSON.parse(hentL("alarmFuels")); if (Array.isArray(v)) return v.filter(b => NAVN[b]); } catch {}
+  return mine();
+}
+async function sendTest() {
+  alStatus = "Sender …"; vis();
+  try {
+    for (const b of alarmFuels()) {
+      const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({
+        topic: emne(b), title: "Tank klar virker 🎉",
+        message: `Du får besked kl. ${st.alarmTid.slice(0, 2)}:${st.alarmTid.slice(2)} om ${NAVN[b].toLowerCase()}${st.alarmNiv === "alle" ? " hver aften" : `, når prisen stiger mindst ${st.alarmNiv} øre`}.`,
+        tags: ["fuelpump"], click: location.origin + location.pathname }) });
+      if (!r.ok) throw new Error(r.status);
+    }
+    alStatus = "Testbeskeden er sendt. Den skulle dukke op på telefonen om et øjeblik.";
+  } catch { alStatus = "Testbeskeden kunne ikke sendes. Prøv igen om lidt."; }
+  vis();
+}
+
+/* ---------- tankdagbog ---------- */
+function dagbogKort() {
+  const d = dagbog().slice().sort((a, b) => a.dato.localeCompare(b.dato));
+  const knap = `<button type="button" class="knap primær bred" data-act="tankning">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Registrér tankning</button>`;
+  if (!d.length) return `<section><div class="kort"><h2>Tankdagbog</h2>
+    <p class="under">Skriv ind, når du tanker. Så kan du se, hvad du bruger på brændstof om måneden, hvad du sparer i forhold til landsprisen, og hvor langt bilen kører pr. liter.</p>${knap}</div></section>`;
+  const nu = new Date(), mdr = `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, "0")}`;
+  const iMdr = d.filter(t => t.dato.startsWith(mdr)), sum = a => a.reduce((x, t) => x + t.liter * t.pris, 0);
+  const liter = d.reduce((x, t) => x + t.liter, 0);
+  let sparet = 0, sammenlignet = 0;
+  d.forEach(t => { const h = historik.find(r => r.dato === t.dato); if (h && h[t.b] != null) { sparet += (h[t.b] - t.pris) * t.liter; sammenlignet++; } });
+  let km = 0, kmL = 0;
+  Object.keys(NAVN).forEach(b => {
+    const k = d.filter(t => t.b === b && t.km).sort((a, c) => a.km - c.km);
+    for (let i = 1; i < k.length; i++) { const diff = k[i].km - k[i - 1].km; if (diff > 0 && diff < 3000) { km += diff; kmL += k[i].liter; } }
+  });
+  const md = nu.toLocaleDateString("da-DK", { month: "long" });
+  const rækker = d.slice(-6).reverse().map(t => `<tr><td>${esc(dato(t.dato, { day: "numeric", month: "short" }))}</td><td>${NAVN[t.b]}</td>
+      <td class="mono">${kr(t.liter, 1)} L</td><td class="mono pl">${kr(t.pris)}</td><td class="mono fed">${kr(t.liter * t.pris)} kr.</td>
+      <td style="text-align:right"><button type="button" class="db-slet" data-slet="${esc(t.id)}" aria-label="Slet tankning">×</button></td></tr>`).join("");
+  return `<section><div class="kort"><h2>Tankdagbog</h2>
+    <p class="under">Dine tankninger, gemt på denne enhed.</p>
+    <div class="db-tal">
+      <div><div class="e">Brugt i ${md}</div><div class="mono">${kr(sum(iMdr), 0)} kr.</div><div class="l">${iMdr.length} tankning${iMdr.length === 1 ? "" : "er"}</div></div>
+      <div><div class="e">Gns. pris</div><div class="mono">${kr(sum(d) / liter)}</div><div class="l">kr. pr. liter</div></div>
+      <div><div class="e">${sparet >= 0 ? "Sparet" : "Betalt ekstra"}</div><div class="mono" style="color:${sparet >= 0 ? "var(--green)" : "var(--red)"}">${kr(Math.abs(sparet), 0)} kr.</div><div class="l">${sammenlignet ? "mod landsprisen samme dag" : "kræver priser fra samme dag"}</div></div>
+      <div><div class="e">Kører</div><div class="mono">${kmL ? kr(km / kmL, 1) : "–"}</div><div class="l">${kmL ? "km pr. liter" : "skriv km-tal ved to tankninger"}</div></div>
+    </div>
+    ${knap}
+    <table class="db-liste"><tbody>${rækker}</tbody></table>
+  </div></section>`;
+}
+const dbDlg = document.getElementById("dagbogDlg");
+function åbnDagbog() {
+  const b = mine().length === 1 ? st.mit : "benzin";
+  document.getElementById("dbDato").value = new Date().toLocaleDateString("sv-SE");
+  document.getElementById("dbB").value = b;
+  document.getElementById("dbLiter").value = "";
+  document.getElementById("dbKm").value = "";
+  sætDbPris();
+  dbDlg.showModal();
+}
+function sætDbPris() {
+  const b = document.getElementById("dbB").value, x = data && data.braendstof[b];
+  document.getElementById("dbPris").value = x && x.idag != null ? x.idag.toFixed(2) : "";
+}
+
+/* ---------- billigste ugedag ---------- */
+function ugedagKort() {
+  const b = mine().length === 1 ? st.mit : st.ugedag;
+  const r = historik.filter(h => h[b] != null);
+  const afv = [[], [], [], [], [], [], []];
+  for (let i = 3; i < r.length - 3; i++) {
+    const vindue = r.slice(i - 3, i + 4).map(h => h[b]), snit = vindue.reduce((a, v) => a + v, 0) / 7;
+    afv[(new Date(r[i].dato + "T12:00:00").getDay() + 6) % 7].push(r[i][b] - snit);
+  }
+  const nok = afv.every(a => a.length >= 2);
+  let indhold;
+  if (!nok) indhold = `<p class="st-status">Appen har samlet priser for ${r.length} dag${r.length === 1 ? "" : "e"}. Der skal bruges cirka 3 uger, før mønsteret kan vises.</p>`;
+  else {
+    const snit = afv.map(a => a.reduce((x, v) => x + v, 0) / a.length * 100), maks = Math.max(...snit.map(Math.abs), 1);
+    const bedst = snit.indexOf(Math.min(...snit)), dage = ["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"];
+    const helt = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag", "Søndag"];
+    indhold = dage.map((d, i) => {
+      const v = snit[i], w = Math.abs(v) / maks * 50;
+      return `<div class="ug-række${i === bedst ? " bedst" : ""}"><span class="dag">${d}</span>
+        <div class="ug-bar"><span style="${v < 0 ? `right:50%;width:${w}%;background:var(--green)` : `left:50%;width:${w}%;background:var(--orange)`}"></span></div>
+        <span class="mono">${fortegn(v / 100)}${kr(Math.abs(v), 0)} øre</span></div>`;
+    }).join("") + `<p class="fod">${helt[bedst]} er typisk billigst. Tallene viser, hvor meget prisen afviger fra ugens gennemsnit, beregnet ud fra ${r.length} dages priser. Forskellen er ofte lille.</p>`;
+  }
+  return `<section><div class="kort"><h2>Billigste ugedag${mine().length === 1 ? ` <span style="color:var(--muted);font-weight:500">· ${NAVN[b]}</span>` : ""}</h2>
+    <p class="under">Hvilken dag det plejer at være billigst at tanke.</p>
+    ${mine().length === 1 ? "" : `<div style="margin-bottom:14px">${faner("ugedag", b)}</div>`}
+    ${indhold}</div></section>`;
+}
+
+/* ---------- del ---------- */
+async function del() {
+  const opsum = mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
+    if (x.idag == null) return null;
+    return r === "flad" ? `${NAVN[b]} ventes uændret i morgen` : `${NAVN[b]} ${r === "op" ? "stiger" : "falder"} ${ø} øre i morgen – ${r === "op" ? "tank i dag" : "vent til i morgen"}`; }).filter(Boolean).join(". ");
+  const url = location.origin + location.pathname, tekst = `${opsum || "Se morgendagens benzin- og dieselpris"}.`;
+  try {
+    if (navigator.share) { await navigator.share({ title: "Tank klar", text: tekst, url }); return; }
+    const fuld = `${tekst} Se mere: ${url}`;
+    try { await navigator.clipboard.writeText(fuld); }
+    catch { const t = document.createElement("textarea"); t.value = fuld; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    delStatus = "Teksten er kopieret – sæt den ind i en besked.";
+  } catch (e) { if (e && e.name === "AbortError") return; delStatus = "Kunne ikke dele lige nu."; }
+  vis(); setTimeout(() => { delStatus = ""; vis(); }, 3500);
+}
+
 function metodeKort() {
   const m = data.marked || {};
   const pct = v => v == null ? "–" : `${fortegn(v)}${kr(Math.abs(v))}%`;
@@ -658,15 +932,20 @@ function vis() {
     if (x.idag == null) return `Ingen pris på ${NAVN[b].toLowerCase()} endnu`;
     return r === "flad" ? `${NAVN[b]} ventes uændret` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; }).join(" · ");
   html += `<div class="helt">
-      <div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
+      <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
+      <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
       <h2>Skal du tanke i morgen?</h2>
       <p>${esc(opsum)}.</p>
+      ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
     <div class="${gitter()}">${mine().map(prisKort).join("")}</div>
     <section><h2 class="sek-titel">Tank i dag eller i morgen?</h2><div class="${gitter()}">${mine().map(rådKort).join("")}</div></section>
     <section>${sparKort()}</section>
     ${stationKort()}
+    ${alarmKort()}
+    ${dagbogKort()}
     <section class="grid2">${selskabKort()}${grafKort()}</section>
+    ${ugedagKort()}
     <section><div class="kort"><h2>Hvor præcis er prognosen?</h2>
       <p class="under">Gårsdagens prognose sammenlignet med den faktiske landspris i dag – og gennemsnittet de seneste 14 dage.</p>
       <div class="${gitter()}">${mine().map(præKort).join("")}</div>
@@ -686,6 +965,19 @@ document.getElementById("indhold").addEventListener("click", e => {
   const f = e.target.closest("[data-fane]"), s = e.target.closest("[data-serie]"), el = e.target.closest("[data-el]");
   const so = e.target.closest("[data-sort]"), fv = e.target.closest("[data-fav]"), act = e.target.closest("[data-act]");
   if (act && act.dataset.act === "find") return findStationer();
+  if (act && act.dataset.act === "test") return sendTest();
+  if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
+  if (act && act.dataset.act === "del") return del();
+  if (act && act.dataset.act === "tankning") return åbnDagbog();
+  if (act && act.dataset.act === "elalarm") { st.elAlarm = !st.elAlarm; return vis(); }
+  if (act && act.dataset.act === "eltest") return elTest();
+  const sl = e.target.closest("[data-slet]");
+  if (sl) { if (confirm("Slet denne tankning?")) { gemL("dagbog", JSON.stringify(dagbog().filter(t => t.id !== sl.dataset.slet))); vis(); } return; }
+  const kp = e.target.closest("[data-kopi]");
+  if (kp) {
+    const t = kp.dataset.kopi, ok = () => { kp.textContent = "Kopieret ✓"; setTimeout(() => kp.textContent = "Kopiér", 1800); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok).catch(() => {}); return;
+  }
   if (so) { st.stSort = so.dataset.sort; gemL("stSort", st.stSort); return vis(); }
   if (fv) { st.fav = st.fav === fv.dataset.fav ? null : fv.dataset.fav; st.fav ? gemL("favStation", st.fav) : (() => { try { localStorage.removeItem("favStation"); } catch {} })(); return vis(); }
   if (f) { st[f.dataset.fane] = f.dataset.b; gemL(f.dataset.fane, f.dataset.b); vis(); }
@@ -693,6 +985,12 @@ document.getElementById("indhold").addEventListener("click", e => {
   else if (el) { st.el = el.dataset.el; gemL("el", st.el); vis(); }
 });
 document.getElementById("indhold").addEventListener("change", e => {
+  if (e.target.dataset && e.target.dataset.alfuel) {
+    const v = [...document.querySelectorAll("[data-alfuel]")].filter(x => x.checked).map(x => x.dataset.alfuel);
+    gemL("alarmFuels", JSON.stringify(v)); alStatus = ""; return vis();
+  }
+  if (e.target.id === "elTid") { st.elTid = e.target.value; gemL("elTid", st.elTid); elAlStatus = ""; return vis(); }
+  if (e.target.id === "alarmTid" || e.target.id === "alarmNiv") { st[e.target.id] = e.target.value; gemL(e.target.id, e.target.value); alStatus = ""; return vis(); }
   if (e.target.id === "radius") { st.radius = +e.target.value; gemL("radius", st.radius); if (stationer) findStationer(); else vis(); return; }
   if (e.target.id === "autoFind") { st.auto = e.target.checked; gemL("autoFind", st.auto ? "ja" : "nej"); if (st.auto && !stationer) findStationer(); return; }
   if (e.target.id === "liter") { const v = Math.min(200, Math.max(5, Math.round(+e.target.value) || 50)); st.liter = v; gemL("liter", v); vis(); }
@@ -723,8 +1021,11 @@ const bDlg = document.getElementById("bilDlg");
 let valgtMit = st.mit;
 const markérMit = () => bDlg.querySelectorAll("[data-mit]").forEach(k => k.setAttribute("aria-pressed", k.dataset.mit === valgtMit));
 bDlg.querySelectorAll("[data-mit]").forEach(k => k.onclick = () => { valgtMit = k.dataset.mit; markérMit(); });
+let valgtTema = st.tema;
+const markérTema = () => bDlg.querySelectorAll("[data-tema]").forEach(k => k.setAttribute("aria-pressed", k.dataset.tema === valgtTema));
+bDlg.querySelectorAll("[data-tema]").forEach(k => k.onclick = () => { valgtTema = k.dataset.tema; markérTema(); });
 document.getElementById("minbil").onclick = () => {
-  valgtMit = st.mit; markérMit();
+  valgtMit = st.mit; markérMit(); valgtTema = st.tema; markérTema();
   document.getElementById("bilLiter").value = st.liter;
   document.getElementById("bilEl").value = st.el;
   document.getElementById("bilVisEl").checked = st.visEl;
@@ -733,10 +1034,22 @@ document.getElementById("minbil").onclick = () => {
 bDlg.addEventListener("close", () => {
   if (bDlg.returnValue !== "gem") return;
   st.mit = valgtMit; gemL("mit", st.mit);
+  st.tema = valgtTema; gemL("tema", st.tema); anvendTema();
   st.liter = Math.min(200, Math.max(5, Math.round(+document.getElementById("bilLiter").value) || 50)); gemL("liter", st.liter);
   st.el = document.getElementById("bilEl").value; gemL("el", st.el);
   st.visEl = document.getElementById("bilVisEl").checked; gemL("visEl", st.visEl ? "ja" : "nej");
   if (data) vis();
+});
+
+document.getElementById("dbB").addEventListener("change", sætDbPris);
+dbDlg.addEventListener("close", () => {
+  if (dbDlg.returnValue !== "gem") return;
+  const tal = id => { const x = parseFloat(String(document.getElementById(id).value).replace(",", ".")); return isFinite(x) && x > 0 ? x : null; };
+  const liter = tal("dbLiter"), pris = tal("dbPris"), dato = document.getElementById("dbDato").value;
+  if (!liter || !pris || !dato) { alert("Skriv både liter og pris for at gemme tankningen."); return; }
+  const km = tal("dbKm");
+  const d = dagbog(); d.push({ id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null });
+  gemL("dagbog", JSON.stringify(d)); vis();
 });
 
 /* ---------- installér ---------- */
