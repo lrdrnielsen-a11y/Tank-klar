@@ -1,6 +1,8 @@
 [
   {
     "dato": "2026-10-25",
+    "el_DK1": 0.083,
+    "el_DK2": 0.098,
     "benzin": 17.1,
     "diesel": 18.9,
     "prognose_benzin": 17.1,

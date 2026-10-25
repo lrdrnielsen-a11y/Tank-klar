@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-10-25T22:45+01:00",
+  "opdateret": "2026-10-25T22:55+01:00",
   "idag": "2026-10-25",
   "imorgen": "2026-10-26",
   "braendstof": {
@@ -10,7 +10,7 @@
       "aendring": 0.0,
       "anbefaling": "lige_meget",
       "kilde_idag": "selskaberne",
-      "metode": "uændret"
+      "metode": "marked"
     },
     "diesel": {
       "idag": 18.9,
@@ -18,7 +18,7 @@
       "aendring": 0.0,
       "anbefaling": "lige_meget",
       "kilde_idag": "selskaberne",
-      "metode": "uændret"
+      "metode": "marked"
     }
   },
   "selskaber": [
@@ -80,7 +80,17 @@
     }
   ],
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
-  "marked": null,
+  "marked": {
+    "handlet_i_dag": false,
+    "usd_dkk": 6.6781,
+    "brent_usd": 116.72,
+    "brent_pct": 0.0,
+    "benzin_pct": 0.0,
+    "benzin": 0.0,
+    "diesel_pct": 0.0,
+    "diesel": 0.0,
+    "kilde": "CNBC"
+  },
   "el": {
     "dato": "2026-10-26",
     "DK1": {
@@ -146,7 +156,70 @@
       ]
     }
   },
-  "advarsler": [
-    "Markedsdata kunne ikke hentes, så prognosen viser uændret pris"
-  ]
+  "el_idag": {
+    "dato": "2026-10-25",
+    "DK1": {
+      "gennemsnit": 0.083,
+      "billigst_start": 2,
+      "billigst_gennemsnit": 0.0,
+      "timer": [
+        0.031,
+        0.017,
+        0.0,
+        0.0,
+        -0.0,
+        0.001,
+        0.006,
+        0.009,
+        0.009,
+        0.009,
+        0.002,
+        0.009,
+        0.009,
+        0.004,
+        0.004,
+        0.009,
+        0.12,
+        0.413,
+        0.393,
+        0.352,
+        0.251,
+        0.107,
+        0.166,
+        0.065
+      ]
+    },
+    "DK2": {
+      "gennemsnit": 0.098,
+      "billigst_start": 8,
+      "billigst_gennemsnit": 0.007,
+      "timer": [
+        0.041,
+        0.038,
+        0.026,
+        0.023,
+        0.024,
+        0.022,
+        0.022,
+        0.011,
+        0.008,
+        0.009,
+        0.004,
+        0.01,
+        0.013,
+        0.023,
+        0.039,
+        0.034,
+        0.169,
+        0.426,
+        0.444,
+        0.359,
+        0.256,
+        0.109,
+        0.168,
+        0.066
+      ]
+    }
+  },
+  "advarsler": []
 }
