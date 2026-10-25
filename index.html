@@ -232,6 +232,9 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 
 /* tema-valg */
 .tema-valg { margin-top: 16px; }
+.vælg-tre { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.vælg-tre .al-boks { display: flex; margin: 0; padding: 11px 10px; font-size: 15.5px; font-weight: 400; gap: 8px; white-space: nowrap; }
+.vælg-tre .al-boks input { width: 19px; height: 19px; flex: none; padding: 0; }
 
 /* metode */
 .fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 6px; }
@@ -347,20 +350,20 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
   <form method="dialog">
     <h2>Min bil</h2>
     <p>Dine valg bliver gemt på denne telefon eller computer, så appen husker dem næste gang.</p>
-    <div class="felt"><label>Jeg tanker</label>
-      <div class="faner" id="bilValg" role="radiogroup">
-        <button type="button" data-mit="benzin">Benzin</button>
-        <button type="button" data-mit="diesel">Diesel</button>
-        <button type="button" data-mit="el">El</button>
-        <button type="button" data-mit="begge">Begge</button>
+    <div class="felt"><label>Vis priser for</label>
+      <div class="vælg-tre">
+        <label class="al-boks"><input type="checkbox" data-vælg="benzin"> Benzin</label>
+        <label class="al-boks"><input type="checkbox" data-vælg="diesel"> Diesel</label>
+        <label class="al-boks"><input type="checkbox" data-vælg="el"> El</label>
       </div>
+      <div class="st-sub" id="vælgFejl" style="margin-top:6px;color:var(--red)" hidden>Vælg mindst én.</div>
     </div>
     <div class="felter" style="margin-top:16px">
-      <div class="felt"><label for="bilLiter">Tankstørrelse (liter)</label><input id="bilLiter" type="number" min="5" max="200" inputmode="numeric"></div>
-      <div class="felt"><label for="bilEl">Elområde</label>
+      <div class="felt" id="bilLiterFelt"><label for="bilLiter">Tankstørrelse (liter)</label><input id="bilLiter" type="number" min="5" max="200" inputmode="numeric"></div>
+      <div class="felt" id="bilKwhFelt"><label for="bilKwh">Opladning (kWh)</label><input id="bilKwh" type="number" min="1" max="200" inputmode="numeric"></div>
+      <div class="felt" id="bilElFelt"><label for="bilEl">Elområde</label>
         <select id="bilEl"><option value="DK1">Vestdanmark (DK1)</option><option value="DK2">Østdanmark (DK2)</option></select></div>
     </div>
-    <label class="tjek"><input type="checkbox" id="bilVisEl"> Vis elpris til elbil</label>
     <div class="felt tema-valg" style="margin-bottom:20px"><label>Udseende</label>
       <div class="faner" id="temaValg">
         <button type="button" data-tema="auto">Automatisk</button>
@@ -417,7 +420,10 @@ const st = {
   serier: (() => { try { return JSON.parse(hentL("serier")) || { benzin: true, diesel: true }; } catch { return { benzin: true, diesel: true }; } })(),
   liter: +hentL("liter") || 50,
   el: hentL("el") || "DK2",
-  mit: hentL("mit") || "begge",
+  valgt: (() => {
+    try { const v = JSON.parse(hentL("valgt")); if (Array.isArray(v) && v.length) return v; } catch {}
+    const g = hentL("mit"); return g === "el" ? ["el"] : g === "benzin" ? ["benzin"] : g === "diesel" ? ["diesel"] : ["benzin", "diesel"];
+  })(),
   visEl: hentL("visEl") !== "nej",
   stFuel: hentL("stFuel") || "benzin",
   radius: +hentL("radius") || 10,
@@ -427,6 +433,8 @@ const st = {
 };
 let stationer = null, stStatus = "", alStatus = "", delStatus = "", elAlStatus = "";
 st.tema = hentL("tema") || "auto";
+st.stType = hentL("stType") || "fuel";
+st.dbType = hentL("dbType") || "fuel";
 st.kwh = +hentL("kwh") || 40;
 st.sted = (() => { try { return JSON.parse(hentL("sted")); } catch { return null; } })();
 st.stedTekst = st.sted ? st.sted.navn : "";
@@ -447,8 +455,12 @@ st.alarmNiv = hentL("alarmNiv") || "20";
 st.alarmVis = false;
 const ALARM_PREFIX = "tankklar-q7m4"; // skal passe med update.py
 const emne = b => `${ALARM_PREFIX}-${b}-${st.alarmNiv}-${st.alarmTid}`;
-const erEl = () => st.mit === "el";
-const mine = () => st.mit === "begge" ? ["benzin", "diesel"] : erEl() ? [] : [st.mit];
+const mine = () => ["benzin", "diesel"].filter(b => st.valgt.includes(b));
+const harEl = () => st.valgt.includes("el");
+const erEl = () => harEl() && !mine().length;           // kun el
+const blandet = () => harEl() && mine().length > 0;     // brændstof og el
+const laderVises = () => erEl() || (blandet() && st.stType === "el");
+const dagbogEl = () => erEl() || (blandet() && st.dbType === "el");
 const gitter = () => mine().length === 1 ? "grid1" : "grid2";
 
 function hentL(k) { try { return localStorage.getItem(k); } catch { return null; } }
@@ -515,7 +527,7 @@ function faner(navn, valgt) {
 }
 
 function sparKort() {
-  const b = mine().length === 1 ? st.mit : st.spar, x = bf(b), L = st.liter, a = x.aendring || 0;
+  const b = mine().length === 1 ? mine()[0] : st.spar, x = bf(b), L = st.liter, a = x.aendring || 0;
   let boks1;
   if (Math.abs(a) < 0.005) boks1 = `<div class="boks grå"><div class="bt">Prisen ventes uændret</div><div class="stor-sum">0,00 kr.</div><div class="lille">0,00 kr./L × ${L} L</div></div>`;
   else boks1 = `<div class="boks grøn"><div class="bt">${a < 0 ? "Vent til i morgen og spar" : "Tank i dag og spar"}</div><div class="stor-sum">${kr(Math.abs(a) * L)} kr.</div><div class="lille">${kr(Math.abs(a))} kr./L × ${L} L</div></div>`;
@@ -537,7 +549,7 @@ function sparKort() {
 }
 
 function selskabKort() {
-  const b = mine().length === 1 ? st.mit : st.tabel, x = bf(b);
+  const b = mine().length === 1 ? mine()[0] : st.tabel, x = bf(b);
   const s = (data.selskaber || []).filter(v => v[b] != null).sort((p, q) => p[b] - q[b] || p.navn.localeCompare(q.navn));
   const rækker = s.map((v, i) => `<tr><td>${esc(v.navn)}${i === 0 ? '<span class="billigst-tag">billigst</span>' : ""}</td>
     <td class="mono">${kr(v[b])}</td><td class="mono fed">${kr(v[b] + (x.aendring || 0))}</td></tr>`).join("");
@@ -560,8 +572,7 @@ function glat(p) {
   return d;
 }
 
-function grafKort() {
-  const elT = erEl();
+function grafKort(elT = erEl()) {
   const nøgler = elT ? ["el_" + st.el] : (mine().length === 1 ? mine() : Object.keys(NAVN).filter(b => st.serier[b]));
   const imorgenAf = k => elT ? data.el?.[st.el]?.gennemsnit : bf(k).imorgen;
   const farveAf = k => elT ? "var(--green)" : FARVE[k];
@@ -599,7 +610,7 @@ function grafKort() {
     svg = `<svg class="graf" viewBox="0 0 ${W} ${H}" role="img" aria-label="Landsgennemsnit de seneste dage og prognosen for i morgen">${g}</svg>`;
   }
   return `<div class="kort">
-    <h2>Seneste 14 dage</h2>
+    <h2>Seneste 14 dage${blandet() ? ` <span style="color:var(--muted);font-weight:500">· ${elT ? "El" : "Brændstof"}</span>` : ""}</h2>
     <p class="under">${elT ? `Gennemsnitlig elpris pr. dag i ${st.el === "DK1" ? "Vestdanmark" : "Østdanmark"} (kr./kWh) + i morgen (stiplet)` : "Landsgennemsnit + morgendagens prognose (stiplet)"}</p>
     <div class="forklaring">${pills}</div>${svg}
   </div>`;
@@ -749,7 +760,7 @@ async function slåStedOp(tekst) {
   throw { trin: "sted", tekst: `Kunne ikke finde "${tekst}". Prøv et postnummer som 9870 eller et bynavn som Sindal.` };
 }
 async function hentStationer(la, lo) {
-  const q = `[out:json][timeout:25];nwr["amenity"="${erEl() ? "charging_station" : "fuel"}"](around:${st.radius * 1000},${la.toFixed(5)},${lo.toFixed(5)});out center tags;`;
+  const q = `[out:json][timeout:25];nwr["amenity"="${laderVises() ? "charging_station" : "fuel"}"](around:${st.radius * 1000},${la.toFixed(5)},${lo.toFixed(5)});out center tags;`;
   for (const url of OVERPASS) {
     try {
       const r = await medTidsgrænse(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) }, 12000);
@@ -763,7 +774,7 @@ async function findStationer() {
   const skrevet = (st.stedTekst || "").trim();
   if (skrevet && (!st.sted || st.sted.navn !== skrevet)) return brugSted();
   if (!skrevet && st.sted) { st.sted = null; try { localStorage.removeItem("sted"); } catch {} }
-  const elT = erEl(), hvad = elT ? "ladestandere" : "tankstationer";
+  const elT = laderVises(), hvad = elT ? "ladestandere" : "tankstationer";
   stStatus = "henter"; stTrin = st.sted ? `Henter ${hvad} …` : "Finder din position …"; vis();
   try {
     const { la, lo } = await minPosition();
@@ -800,8 +811,8 @@ async function brugSted() {
   findStationer();
 }
 function stationKort() {
-  if (erEl()) return ladeKort();
-  const enkelt = mine().length === 1, b = enkelt ? st.mit : st.stFuel;
+  if (laderVises()) return ladeKort();
+  const enkelt = mine().length === 1, b = enkelt ? mine()[0] : st.stFuel;
   const fuelFaner = enkelt ? "" : `<div class="faner" role="group">${Object.keys(NAVN).map(k =>
     `<button type="button" data-fane="stFuel" data-b="${k}" aria-pressed="${k === b}">${NAVN[k]}</button>`).join("")}</div>`;
   const sortFaner = `<div class="faner" role="group" style="min-width:180px">${[["pris", "Billigst"], ["afstand", "Nærmest"]].map(([k, t]) =>
@@ -840,6 +851,7 @@ function stationKort() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
       ${stationer ? "Find igen" : "Find stationer nær mig"}</button>`;
   return `<section><div class="kort">
+    ${typeFaner("stType", st.stType)}
     <h2>Stationer nær dig${enkelt ? ` <span style="color:var(--muted);font-weight:500">· ${NAVN[b]}</span>` : ""}</h2>
     <p class="under">De billigste tankstationer i nærheden. Tryk ☆ for at gemme din faste station, så står den altid øverst.</p>
     <div class="st-kontrol">${fuelFaner}${sortFaner}${radius}</div>
@@ -860,6 +872,11 @@ function stedFelter() {
       <button type="button" class="knap" data-act="sted">${st.sted ? "Søg" : "Brug"}</button></div>
       ${st.sted ? `<div class="st-sub" style="margin-top:4px">Søger fra <b>${esc(st.sted.vist || st.sted.navn)}</b>. Ryd feltet for at bruge din position igen.</div>` : ""}</div>
     <label class="tjek"><input type="checkbox" id="autoFind" ${st.auto ? "checked" : ""}> Find automatisk, når jeg åbner appen</label>`;
+}
+function typeFaner(navn, v) {
+  if (!blandet()) return "";
+  return `<div class="faner" role="group" style="margin-bottom:14px">${[["fuel", "Tankstationer"], ["el", "Ladestandere"]].map(([k, t]) =>
+    `<button type="button" data-type="${navn}" data-v="${k}" aria-pressed="${k === v}">${navn === "dbType" ? (k === "el" ? "Opladninger" : "Tankninger") : t}</button>`).join("")}</div>`;
 }
 function ladeKort() {
   const radius = `<div class="felt"><label for="radius">Afstand</label><select id="radius">${[5, 10, 20, 30].map(r =>
@@ -888,6 +905,7 @@ function ladeKort() {
   const sortFaner = `<div class="faner" role="group" style="min-width:200px">${[["afstand", "Nærmest"], ["kw", "Hurtigst"]].map(([k, t]) =>
     `<button type="button" data-sort="${k}" aria-pressed="${k === (st.stSort === "kw" ? "kw" : "afstand")}">${t}</button>`).join("")}</div>`;
   return `<section><div class="kort">
+    ${typeFaner("stType", st.stType)}
     <h2>Ladestandere nær dig</h2>
     <p class="under">Offentlige ladere i nærheden. Hver operatør har sin egen pris pr. kWh, ofte afhængigt af abonnement, og priserne deles ikke åbent – tjek prisen i operatørens app. Tryk ☆ for at gemme din faste lader.</p>
     <div class="st-kontrol">${sortFaner}${radius}</div>
@@ -949,13 +967,13 @@ async function sendTest() {
 
 /* ---------- tankdagbog ---------- */
 function dagbogKort() {
-  const elT = erEl(), alle = dagbog().slice().sort((a, b) => a.dato.localeCompare(b.dato));
+  const elT = dagbogEl(), alle = dagbog().slice().sort((a, b) => a.dato.localeCompare(b.dato));
   const d = alle.filter(t => elT ? t.b === "el" : t.b !== "el");
   const enhed = elT ? "kWh" : "L", hvad = elT ? "opladning" : "tankning";
   const knap = `<button type="button" class="knap primær bred" data-act="tankning">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Registrér ${hvad}</button>`;
   const titel = elT ? "Ladedagbog" : "Tankdagbog";
-  if (!d.length) return `<section><div class="kort"><h2>${titel}</h2>
+  if (!d.length) return `<section><div class="kort">${typeFaner("dbType", st.dbType)}<h2>${titel}</h2>
     <p class="under">${elT ? "Skriv ind, når du lader. Så kan du se, hvad du bruger på strøm til bilen om måneden, din gennemsnitspris pr. kWh, og hvor langt bilen kører pr. kWh."
       : "Skriv ind, når du tanker. Så kan du se, hvad du bruger på brændstof om måneden, hvad du sparer i forhold til landsprisen, og hvor langt bilen kører pr. liter."}</p>${knap}</div></section>`;
   const nu = new Date(), mdr = `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, "0")}`;
@@ -976,7 +994,7 @@ function dagbogKort() {
   const tredje = elT
     ? `<div><div class="e">Ladet i alt</div><div class="mono">${kr(mængde, 0)} kWh</div><div class="l">${d.length} opladning${d.length === 1 ? "" : "er"}</div></div>`
     : `<div><div class="e">${sparet >= 0 ? "Sparet" : "Betalt ekstra"}</div><div class="mono" style="color:${sparet >= 0 ? "var(--green)" : "var(--red)"}">${kr(Math.abs(sparet), 0)} kr.</div><div class="l">${sammenlignet ? "mod landsprisen samme dag" : "kræver priser fra samme dag"}</div></div>`;
-  return `<section><div class="kort"><h2>${titel}</h2>
+  return `<section><div class="kort">${typeFaner("dbType", st.dbType)}<h2>${titel}</h2>
     <p class="under">Dine ${elT ? "opladninger" : "tankninger"}, gemt på denne enhed.</p>
     <div class="db-tal">
       <div><div class="e">Brugt i ${md}</div><div class="mono">${kr(sum(iMdr), 0)} kr.</div><div class="l">${iMdr.length} ${hvad}${iMdr.length === 1 ? "" : "er"}</div></div>
@@ -990,7 +1008,7 @@ function dagbogKort() {
 }
 const dbDlg = document.getElementById("dagbogDlg");
 function åbnDagbog() {
-  const b = erEl() ? "el" : mine().length === 1 ? st.mit : "benzin";
+  const b = dagbogEl() ? "el" : mine().length === 1 ? mine()[0] : "benzin";
   document.getElementById("dbDato").value = new Date().toLocaleDateString("sv-SE");
   document.getElementById("dbB").value = b;
   document.getElementById("dbLiter").value = "";
@@ -1009,9 +1027,9 @@ function sætDbPris() {
 }
 
 /* ---------- billigste ugedag ---------- */
-function ugedagKort() {
-  const enkelt = erEl() || mine().length === 1;
-  const b = erEl() ? "el_" + st.el : (mine().length === 1 ? st.mit : st.ugedag), etiket = erEl() ? "El" : NAVN[b];
+function ugedagKort(elT = erEl()) {
+  const enkelt = elT || mine().length === 1;
+  const b = elT ? "el_" + st.el : (mine().length === 1 ? mine()[0] : st.ugedag), etiket = elT ? "El" : NAVN[b];
   const r = historik.filter(h => h[b] != null);
   const afv = [[], [], [], [], [], [], []];
   for (let i = 3; i < r.length - 3; i++) {
@@ -1033,17 +1051,18 @@ function ugedagKort() {
     }).join("") + `<p class="fod">${helt[bedst]} er typisk billigst. Tallene viser, hvor meget prisen afviger fra ugens gennemsnit, beregnet ud fra ${r.length} dages priser. Forskellen er ofte lille.</p>`;
   }
   return `<section><div class="kort"><h2>Billigste ugedag${enkelt ? ` <span style="color:var(--muted);font-weight:500">· ${etiket}</span>` : ""}</h2>
-    <p class="under">Hvilken dag det plejer at være billigst at ${erEl() ? "lade" : "tanke"}.</p>
+    <p class="under">Hvilken dag det plejer at være billigst at ${elT ? "lade" : "tanke"}.</p>
     ${enkelt ? "" : `<div style="margin-bottom:14px">${faner("ugedag", b)}</div>`}
     ${indhold}</div></section>`;
 }
 
 /* ---------- del ---------- */
 async function del() {
-  const e = erEl() ? elInfo() : null;
-  const opsum = e ? `Billigste strøm i morgen: kl. ${to(e.start)}–${to(e.start + 3)} (${kr(e.billig)} kr./kWh i ${OMR[st.el]})` : mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
+  const e = harEl() && data.el ? elInfo() : null;
+  const elTekst = e ? `Billigste strøm i morgen: kl. ${to(e.start)}–${to(e.start + 3)} (${kr(e.billig)} kr./kWh i ${OMR[st.el]})` : "";
+  const opsum = [mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
     if (x.idag == null) return null;
-    return r === "flad" ? `${NAVN[b]} ventes uændret i morgen` : `${NAVN[b]} ${r === "op" ? "stiger" : "falder"} ${ø} øre i morgen – ${r === "op" ? "tank i dag" : "vent til i morgen"}`; }).filter(Boolean).join(". ");
+    return r === "flad" ? `${NAVN[b]} ventes uændret i morgen` : `${NAVN[b]} ${r === "op" ? "stiger" : "falder"} ${ø} øre i morgen – ${r === "op" ? "tank i dag" : "vent til i morgen"}`; }).filter(Boolean).join(". "), elTekst].filter(Boolean).join(". ");
   const url = location.origin + location.pathname, tekst = `${opsum || "Se morgendagens benzin- og dieselpris"}.`;
   try {
     if (navigator.share) { await navigator.share({ title: "Tank klar", text: tekst, url }); return; }
@@ -1120,7 +1139,7 @@ function elSparKort() {
   if (!e) return "";
   const k = st.kwh;
   return `<section><div class="kort">
-    <h2>Hvad sparer du?</h2>
+    <h2>Hvad sparer du?${blandet() ? ' <span style="color:var(--muted);font-weight:500">· El</span>' : ""}</h2>
     <p class="under">Regn ud, hvad det betyder at lade i de billigste timer derhjemme.</p>
     <div class="spar-række"><div class="felt"><label for="kwh">Opladning (kWh)</label><input id="kwh" type="number" min="1" max="200" inputmode="numeric" value="${k}"></div></div>
     <div class="bokse">
@@ -1132,7 +1151,7 @@ function elSparKort() {
 }
 function elAlarmKort() {
   return `<section><div class="kort">
-    <h2>Prisalarm</h2>
+    <h2>${blandet() ? "Prisalarm for el" : "Prisalarm"}</h2>
     <p class="under">Få en besked om aftenen med morgendagens billigste ladetimer i ${OMR[st.el]}.</p>
     ${elAlarmDel(true)}
   </div></section>`;
@@ -1170,32 +1189,43 @@ function metodeKort() {
 
 function vis() {
   if (erEl()) return visEl();
+  const medEl = harEl() && data.el;
   let html = "";
   if (data.demo) html += `<div class="demo">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
   const opsum = mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
     if (x.idag == null) return `Ingen pris på ${NAVN[b].toLowerCase()} endnu`;
-    return r === "flad" ? `${NAVN[b]} ventes uændret` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; }).join(" · ");
+    return r === "flad" ? `${NAVN[b]} ventes uændret` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; });
+  const ei = medEl ? elInfo() : null;
+  if (ei) opsum.push(`billigste strøm kl. ${to(ei.start)}–${to(ei.start + 3)}`);
+  const opsumTekst = opsum.join(" · ");
   html += `<div class="helt">
       <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
-      <h2>Skal du tanke i morgen?</h2>
-      <p>${esc(opsum)}.</p>
+      <h2>${medEl ? "Tanke eller lade i morgen?" : "Skal du tanke i morgen?"}</h2>
+      <p>${esc(opsumTekst)}.</p>
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
     <div class="${gitter()}">${mine().map(prisKort).join("")}</div>
+    ${medEl ? `<section>${elPrisKort()}</section>` : ""}
     <section><h2 class="sek-titel">Tank i dag eller i morgen?</h2><div class="${gitter()}">${mine().map(rådKort).join("")}</div></section>
+    ${medEl ? elRådKort() : ""}
     <section>${sparKort()}</section>
+    ${medEl ? elSparKort() : ""}
     ${stationKort()}
     ${alarmKort()}
+    ${medEl ? elAlarmKort() : ""}
     ${dagbogKort()}
-    <section class="grid2">${selskabKort()}${grafKort()}</section>
-    ${ugedagKort()}
+    <section class="grid2">${selskabKort()}${grafKort(false)}</section>
+    ${medEl ? `<section>${grafKort(true)}</section>` : ""}
+    ${ugedagKort(false)}
+    ${medEl ? ugedagKort(true) : ""}
     <section><div class="kort"><h2>Hvor præcis er prognosen?</h2>
       <p class="under">Gårsdagens prognose sammenlignet med den faktiske landspris i dag – og gennemsnittet de seneste 14 dage.</p>
       <div class="${gitter()}">${mine().map(præKort).join("")}</div>
       <p class="fod">Grøn = under 10 øre fra, gul = under 25 øre, rød = mere.</p></div></section>
-    ${data.el && st.visEl ? elKort() : ""}
+    ${medEl ? elKort() : ""}
     ${metodeKort()}
+    ${medEl ? elOmKort() : ""}
     <div class="note">
       <p>Dagens priser er kædernes egne udmeldte priser, hentet fra <a href="https://benzinsignal.dk/data">BenzinSignal</a>. Lokale rabatter og kundekort er ikke regnet med. Elpriser fra Energi Data Service (Energinet).</p>
       <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p>
@@ -1210,6 +1240,12 @@ document.getElementById("indhold").addEventListener("click", e => {
   const so = e.target.closest("[data-sort]"), fv = e.target.closest("[data-fav]"), act = e.target.closest("[data-act]");
   if (act && act.dataset.act === "find") return findStationer();
   if (act && act.dataset.act === "sted") return brugSted();
+  const ty = e.target.closest("[data-type]");
+  if (ty) {
+    st[ty.dataset.type] = ty.dataset.v; gemL(ty.dataset.type, ty.dataset.v);
+    if (ty.dataset.type === "stType") { stStatus = ""; try { stationer = JSON.parse(hentL("sidsteStationer" + (ty.dataset.v === "el" ? "_el" : ""))); } catch { stationer = null; } }
+    return vis();
+  }
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
@@ -1266,27 +1302,39 @@ jDlg.addEventListener("close", () => {
 
 /* ---------- min bil ---------- */
 const bDlg = document.getElementById("bilDlg");
-let valgtMit = st.mit;
-const markérMit = () => bDlg.querySelectorAll("[data-mit]").forEach(k => k.setAttribute("aria-pressed", k.dataset.mit === valgtMit));
-bDlg.querySelectorAll("[data-mit]").forEach(k => k.onclick = () => { valgtMit = k.dataset.mit; markérMit(); });
+const vælgBokse = () => [...bDlg.querySelectorAll("[data-vælg]")];
+function opdaterBilFelter() {
+  const v = vælgBokse().filter(x => x.checked).map(x => x.dataset.vælg);
+  document.getElementById("bilLiterFelt").hidden = !v.some(b => b !== "el");
+  document.getElementById("bilKwhFelt").hidden = !v.includes("el");
+  document.getElementById("bilElFelt").hidden = !v.includes("el");
+  document.getElementById("vælgFejl").hidden = v.length > 0;
+  bDlg.querySelector('button[value="gem"]').disabled = !v.length;
+}
+vælgBokse().forEach(x => x.addEventListener("change", opdaterBilFelter));
 let valgtTema = st.tema;
 const markérTema = () => bDlg.querySelectorAll("[data-tema]").forEach(k => k.setAttribute("aria-pressed", k.dataset.tema === valgtTema));
 bDlg.querySelectorAll("[data-tema]").forEach(k => k.onclick = () => { valgtTema = k.dataset.tema; markérTema(); });
 document.getElementById("minbil").onclick = () => {
-  valgtMit = st.mit; markérMit(); valgtTema = st.tema; markérTema();
+  vælgBokse().forEach(x => x.checked = st.valgt.includes(x.dataset.vælg));
+  document.getElementById("bilKwh").value = st.kwh;
+  opdaterBilFelter(); valgtTema = st.tema; markérTema();
   document.getElementById("bilLiter").value = st.liter;
   document.getElementById("bilEl").value = st.el;
-  document.getElementById("bilVisEl").checked = st.visEl;
+
   bDlg.showModal();
 };
 bDlg.addEventListener("close", () => {
   if (bDlg.returnValue !== "gem") return;
-  if ((st.mit === "el") !== (valgtMit === "el")) { stationer = null; stStatus = ""; }
-  st.mit = valgtMit; gemL("mit", st.mit);
+  const før = laderVises();
+  const v = vælgBokse().filter(x => x.checked).map(x => x.dataset.vælg);
+  if (v.length) { st.valgt = v; gemL("valgt", JSON.stringify(v)); }
+  if (før !== laderVises()) { stationer = null; stStatus = ""; }
+  st.kwh = Math.min(200, Math.max(1, Math.round(+document.getElementById("bilKwh").value) || 40)); gemL("kwh", st.kwh);
   st.tema = valgtTema; gemL("tema", st.tema); anvendTema();
   st.liter = Math.min(200, Math.max(5, Math.round(+document.getElementById("bilLiter").value) || 50)); gemL("liter", st.liter);
   st.el = document.getElementById("bilEl").value; gemL("el", st.el);
-  st.visEl = document.getElementById("bilVisEl").checked; gemL("visEl", st.visEl ? "ja" : "nej");
+
   if (data) vis();
 });
 
