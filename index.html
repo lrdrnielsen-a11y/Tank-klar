@@ -426,6 +426,7 @@ const st = {
 };
 let stationer = null, stStatus = "", alStatus = "", delStatus = "", elAlStatus = "";
 st.tema = hentL("tema") || "auto";
+st.sted = (() => { try { return JSON.parse(hentL("sted")); } catch { return null; } })();
 st.ugedag = hentL("ugedag") || "benzin";
 st.elAlarm = false;
 st.elTid = hentL("elTid") || "2030";
@@ -690,19 +691,46 @@ function afstand(a, b, c, d) {
   const h = Math.sin(r(c - a) / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(r(d - b) / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
+const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+async function medTidsgrænse(url, opt, ms) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { return await fetch(url, { ...opt, signal: c.signal }); } finally { clearTimeout(t); }
+}
+async function minPosition() {
+  if (st.sted) return st.sted; // postnummer/by, som brugeren selv har skrevet
+  if (!navigator.geolocation) throw { trin: "pos", tekst: "Din browser kan ikke finde din position. Skriv dit postnummer i stedet." };
+  try {
+    const pos = await new Promise((ok, nej) => navigator.geolocation.getCurrentPosition(ok, nej, { timeout: 15000, maximumAge: 600000 }));
+    return { la: pos.coords.latitude, lo: pos.coords.longitude };
+  } catch (e) {
+    throw { trin: "pos", tekst: e && e.code === 1
+      ? "Appen har ikke lov til at se din position. Tillad det i indstillingerne, eller skriv dit postnummer nedenfor."
+      : "Din position kunne ikke findes. Skriv dit postnummer eller din by nedenfor i stedet." };
+  }
+}
+async function slåStedOp(tekst) {
+  const r = await medTidsgrænse("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=dk&q=" + encodeURIComponent(tekst), {}, 12000);
+  const j = r.ok ? await r.json() : [];
+  if (!j.length) throw { trin: "sted", tekst: `Kunne ikke finde "${tekst}". Prøv et postnummer, fx 9870.` };
+  return { la: +j[0].lat, lo: +j[0].lon, navn: tekst };
+}
+async function hentStationer(la, lo) {
+  const q = `[out:json][timeout:25];nwr["amenity"="fuel"](around:${st.radius * 1000},${la.toFixed(5)},${lo.toFixed(5)});out center tags;`;
+  for (const url of OVERPASS) {
+    try {
+      const r = await medTidsgrænse(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) }, 20000);
+      if (r.ok) return (await r.json()).elements || [];
+    } catch {}
+  }
+  throw { trin: "kort", tekst: "Kortserverne er overbelastede lige nu. Prøv igen om et par minutter." };
+}
 async function findStationer() {
-  if (!navigator.geolocation) { stStatus = "fejl:Din browser kan ikke finde din position."; vis(); return; }
   stStatus = "henter"; vis();
   try {
-    const pos = await new Promise((ok, nej) => navigator.geolocation.getCurrentPosition(ok, nej, { timeout: 15000, maximumAge: 300000 }));
-    const la = pos.coords.latitude, lo = pos.coords.longitude;
-    const q = `[out:json][timeout:25];nwr["amenity"="fuel"](around:${st.radius * 1000},${la.toFixed(5)},${lo.toFixed(5)});out center tags;`;
-    const r = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q)
-    });
-    if (!r.ok) throw new Error("server");
-    const j = await r.json();
-    stationer = (j.elements || []).map(e => {
+    const { la, lo } = await minPosition();
+    const el = await hentStationer(la, lo);
+    stationer = el.map(e => {
       const t = e.tags || {}, p = e.lat != null ? [e.lat, e.lon] : e.center ? [e.center.lat, e.center.lon] : null;
       if (!p) return null;
       const k = findKæde(t);
@@ -713,12 +741,20 @@ async function findStationer() {
       };
     }).filter(Boolean);
     stStatus = "ok";
+    try { localStorage.setItem("sidsteStationer", JSON.stringify(stationer)); } catch {}
   } catch (e) {
-    stStatus = "fejl:" + (e && e.code === 1
-      ? "Appen har ikke lov til at se din position. Tillad det i telefonens eller browserens indstillinger, og prøv igen."
-      : "Tankstationerne kunne ikke hentes lige nu. Prøv igen om lidt.");
+    stStatus = "fejl:" + (e && e.tekst ? e.tekst : "Tankstationerne kunne ikke hentes lige nu. Prøv igen om lidt.");
+    if (!stationer) { try { stationer = JSON.parse(hentL("sidsteStationer")); if (stationer) stStatus += " Viser de sidst fundne stationer."; } catch {} }
   }
   vis();
+}
+async function brugSted() {
+  const v = (document.getElementById("stedInput") || {}).value?.trim();
+  if (!v) { st.sted = null; try { localStorage.removeItem("sted"); } catch {} return findStationer(); }
+  stStatus = "henter"; vis();
+  try { st.sted = await slåStedOp(v); gemL("sted", JSON.stringify(st.sted)); }
+  catch (e) { stStatus = "fejl:" + (e.tekst || "Stedet kunne ikke slås op lige nu."); return vis(); }
+  findStationer();
 }
 function stationKort() {
   const enkelt = mine().length === 1, b = enkelt ? st.mit : st.stFuel;
@@ -763,6 +799,10 @@ function stationKort() {
     <h2>Stationer nær dig${enkelt ? ` <span style="color:var(--muted);font-weight:500">· ${NAVN[b]}</span>` : ""}</h2>
     <p class="under">De billigste tankstationer i nærheden. Tryk ☆ for at gemme din faste station, så står den altid øverst.</p>
     <div class="st-kontrol">${fuelFaner}${sortFaner}${radius}</div>
+    <div class="felt" style="margin-bottom:14px"><label for="stedInput">Søg fra</label>
+      <div style="display:flex;gap:8px"><input id="stedInput" type="text" inputmode="text" autocomplete="postal-code" placeholder="Min position – eller skriv postnummer/by" value="${st.sted ? esc(st.sted.navn) : ""}" style="flex:1;width:auto;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--card)">
+      <button type="button" class="knap" data-act="sted">${st.sted ? "Søg" : "Brug"}</button></div>
+      ${st.sted ? `<div class="st-sub" style="margin-top:4px">Søger fra ${esc(st.sted.navn)}. Ryd feltet og tryk Søg for at bruge din position igen.</div>` : ""}</div>
     <label class="tjek"><input type="checkbox" id="autoFind" ${st.auto ? "checked" : ""}> Find automatisk, når jeg åbner appen</label>
     ${knap}
     <div style="margin-top:14px">${liste}</div>
@@ -965,6 +1005,7 @@ document.getElementById("indhold").addEventListener("click", e => {
   const f = e.target.closest("[data-fane]"), s = e.target.closest("[data-serie]"), el = e.target.closest("[data-el]");
   const so = e.target.closest("[data-sort]"), fv = e.target.closest("[data-fav]"), act = e.target.closest("[data-act]");
   if (act && act.dataset.act === "find") return findStationer();
+  if (act && act.dataset.act === "sted") return brugSted();
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
@@ -995,6 +1036,7 @@ document.getElementById("indhold").addEventListener("change", e => {
   if (e.target.id === "autoFind") { st.auto = e.target.checked; gemL("autoFind", st.auto ? "ja" : "nej"); if (st.auto && !stationer) findStationer(); return; }
   if (e.target.id === "liter") { const v = Math.min(200, Math.max(5, Math.round(+e.target.value) || 50)); st.liter = v; gemL("liter", v); vis(); }
 });
+document.getElementById("indhold").addEventListener("keydown", e => { if (e.target.id === "stedInput" && e.key === "Enter") { e.preventDefault(); brugSted(); } });
 document.getElementById("opdater").onclick = e => hent(e.currentTarget);
 
 const jDlg = document.getElementById("justerDlg");
