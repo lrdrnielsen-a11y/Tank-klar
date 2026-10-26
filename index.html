@@ -410,7 +410,8 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
       <div class="felt"><label for="dbLiter" id="dbLiterLbl">Liter</label><input id="dbLiter" type="number" step="0.01" min="1" max="300" inputmode="decimal" placeholder="fx 45,3"></div>
       <div class="felt"><label for="dbPris" id="dbPrisLbl">Pris pr. liter</label><input id="dbPris" type="number" step="0.01" min="5" max="40" inputmode="decimal"></div>
     </div>
-    <div class="felt" style="margin-bottom:18px"><label for="dbKm">Kilometertal (valgfrit)</label><input id="dbKm" type="number" min="0" inputmode="numeric" placeholder="Bruges til at regne km/l ud"></div>
+    <div class="felt" style="margin-bottom:12px"><label for="dbKm">Kilometertal (valgfrit)</label><input id="dbKm" type="number" min="0" inputmode="numeric" placeholder="Bruges til at regne km/l ud"></div>
+    <label class="tjek" id="dbFuldFelt" style="margin-bottom:18px"><input type="checkbox" id="dbFuld" checked> <span id="dbFuldTekst">Jeg fyldte tanken helt op</span></label>
     <div class="knapper">
       <button class="knap" value="luk">Annullér</button>
       <button class="knap primær" value="gem">Gem tankning</button>
@@ -1087,10 +1088,17 @@ function dagbogKort() {
   const mængde = d.reduce((x, t) => x + t.liter, 0);
   let sparet = 0, sammenlignet = 0;
   if (!elT) d.forEach(t => { const h = historik.find(r => r.dato === t.dato); if (h && h[t.b] != null) { sparet += (h[t.b] - t.pris) * t.liter; sammenlignet++; } });
-  let km = 0, kmM = 0;
+  // Km pr. liter/kWh: fra én fuld tank til en senere fuld tank tæller ALT, der er tanket imellem –
+  // også små påfyldninger. Så må man gerne tanke fx 13 liter ind imellem.
+  let km = 0, kmM = 0, ca = false;
   (elT ? ["el"] : Object.keys(NAVN)).forEach(b => {
-    const k = d.filter(t => t.b === b && t.km).sort((a, c) => a.km - c.km);
-    for (let i = 1; i < k.length; i++) { const diff = k[i].km - k[i - 1].km; if (diff > 0 && diff < 3000) { km += diff; kmM += k[i].liter; } }
+    const r = d.filter(t => t.b === b).sort((p, q) => p.dato.localeCompare(q.dato) || (p.km || 0) - (q.km || 0));
+    let fulde = r.map((t, i) => [t, i]).filter(([t]) => t.km && t.fuld !== false);
+    if (fulde.length < 2) { fulde = r.map((t, i) => [t, i]).filter(([t]) => t.km); ca = ca || fulde.length >= 2; }
+    if (fulde.length < 2) return;
+    const [[første, i0], [sidste, i1]] = [fulde[0], fulde[fulde.length - 1]];
+    const diff = sidste.km - første.km, mængde = r.slice(i0 + 1, i1 + 1).reduce((x, t) => x + t.liter, 0);
+    if (diff > 0 && mængde > 0) { km += diff; kmM += mængde; }
   });
   const md = nu.toLocaleDateString("da-DK", { month: "long" });
   const navnAf = b => b === "el" ? "El" : NAVN[b];
@@ -1106,7 +1114,7 @@ function dagbogKort() {
       <div><div class="e">Brugt i ${md}</div><div class="mono">${kr(sum(iMdr), 0)} kr.</div><div class="l">${iMdr.length} ${hvad}${iMdr.length === 1 ? "" : "er"}</div></div>
       <div><div class="e">Gns. pris</div><div class="mono">${kr(sum(d) / mængde)}</div><div class="l">kr. pr. ${elT ? "kWh" : "liter"}</div></div>
       ${tredje}
-      <div><div class="e">Kører</div><div class="mono">${kmM ? kr(km / kmM, 1) : "–"}</div><div class="l">${kmM ? `km pr. ${elT ? "kWh" : "liter"}` : `skriv km-tal ved to ${hvad}er`}</div></div>
+      <div><div class="e">Kører</div><div class="mono">${kmM ? kr(km / kmM, 1) : "–"}</div><div class="l">${kmM ? `${ca ? "ca. " : ""}km pr. ${elT ? "kWh" : "liter"}` : `skriv km-tal ved to fulde ${elT ? "opladninger" : "tanke"}`}</div></div>
     </div>
     ${knap}
     <table class="db-liste"><tbody>${rækker}</tbody></table>
@@ -1119,6 +1127,7 @@ function åbnDagbog() {
   document.getElementById("dbB").value = b;
   document.getElementById("dbLiter").value = "";
   document.getElementById("dbKm").value = "";
+  document.getElementById("dbFuld").checked = true;
   sætDbPris();
   dbDlg.showModal();
 }
@@ -1126,6 +1135,7 @@ function sætDbPris() {
   const b = document.getElementById("dbB").value;
   document.getElementById("dbLiterLbl").textContent = b === "el" ? "kWh" : "Liter";
   document.getElementById("dbTitel").textContent = b === "el" ? "Registrér opladning" : "Registrér tankning";
+  document.getElementById("dbFuldTekst").textContent = b === "el" ? "Jeg ladede til samme niveau som sidst (fx 80 %)" : "Jeg fyldte tanken helt op";
   document.getElementById("dbPrisLbl").textContent = b === "el" ? "Pris pr. kWh" : "Pris pr. liter";
   document.getElementById("dbLiter").placeholder = b === "el" ? "fx 35" : "fx 45,3";
   const v = b === "el" ? (data?.el_idag?.[st.el]?.gennemsnit ?? data?.el?.[st.el]?.gennemsnit) : data?.braendstof[b]?.idag;
@@ -1519,7 +1529,7 @@ dbDlg.addEventListener("close", () => {
   const liter = tal("dbLiter"), pris = tal("dbPris"), dato = document.getElementById("dbDato").value;
   if (!liter || !pris || !dato) { alert("Skriv både liter og pris for at gemme tankningen."); return; }
   const km = tal("dbKm");
-  const d = dagbog(); d.push({ id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null });
+  const d = dagbog(); d.push({ id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null, fuld: document.getElementById("dbFuld").checked });
   gemL("dagbog", JSON.stringify(d)); vis();
 });
 
