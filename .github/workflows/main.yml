@@ -2,9 +2,11 @@ name: Opdater priser
 
 on:
   schedule:
-    - cron: "30 17 * * *"      # hver aften: prognose, elpriser, alarmer og stationspriser
-    - cron: "0 6,9,12,15 * * *" # i løbet af dagen: kun friske stationspriser
-  workflow_dispatch:            # giver knappen "Run workflow"
+    - cron: "30 17 * * *"   # hver aften: prognose, elpriser, alarmer og stationspriser
+    - cron: "0 6 * * *"     # morgen
+    - cron: "15 9,10 * * *" # lige efter kædernes prisændring kl. 11 (sommer- og vintertid)
+    - cron: "0 13,15 * * *" # eftermiddag
+  workflow_dispatch:        # giver knappen "Run workflow"
 
 permissions:
   contents: write
@@ -21,7 +23,7 @@ jobs:
 
       - name: Hent priser og beregn prognose
         env:
-          KOERSEL: ${{ github.event.schedule == '0 6,9,12,15 * * *' && 'dag' || 'aften' }}
+          KOERSEL: ${{ github.event_name == 'schedule' && github.event.schedule != '30 17 * * *' && 'dag' || 'aften' }}
         run: python scripts/update.py
 
       - name: Gem de nye data (Cloudflare henter dem selv)
