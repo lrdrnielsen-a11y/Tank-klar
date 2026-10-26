@@ -1318,7 +1318,7 @@ function metodeKort() {
   const pct = v => v == null ? "–" : `${fortegn(v)}${kr(Math.abs(v))}%`;
   return `<section><div class="kort">
     <h2>Sådan beregnes prognosen</h2>
-    <p class="under">Dagens pris + ændringen i markedsprisen på benzin og diesel omregnet til kr./L med dagens dollarkurs og moms.${m.diesel_marked === "europæisk" ? " Diesel følger gasolie-kursen i London, som danske dieselpriser bygger på." : ""} Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
+    <p class="under">Dagens pris + ændringen i markedsprisen på benzin og diesel omregnet til kr./L med dagens dollarkurs og moms.${m.diesel_marked === "europæisk" ? " Diesel følger gasolie-kursen i London, som danske dieselpriser bygger på." : ""}${Object.values(data.braendstof).some(x => x.metode === "margin") ? " Prognosen sammenligner også pumpeprisen med indkøbsprisen: tjener kæderne mindre end normalt, er en stigning på vej – og omvendt." : " Om nogle dage begynder prognosen også at sammenligne pumpeprisen med indkøbsprisen, så den kan se prisstigninger komme."} Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
     <div class="fire">
       <div><div class="e">Brent råolie</div><div class="mono">${m.brent_usd != null ? "$" + kr(m.brent_usd) : "–"}</div><div class="l">${pct(m.brent_pct)}</div></div>
       <div><div class="e">Benzin-future</div><div class="mono">${pct(m.benzin_pct)}</div><div class="l">seneste handelsdag</div></div>
