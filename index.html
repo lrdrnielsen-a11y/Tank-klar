@@ -6,6 +6,17 @@
 <title>Tank klar – benzin- og dieselpris i morgen</title>
 <meta name="description" content="Se morgendagens forventede benzin- og dieselpris i Danmark, priserne hos OK, Circle K, Q8, Shell m.fl. og om du skal tanke i dag.">
 <meta name="theme-color" content="#F4F1E9">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tank klar">
+<meta property="og:title" content="Tank klar – skal du tanke i dag eller i morgen?">
+<meta property="og:description" content="Gratis app med morgendagens benzin- og dieselpris, de billigste stationer nær dig og en ladeplan til elbilen.">
+<meta property="og:url" content="https://tank-klar.pages.dev/">
+<meta property="og:image" content="https://tank-klar.pages.dev/ikoner/del.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tank klar – skal du tanke i dag eller i morgen?">
+<meta property="og:locale" content="da_DK">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="ikoner/ikon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="ikoner/apple-touch-icon.png">
@@ -48,7 +59,7 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; }
-button, input, select { font: inherit; color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid rgba(28,63,46,.35); outline-offset: 2px; border-radius: 10px; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
@@ -401,6 +412,25 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
     <div class="knapper">
       <button class="knap" value="luk">Annullér</button>
       <button class="knap primær" value="gem">Gem tankning</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="feedbackDlg">
+  <form method="dialog">
+    <h2>Hvad synes du om Tank klar?</h2>
+    <p>Din besked går direkte til den, der har lavet appen. Den er anonym, medmindre du selv skriver dit navn.</p>
+    <div class="faner" id="humør" style="margin-bottom:14px">
+      <button type="button" data-humør="😀 Glad">😀 Glad</button>
+      <button type="button" data-humør="😐 OK">😐 OK</button>
+      <button type="button" data-humør="😞 Utilfreds">😞 Utilfreds</button>
+    </div>
+    <div class="felt" style="margin-bottom:8px"><label for="fbTekst">Ros, fejl eller idéer</label>
+      <textarea id="fbTekst" rows="5" maxlength="1500" placeholder="Fx: Jeg savner … / Det virker ikke, når …" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--card);resize:vertical"></textarea></div>
+    <p class="st-sub" id="fbStatus" style="min-height:20px;margin:0 0 12px"></p>
+    <div class="knapper">
+      <button class="knap" value="luk">Luk</button>
+      <button class="knap primær" type="button" id="fbSend">Send</button>
     </div>
   </form>
 </dialog>
@@ -1271,9 +1301,16 @@ function visEl() {
   let html = "";
   if (data.demo) html += `<div class="demo">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
   html += elHelt() + elPrisKort() + elRådKort() + elSparKort() + stationKort() + alarmKort() + dagbogKort()
-    + `<section>${grafKort()}</section>` + ugedagKort() + (data.el ? elKort() : "") + elOmKort()
+    + `<section>${grafKort()}</section>` + ugedagKort() + (data.el ? elKort() : "") + elOmKort() + feedbackKort()
     + `<div class="note"><p>Elpriser fra Energi Data Service (Energinet). Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p></div>`;
   document.getElementById("indhold").innerHTML = html;
+}
+
+function feedbackKort() {
+  return `<section><div class="kort" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+    <div><h2>Hvad synes du?</h2><p class="under" style="margin-bottom:0">Ros, fejl eller idéer – din besked går direkte til den, der har lavet appen.</p></div>
+    <button type="button" class="knap primær" data-act="feedback">💬 Giv feedback</button>
+  </div></section>`;
 }
 
 function metodeKort() {
@@ -1281,11 +1318,11 @@ function metodeKort() {
   const pct = v => v == null ? "–" : `${fortegn(v)}${kr(Math.abs(v))}%`;
   return `<section><div class="kort">
     <h2>Sådan beregnes prognosen</h2>
-    <p class="under">Dagens pris + ændringen i benzin- og diesel-futures omregnet til kr./L med dagens dollarkurs og moms. Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
+    <p class="under">Dagens pris + ændringen i markedsprisen på benzin og diesel omregnet til kr./L med dagens dollarkurs og moms.${m.diesel_marked === "europæisk" ? " Diesel følger gasolie-kursen i London, som danske dieselpriser bygger på." : ""} Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
     <div class="fire">
       <div><div class="e">Brent råolie</div><div class="mono">${m.brent_usd != null ? "$" + kr(m.brent_usd) : "–"}</div><div class="l">${pct(m.brent_pct)}</div></div>
       <div><div class="e">Benzin-future</div><div class="mono">${pct(m.benzin_pct)}</div><div class="l">seneste handelsdag</div></div>
-      <div><div class="e">Diesel-future</div><div class="mono">${pct(m.diesel_pct)}</div><div class="l">seneste handelsdag</div></div>
+      <div><div class="e">${m.diesel_marked === "europæisk" ? "Diesel (Europa)" : "Diesel-future"}</div><div class="mono">${pct(m.diesel_pct)}</div><div class="l">seneste handelsdag</div></div>
       <div><div class="e">USD/DKK</div><div class="mono">${m.usd_dkk != null ? kr(m.usd_dkk) : "–"}</div><div class="l">valutakurs</div></div>
     </div>
   </div></section>`;
@@ -1334,6 +1371,7 @@ function vis() {
     ${medEl ? elKort() : ""}
     ${metodeKort()}
     ${medEl ? elOmKort() : ""}
+    ${feedbackKort()}
     <div class="note">
       <p>Dagens priser er tankstationernes egne pumpepriser fra kædernes officielle prisdata (OK, Q8, F24, Shell, OIL!, Circle K og INGO). Go'on og Uno-X kommer fra <a href="https://benzinsignal.dk/data">BenzinSignal</a>. Lokale rabatter og kundekort er ikke regnet med. Elpriser fra Energi Data Service (Energinet).</p>
       <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p>
@@ -1357,6 +1395,7 @@ document.getElementById("indhold").addEventListener("click", e => {
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
+  if (act && act.dataset.act === "feedback") return åbnFeedback();
   if (act && act.dataset.act === "minbil") { e.preventDefault(); return document.getElementById("minbil").click(); }
   if (act && act.dataset.act === "tankning") return åbnDagbog();
   if (act && act.dataset.act === "elalarm") { st.elAlarm = !st.elAlarm; return vis(); }
@@ -1472,6 +1511,34 @@ dbDlg.addEventListener("close", () => {
   const d = dagbog(); d.push({ id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null });
   gemL("dagbog", JSON.stringify(d)); vis();
 });
+
+/* ---------- feedback ---------- */
+const FEEDBACK_EMNE = "tankklar-feedback-588efe2e1471"; // dine beskeder: abonnér på dette navn i ntfy
+const fbDlg = document.getElementById("feedbackDlg");
+let fbHumør = "";
+fbDlg.querySelectorAll("[data-humør]").forEach(k => k.onclick = () => {
+  fbHumør = k.dataset.humør; fbDlg.querySelectorAll("[data-humør]").forEach(x => x.setAttribute("aria-pressed", x === k));
+});
+function åbnFeedback() {
+  fbHumør = ""; fbDlg.querySelectorAll("[data-humør]").forEach(x => x.setAttribute("aria-pressed", "false"));
+  document.getElementById("fbTekst").value = ""; document.getElementById("fbStatus").textContent = "";
+  document.getElementById("fbSend").disabled = false; fbDlg.showModal();
+}
+document.getElementById("fbSend").onclick = async () => {
+  const tekst = document.getElementById("fbTekst").value.trim(), status = document.getElementById("fbStatus");
+  if (!tekst && !fbHumør) { status.textContent = "Vælg et humør eller skriv en besked."; return; }
+  const sidst = +hentL("fbSidst") || 0;
+  if (Date.now() - sidst < 60000) { status.textContent = "Vent lige et minut, før du sender igen."; return; }
+  const knap = document.getElementById("fbSend"); knap.disabled = true; status.textContent = "Sender …";
+  const enhed = /iPhone|iPad/.test(navigator.userAgent) ? "iPhone" : /Android/.test(navigator.userAgent) ? "Android" : "Computer";
+  const info = [st.valgt.join(" + "), enhed, matchMedia("(display-mode: standalone)").matches || navigator.standalone ? "installeret" : "i browser"].join(" · ");
+  try {
+    const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({
+      topic: FEEDBACK_EMNE, title: `Feedback: ${fbHumør || "Ny besked"}`, message: `${tekst || "(ingen tekst)"}\n\n${info}`, tags: ["speech_balloon"] }) });
+    if (!r.ok) throw 0;
+    gemL("fbSidst", Date.now()); status.textContent = "Tak! Din besked er sendt. 🙏"; setTimeout(() => fbDlg.close(), 1600);
+  } catch { status.textContent = "Beskeden kunne ikke sendes. Prøv igen om lidt."; knap.disabled = false; }
+};
 
 /* ---------- installér ---------- */
 let installEvt = null;

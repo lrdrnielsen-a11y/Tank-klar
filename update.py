@@ -27,6 +27,7 @@ DK = ZoneInfo("Europe/Copenhagen")
 NY = ZoneInfo("America/New_York")
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
 LITER_PR_GALLON = 3.78541
+LITER_PR_TON_DIESEL = 1000 / 0.845  # diesel vejer ca. 0,845 kg pr. liter
 MOMS = 1.25
 TAERSKEL = 0.03  # kr/l: mindre ændringer end dette regnes som "uændret"
 
@@ -142,7 +143,7 @@ def yahoo(symbol):
 
 
 # --- kilde 2: CNBC's offentlige kursdata ---
-CNBC_SYMBOL = {"RB=F": "@RB.1", "HO=F": "@HO.1", "BZ=F": "@LCO.1"}
+CNBC_SYMBOL = {"RB=F": "@RB.1", "HO=F": "@HO.1", "BZ=F": "@LCO.1", "GASOIL": "@LGO.1"}
 
 
 def cnbc(symbol):
@@ -216,6 +217,14 @@ def lukkekurser_fx():
     return yahoo("DKK=X") + ("Yahoo",)
 
 
+def europæisk_diesel():
+    """ICE Low Sulphur Gasoil (London) i USD pr. ton – det marked, danske dieselpriser følger."""
+    p0, p1, dato = cnbc("GASOIL")
+    if not (200 < p1 < 3000 and 200 < p0 < 3000):
+        raise ValueError(f"usandsynlig gasolie-kurs: {p1}")
+    return p0, p1, dato
+
+
 def markedsdata(idag, advarsler):
     ud = {"handlet_i_dag": True}
     try:
@@ -239,9 +248,21 @@ def markedsdata(idag, advarsler):
     kilder = set()
     try:
         for brændstof, symbol in (("benzin", "RB=F"), ("diesel", "HO=F")):
-            p0, p1, dato, kilde = lukkekurser(symbol)
+            enhed = LITER_PR_GALLON
+            if brændstof == "diesel":
+                try:
+                    p0, p1, dato = europæisk_diesel()
+                    kilde, enhed = "ICE gasolie (London)", LITER_PR_TON_DIESEL
+                    ud["diesel_marked"] = "europæisk"
+                    print(f"  Diesel: europæisk gasolie {p1:.1f} USD/ton")
+                except Exception as e:
+                    print(f"  ! europæisk gasolie: {e} – bruger amerikansk diesel i stedet")
+                    p0, p1, dato, kilde = lukkekurser(symbol)
+                    ud["diesel_marked"] = "amerikansk"
+            else:
+                p0, p1, dato, kilde = lukkekurser(symbol)
             kilder.add(kilde)
-            aendring = (p1 * fx1 - p0 * fx0) / LITER_PR_GALLON * MOMS
+            aendring = (p1 * fx1 - p0 * fx0) / enhed * MOMS
             ud[brændstof + "_pct"] = round((p1 - p0) / p0 * 100, 2)
             if dato is not None and dato != idag:  # markedet har ikke handlet i dag (weekend/helligdag)
                 aendring = 0.0
