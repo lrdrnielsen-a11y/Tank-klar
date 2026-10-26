@@ -359,7 +359,7 @@ def send_el_alarmer(el, nu):
 
 def send_alarmer(braendstof, nu, el=None):
     import os
-    if os.environ.get("GITHUB_EVENT_NAME") != "schedule":
+    if os.environ.get("GITHUB_EVENT_NAME") != "schedule" or os.environ.get("KOERSEL") == "dag":
         print("Prisalarmer sendes kun ved den automatiske kørsel om aftenen.")
         return
     sendt = 0
@@ -391,6 +391,22 @@ def anbefaling(aendring):
     return "lige_meget"
 
 
+def opdater_stationer():
+    """Henter pumpeprisen på hver station fra kædernes officielle API'er."""
+    import stationer as S
+    print("Henter stationspriser fra kædernes API'er ...")
+    cache = lad_json(DATA / "geokode.json", {})
+    try:
+        alle, status = S.hent_alle(cache)
+    except Exception as e:
+        print(f"  ! stationspriser: {e}")
+        return []
+    gem_json(DATA / "geokode.json", cache)
+    if alle:
+        gem_json(DATA / "stationer.json", S.til_fil(alle, status))
+    return alle
+
+
 def main():
     nu = datetime.now(DK)
     idag = nu.date()
@@ -403,6 +419,17 @@ def main():
 
     print("Henter selskabernes priser fra BenzinSignal ...")
     selskaber = hent_benzinsignal(advarsler)
+    alle_stationer = opdater_stationer()
+    if alle_stationer:
+        # Kædernes priser regnes ud fra stationernes egne pumpepriser.
+        # BenzinSignal bruges kun til kæder, der ikke har et åbent API (fx Go'on og Uno-X).
+        import stationer as S
+        norm = lambda n: re.sub(r"[^a-z0-9]", "", str(n).lower())
+        fra_stationer = S.kædemedianer(alle_stationer)
+        kendte = {norm(k["navn"]) for k in fra_stationer}
+        selskaber = fra_stationer + [k for k in selskaber if norm(k["navn"]) not in kendte]
+        advarsler[:] = [a for a in advarsler if "BenzinSignal" not in a]
+        print(f"  Kædepriser fra {len(alle_stationer)} stationers egne priser")
     print("Henter markedsdata ...")
     marked = markedsdata(idag, advarsler)
     print("Henter elpriser ...")
@@ -411,8 +438,11 @@ def main():
 
     braendstof = {}
     for b in ("benzin", "diesel"):
+        st_priser = [x[b] for x in alle_stationer if x.get(b) is not None]
         priser = [s[b] for s in selskaber if s[b] is not None]
-        if priser:
+        if len(st_priser) >= 50:
+            pris_idag, kilde = statistics.median(st_priser), "stationerne"
+        elif priser:
             pris_idag, kilde = statistics.median(priser), "selskaberne"
         else:
             tidligere = [h[b] for h in historik if h.get(b) is not None]

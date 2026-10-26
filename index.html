@@ -236,6 +236,9 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .vælg-tre .al-boks { display: flex; margin: 0; padding: 11px 10px; font-size: 15.5px; font-weight: 400; gap: 8px; white-space: nowrap; }
 .vælg-tre .al-boks input { width: 19px; height: 19px; flex: none; padding: 0; }
 
+.fav-linje { margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: var(--green-soft); display: flex; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; font-size: 14.5px; }
+.fav-linje .mono { font-weight: 700; }
+
 /* metode */
 .fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 6px; }
 .fire .e { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
@@ -501,6 +504,7 @@ async function hent(knap) {
       fetch("data/history.json?t=" + t).then(r => r.ok ? r.json() : []).catch(() => [])
     ]);
     data = l; historik = h; vis();
+    if (st.fav && stationsData === undefined) hentStationsdata().then(() => vis());
     if (st.auto && !stationer && stStatus !== "henter") findStationer();
   } catch (e) {
     document.getElementById("indhold").innerHTML = `<div class="fejl">Priserne kunne ikke indlæses. Tjek din internetforbindelse, eller prøv igen om lidt.</div>`;
@@ -508,6 +512,14 @@ async function hent(knap) {
 }
 
 /* ---------- byggeklodser ---------- */
+function favLinje(b) {
+  if (!st.fav || !stationsData) return "";
+  const f = stationsData.felter, r = stationsData.stationer.find(x => x[f.indexOf("id")] === st.fav);
+  if (!r || r[f.indexOf(b)] == null) return "";
+  const p = r[f.indexOf(b)], a = bf(b).aendring || 0;
+  return `<div class="fav-linje"><span>★ Din station · ${esc(r[f.indexOf("kæde")] + " " + r[f.indexOf("adresse")])}</span>
+    <span class="mono">${kr(p)} kr. → i morgen ca. ${kr(p + a)}</span></div>`;
+}
 function prisKort(b) {
   const x = bf(b), r = retning(x.aendring);
   const mærke = { op: "↑ Stiger", ned: "↓ Falder", flad: "— Uændret" }[r];
@@ -520,6 +532,7 @@ function prisKort(b) {
       <div><div class="etiket" style="margin:0">I dag</div><div class="mono">${kr(x.idag)} kr.</div></div>
       <div class="mono ${r === "op" ? "op-tekst" : r === "ned" ? "ned-tekst" : ""}">${fortegn(x.aendring)}${kr(Math.abs(x.aendring || 0))} kr. (${fortegn(x.aendring)}${kr(Math.abs(pct))}%)</div>
     </div>
+  ${favLinje(b)}
   </div>`;
 }
 
@@ -780,6 +793,28 @@ async function hentStationer(la, lo) {
   throw { trin: "kort", tekst: "Kortserverne er overbelastede lige nu. Prøv igen om et par minutter." };
 }
 let stTrin = "";
+let stationsData;
+async function hentStationsdata() {
+  if (stationsData !== undefined) return stationsData;
+  try {
+    const r = await medTidsgrænse("data/stationer.json?t=" + Date.now(), {}, 15000);
+    stationsData = r.ok ? await r.json() : null;
+  } catch { stationsData = null; }
+  if (stationsData && !(stationsData.stationer || []).length) stationsData = null;
+  return stationsData;
+}
+function stationerFraData(sd, la, lo) {
+  const f = sd.felter, i = n => f.indexOf(n);
+  return sd.stationer.map(r => {
+    const lat = r[i("lat")], lon = r[i("lon")], km = afstand(la, lo, lat, lon);
+    if (km > st.radius) return null;
+    return {
+      id: r[i("id")], navn: `${r[i("kæde")]} ${r[i("adresse")]}`.trim(), kæde: r[i("kæde")],
+      adr: `${r[i("postnr")]} ${r[i("by")]}`.trim(), lat, lon, km,
+      priser: { benzin: r[i("benzin")], diesel: r[i("diesel")] }, opdateret: r[i("opdateret")]
+    };
+  }).filter(Boolean);
+}
 async function findStationer() {
   const skrevet = (st.stedTekst || "").trim();
   if (skrevet && (!st.sted || st.sted.navn !== skrevet)) return brugSted();
@@ -789,6 +824,13 @@ async function findStationer() {
   try {
     const { la, lo } = await minPosition();
     stTrin = `Henter ${hvad} …`; vis();
+    const sd = elT ? null : await hentStationsdata();
+    if (sd) {
+      stationer = stationerFraData(sd, la, lo);
+      stStatus = "ok";
+      try { localStorage.setItem("sidsteStationer", JSON.stringify(stationer)); } catch {}
+      return vis();
+    }
     const el = await hentStationer(la, lo);
     stationer = el.map(e => {
       const t = e.tags || {}, p = e.lat != null ? [e.lat, e.lon] : e.center ? [e.center.lat, e.center.lon] : null;
@@ -833,7 +875,7 @@ function stationKort() {
   if (stStatus === "henter") liste = `<p class="st-status">${esc(stTrin || "Henter …")}</p>`;
   else if (stStatus.startsWith("fejl:")) liste = `<p class="st-status" style="color:var(--red)">${esc(stStatus.slice(5))}</p>`;
   if (stationer && stStatus !== "henter") {
-    const rækker = stationer.map(s => ({ ...s, pris: kædePris(s.kæde, b) }));
+    const rækker = stationer.map(s => ({ ...s, pris: s.priser ? s.priser[b] ?? null : kædePris(s.kæde, b) }));
     const med = rækker.filter(s => s.pris != null), uden = rækker.filter(s => s.pris == null);
     med.sort((p, q) => st.stSort === "pris" ? (p.pris - q.pris) || (p.km - q.km) : p.km - q.km);
     uden.sort((p, q) => p.km - q.km);
@@ -845,7 +887,7 @@ function stationKort() {
       <div class="st-række${s.id === st.fav ? " fav" : ""}${s.pris == null && s.id !== st.fav ? " ukendt" : ""}">
         <div>
           <div class="st-navn">${esc(s.navn)}${s.id === st.fav ? '<span class="chip mørk">Din station</span>' : ""}${s.pris != null && s.pris === min ? '<span class="chip grøn">Billigst</span>' : ""}${s.vask ? '<span class="chip">Bilvask</span>' : ""}</div>
-          <div class="st-sub">${s.adr ? esc(s.adr) + " · " : ""}${kr(s.km, 1)} km</div>
+          <div class="st-sub">${s.adr ? esc(s.adr) + " · " : ""}${kr(s.km, 1)} km${s.opdateret ? ` · pris fra ${esc(dato(s.opdateret, { day: "numeric", month: "short" }))}` : ""}</div>
         </div>
         <div class="st-pris">${s.pris != null
           ? `<div class="mono">${kr(s.pris)}</div><div class="lille">i morgen ca. ${kr(s.pris + a)}</div>`
@@ -872,7 +914,7 @@ function stationKort() {
     <label class="tjek"><input type="checkbox" id="autoFind" ${st.auto ? "checked" : ""}> Find automatisk, når jeg åbner appen</label>
     ${knap}
     <div style="margin-top:14px">${liste}</div>
-    <p class="fod">Prisen er kædens pris fra BenzinSignal, og enkelte stationer kan have deres egen lokale pris. Stationer uden kendt kæde vises uden pris. Stationsdata © OpenStreetMap-bidragydere. Din position bruges kun til søgningen og gemmes ikke.</p>
+    <p class="fod">${stationsData ? "Priserne er de aktuelle pumpepriser fra kædernes officielle prisdata (OK, Q8, F24, Shell, OIL!, Circle K og INGO) og opdateres flere gange om dagen. Go'on og Uno-X er ikke med endnu." : "Prisen er kædens pris fra BenzinSignal, og enkelte stationer kan have deres egen lokale pris. Stationer uden kendt kæde vises uden pris. Stationsdata © OpenStreetMap-bidragydere."} Din position bruges kun til søgningen og gemmes ikke.</p>
   </div></section>`;
 }
 
@@ -1249,6 +1291,10 @@ function metodeKort() {
   </div></section>`;
 }
 
+function beregnet() {
+  const d = new Date(data.opdateret), idag = new Date().toDateString() === d.toDateString();
+  return (idag ? "i dag " : d.toLocaleDateString("da-DK", { weekday: "short" }) + " ") + "kl. " + d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
+}
 function vis() {
   if (erEl()) return visEl();
   const medEl = harEl() && data.el;
@@ -1262,7 +1308,7 @@ function vis() {
   if (ei) opsum.push(pl ? `lad elbilen kl. ${tid(pl.start)}–${tid(pl.slut)}` : `billigste strøm kl. ${to(ei.start)}–${to(ei.start + 3)}`);
   const opsumTekst = opsum.join(" · ");
   html += `<div class="helt">
-      <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
+      <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))} · beregnet ${esc(beregnet())}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
       <h2>${medEl ? "Tanke eller lade i morgen?" : "Skal du tanke i morgen?"}</h2>
       <p>${esc(opsumTekst)}.</p>
@@ -1289,7 +1335,7 @@ function vis() {
     ${metodeKort()}
     ${medEl ? elOmKort() : ""}
     <div class="note">
-      <p>Dagens priser er kædernes egne udmeldte priser, hentet fra <a href="https://benzinsignal.dk/data">BenzinSignal</a>. Lokale rabatter og kundekort er ikke regnet med. Elpriser fra Energi Data Service (Energinet).</p>
+      <p>Dagens priser er tankstationernes egne pumpepriser fra kædernes officielle prisdata (OK, Q8, F24, Shell, OIL!, Circle K og INGO). Go'on og Uno-X kommer fra <a href="https://benzinsignal.dk/data">BenzinSignal</a>. Lokale rabatter og kundekort er ikke regnet med. Elpriser fra Energi Data Service (Energinet).</p>
       <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p>
       ${(data.advarsler || []).length ? `<p>Mangler: ${data.advarsler.map(esc).join(". ")}.</p>` : ""}
     </div>`;
