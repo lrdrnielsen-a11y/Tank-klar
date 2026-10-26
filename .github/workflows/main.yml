@@ -2,26 +2,16 @@ name: Opdater priser
 
 on:
   schedule:
-    - cron: "30 18 * * *"   # hver aften kl. 18:30 UTC (19:30 vintertid / 20:30 sommertid)
-  workflow_dispatch:         # giver knappen "Run workflow"
-  push:
-    branches: [main]         # udgiver siden igen, når du retter i filerne
+    - cron: "30 17 * * *"      # hver aften: prognose, elpriser, alarmer og stationspriser
+    - cron: "0 6,9,12,15 * * *" # i løbet af dagen: kun friske stationspriser
+  workflow_dispatch:            # giver knappen "Run workflow"
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
-  opdater-og-udgiv:
+  opdater:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,21 +20,15 @@ jobs:
           python-version: "3.12"
 
       - name: Hent priser og beregn prognose
-        if: github.event_name != 'push'
+        env:
+          KOERSEL: ${{ github.event.schedule == '0 6,9,12,15 * * *' && 'dag' || 'aften' }}
         run: python scripts/update.py
 
-      - name: Gem de nye data
-        if: github.event_name != 'push'
+      - name: Gem de nye data (Cloudflare henter dem selv)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add data/
-          git diff --staged --quiet || git commit -m "Opdater priser $(date -u +%F)"
+          git diff --staged --quiet || git commit -m "Opdater priser $(date -u +%F\ %H:%M)"
+          git pull --rebase --quiet || true
           git push
-
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: "."
-      - id: deploy
-        uses: actions/deploy-pages@v4
