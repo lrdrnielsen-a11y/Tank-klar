@@ -250,6 +250,8 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .fav-linje { margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: var(--green-soft); display: flex; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; font-size: 14.5px; }
 .fav-linje .mono { font-weight: 700; }
 
+.usikker { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--soft); font-size: 13px; color: var(--muted); }
+
 /* metode */
 .fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 6px; }
 .fire .e { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
@@ -449,7 +451,7 @@ const FARVE = { benzin: "var(--benzin)", diesel: "var(--diesel)" };
 const RÅD = {
   vent: (n) => ["Vent til i morgen", `${n} ventes at falde – tank i morgen, hvis du kan`],
   tank_i_dag: (n) => ["Tank i dag", `${n} ventes at stige i morgen`],
-  lige_meget: (n) => ["Ligegyldigt", `${n} ventes stort set uændret – tank når det passer dig`],
+  lige_meget: (n) => ["Ingen klar retning", `Prognosen for ${n.toLowerCase()} viser under 10 øre i forskel. Det er mindre end usikkerheden, så tank, når det passer dig`],
   ukendt: () => ["Ingen anbefaling", "Der mangler priser til at lave en prognose"]
 };
 let data = null, historik = [];
@@ -511,16 +513,19 @@ const kr = (v, d = 2) => v == null || isNaN(v) ? "–" : Number(v).toLocaleStrin
 const fortegn = v => Math.abs(v) < 0.005 ? "±" : v > 0 ? "+" : "−";
 const dato = (s, o) => new Date(s + "T12:00:00").toLocaleDateString("da-DK", o);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const retning = a => a == null || Math.abs(a) < 0.005 ? "flad" : a > 0 ? "op" : "ned";
+const RÅD_GRÆNSE = 0.10; // kr./L – mindre udsving end dette giver ikke et råd
+const retning = a => a == null || Math.abs(a) < RÅD_GRÆNSE ? "flad" : a > 0 ? "op" : "ned";
 
 function lokalOverride() {
   try { const o = JSON.parse(hentL("override")); return o && o.dato === data.imorgen ? o : null; } catch { return null; }
 }
 function bf(b) {
   const x = { ...data.braendstof[b] }, o = lokalOverride();
+  if (x.idag != null && x.aendring != null) // rådet regnes altid ud fra samme grænse som resten af appen
+    x.anbefaling = x.aendring <= -RÅD_GRÆNSE ? "vent" : x.aendring >= RÅD_GRÆNSE ? "tank_i_dag" : "lige_meget";
   if (o && o[b] != null && x.idag != null) {
     x.imorgen = o[b]; x.aendring = Math.round((o[b] - x.idag) * 100) / 100; x.metode = "manuel";
-    x.anbefaling = x.aendring <= -0.03 ? "vent" : x.aendring >= 0.03 ? "tank_i_dag" : "lige_meget";
+    x.anbefaling = x.aendring <= -RÅD_GRÆNSE ? "vent" : x.aendring >= RÅD_GRÆNSE ? "tank_i_dag" : "lige_meget";
   }
   return x;
 }
@@ -550,13 +555,19 @@ function favLinje(b) {
   return `<div class="fav-linje"><span>★ Din station · ${esc(r[f.indexOf("kæde")] + " " + r[f.indexOf("adresse")])}</span>
     <span class="mono">${kr(p)} kr. → i morgen ca. ${kr(p + a)}</span></div>`;
 }
+function usikkerhed(b) {
+  const m = præcision(b);
+  if (m.length < 3) return null;
+  const fejl = m.map(v => v.fejl).sort((p, q) => p - q);
+  return Math.round(fejl[Math.floor(fejl.length / 2)] * 100); // typisk afvigelse i øre (median)
+}
 function prisKort(b) {
   const x = bf(b), r = retning(x.aendring);
-  const mærke = { op: "↑ Stiger", ned: "↓ Falder", flad: "— Uændret" }[r];
+  const mærke = { op: "↑ Stiger", ned: "↓ Falder", flad: "— Ingen klar retning" }[r];
   const pct = x.idag ? x.aendring / x.idag * 100 : 0;
   return `<div class="kort">
     <div class="pris-top"><h2>${NAVN[b]}</h2><span class="mærke ${r}">${mærke}</span></div>
-    <div class="etiket">I morgen${x.metode === "manuel" ? " (din egen pris)" : ""}</div>
+    <div class="etiket">I morgen${x.metode === "manuel" ? " (din egen pris)" : (u => u != null ? ` <span class="usikker">typisk ± ${u} øre</span>` : ` <span class="usikker">usikkerheden måles endnu</span>`)(usikkerhed(b))}</div>
     <div class="stor"><span class="tal">${kr(x.imorgen)}</span><span class="enhed">kr./L</span></div>
     <div class="idag">
       <div><div class="etiket" style="margin:0">I dag</div><div class="mono">${kr(x.idag)} kr.</div></div>
@@ -581,7 +592,7 @@ function faner(navn, valgt) {
 function sparKort() {
   const b = mine().length === 1 ? mine()[0] : st.spar, x = bf(b), L = st.liter, a = x.aendring || 0;
   let boks1;
-  if (Math.abs(a) < 0.005) boks1 = `<div class="boks grå"><div class="bt">Prisen ventes uændret</div><div class="stor-sum">0,00 kr.</div><div class="lille">0,00 kr./L × ${L} L</div></div>`;
+  if (Math.abs(a) < RÅD_GRÆNSE) boks1 = `<div class="boks grå"><div class="bt">Ingen klar retning</div><div class="stor-sum">ca. ${kr(Math.abs(a) * L)} kr.</div><div class="lille">Forventet forskel på en tank – mindre end usikkerheden</div></div>`;
   else boks1 = `<div class="boks grøn"><div class="bt">${a < 0 ? "Vent til i morgen og spar" : "Tank i dag og spar"}</div><div class="stor-sum">${kr(Math.abs(a) * L)} kr.</div><div class="lille">${kr(Math.abs(a))} kr./L × ${L} L</div></div>`;
   const s = (data.selskaber || []).filter(v => v[b] != null).sort((p, q) => p[b] - q[b]);
   let boks2 = "";
@@ -1339,7 +1350,7 @@ function vis() {
   if (data.demo) html += `<div class="demo">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
   const opsum = mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
     if (x.idag == null) return `Ingen pris på ${NAVN[b].toLowerCase()} endnu`;
-    return r === "flad" ? `${NAVN[b]} ventes uændret` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; });
+    return r === "flad" ? `Ingen klar retning for ${NAVN[b].toLowerCase()}` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; });
   const ei = medEl ? elInfo() : null;
   const pl = ei ? ladeplan() : null;
   if (ei) opsum.push(pl ? `lad elbilen kl. ${tid(pl.start)}–${tid(pl.slut)}` : `billigste strøm kl. ${to(ei.start)}–${to(ei.start + 3)}`);
@@ -1367,7 +1378,7 @@ function vis() {
     <section><div class="kort"><h2>Hvor præcis er prognosen?</h2>
       <p class="under">Gårsdagens prognose sammenlignet med den faktiske landspris i dag – og gennemsnittet de seneste 14 dage.</p>
       <div class="${gitter()}">${mine().map(præKort).join("")}</div>
-      <p class="fod">Grøn = under 10 øre fra, gul = under 25 øre, rød = mere.</p></div></section>
+      <p class="fod">Grøn = under 10 øre fra, gul = under 25 øre, rød = mere. Den typiske afvigelse vises også ved prisen i morgen, så du kan se, hvor meget du kan regne med prognosen.</p></div></section>
     ${medEl ? elKort() : ""}
     ${metodeKort()}
     ${medEl ? elOmKort() : ""}
