@@ -262,6 +262,7 @@ def markedsdata(idag, advarsler):
             else:
                 p0, p1, dato, kilde = lukkekurser(symbol)
             kilder.add(kilde)
+            ud[brændstof + "_kost"] = round(p1 * fx1 / enhed, 4)  # indkøbspris i kr./L uden moms og afgifter
             aendring = (p1 * fx1 - p0 * fx0) / enhed * MOMS
             ud[brændstof + "_pct"] = round((p1 - p0) / p0 * 100, 2)
             if dato is not None and dato != idag:  # markedet har ikke handlet i dag (weekend/helligdag)
@@ -402,6 +403,25 @@ def send_alarmer(braendstof, nu, el=None):
 
 # ---------- 5. saml det hele ----------
 
+MARGIN_DAGE_MIN = 7      # så mange dages data skal der til, før marginmodellen bruges
+MARGIN_TILPASNING = 0.5  # hvor stor en del af afvigelsen kæderne typisk retter op på én dag
+
+
+def margin_prognose(b, pris_idag, kost_idag, historik, idag):
+    """Sammenligner dagens 'margin' (pumpepris uden moms minus indkøbspris) med den normale.
+    Er marginen lavere end normalt, er en stigning på vej – og omvendt."""
+    if pris_idag is None or kost_idag is None:
+        return None
+    marginer = [h[b] / MOMS - h[f"kost_{b}"] for h in historik[-21:]
+                if h.get(b) is not None and h.get(f"kost_{b}") is not None and h["dato"] != idag.isoformat()]
+    if len(marginer) < MARGIN_DAGE_MIN:
+        return None
+    normal = statistics.median(marginer)
+    nu = pris_idag / MOMS - kost_idag
+    aendring = (normal - nu) * MOMS * MARGIN_TILPASNING
+    return max(-0.8, min(0.8, aendring)), round(normal, 3), round(nu, 3)
+
+
 def anbefaling(aendring):
     if aendring is None:
         return "ukendt"
@@ -471,6 +491,11 @@ def main():
         ok = bool(marked) and not marked.get("fejl") and marked.get(b) is not None
         aendring = marked[b] if ok else 0.0
         metode = "marked" if ok else "uændret"
+        mp = margin_prognose(b, pris_idag, (marked or {}).get(f"{b}_kost"), historik, idag) if ok else None
+        if mp:
+            aendring, normal, nu_margin = mp
+            metode = "margin"
+            print(f"  {b}: marginmodel – normal margin {normal:.2f} kr./L, i dag {nu_margin:.2f} kr./L")
         if override.get("dato") == imorgen.isoformat() and override.get(b) is not None:
             if pris_idag is not None:
                 aendring = float(override[b]) - pris_idag
@@ -511,6 +536,9 @@ def main():
                          "el_DK2": (el_idag or {}).get("DK2", {}).get("gennemsnit"),
                          "benzin": braendstof["benzin"]["idag"],
                          "diesel": braendstof["diesel"]["idag"],
+                         # indkøbsprisen (marked) – bruges af marginmodellen
+                         "kost_benzin": (marked or {}).get("benzin_kost"),
+                         "kost_diesel": (marked or {}).get("diesel_kost"),
                          # prognosen for næste dag – bruges til at måle, hvor præcis appen er
                          "prognose_benzin": braendstof["benzin"]["imorgen"],
                          "prognose_diesel": braendstof["diesel"]["imorgen"]})
