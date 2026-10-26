@@ -29,7 +29,7 @@ UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 LITER_PR_GALLON = 3.78541
 LITER_PR_TON_DIESEL = 1000 / 0.845  # diesel vejer ca. 0,845 kg pr. liter
 MOMS = 1.25
-TAERSKEL = 0.03  # kr/l: mindre ændringer end dette regnes som "uændret"
+TAERSKEL = 0.10  # kr/l: mindre ændringer end dette giver ikke et råd (prognosen er ikke så præcis)
 
 # Prisalarm via den gratis tjeneste ntfy.sh. Skal passe med ALARM_PREFIX i index.html.
 NTFY = "https://ntfy.sh/"
@@ -334,7 +334,7 @@ def alarm_tekst(b, x):
     if x["anbefaling"] == "vent":
         return (f"Vent med at tanke – {n.lower()} falder {ø} øre",
                 f"{n} ventes at koste {kr_tekst(x['imorgen'])} kr. i morgen (i dag {kr_tekst(x['idag'])} kr.).")
-    return (f"{n} ventes uændret i morgen",
+    return (f"Ingen klar retning for {n.lower()} i morgen",
             f"Prisen ligger på ca. {kr_tekst(x['idag'])} kr. Tank, når det passer dig.")
 
 
