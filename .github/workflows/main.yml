@@ -2,11 +2,9 @@ name: Opdater priser
 
 on:
   schedule:
-    # Skæve minuttal: GitHub forsinker ofte kørsler, der ligger på hele klokkeslæt.
-    - cron: "23 17 * * *"   # aften: prognose, elpriser, alarmer og stationspriser (18:23 vinter / 19:23 sommer)
-    - cron: "7 6 * * *"     # morgen
-    - cron: "17 9,10 * * *" # lige efter kædernes prisændring kl. 11 (sommer- og vintertid)
-    - cron: "37 12,14 * * *" # eftermiddag
+    # Tiderne styres nu af cron-job.org (præcist til minuttet).
+    # Dette er kun en reserve, hvis cron-job.org en dag svigter – den sender ikke prisalarmer.
+    - cron: "41 20 * * *"
   workflow_dispatch:        # knappen "Run workflow" – og det eksterne vækkeur (cron-job.org)
     inputs:
       koersel:
@@ -31,7 +29,7 @@ jobs:
 
       - name: Hent priser og beregn prognose
         env:
-          KOERSEL: ${{ github.event_name == 'workflow_dispatch' && inputs.koersel || (github.event_name == 'schedule' && github.event.schedule != '23 17 * * *' && 'dag' || 'aften') }}
+          KOERSEL: ${{ github.event_name == 'workflow_dispatch' && inputs.koersel || 'dag' }}
           ALARMER: ${{ github.event_name == 'workflow_dispatch' && inputs.alarmer || 'nej' }}
         run: python scripts/update.py
 
