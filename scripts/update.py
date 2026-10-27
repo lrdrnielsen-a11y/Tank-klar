@@ -381,7 +381,8 @@ def send_el_alarmer(el, nu):
 
 def send_alarmer(braendstof, nu, el=None):
     import os
-    if os.environ.get("GITHUB_EVENT_NAME") != "schedule" or os.environ.get("KOERSEL") == "dag":
+    planlagt = os.environ.get("GITHUB_EVENT_NAME") == "schedule" or os.environ.get("ALARMER") == "ja"
+    if not planlagt or os.environ.get("KOERSEL") == "dag":
         print("Prisalarmer sendes kun ved den automatiske kørsel om aftenen.")
         return
     sendt = 0
