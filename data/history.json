@@ -23,11 +23,11 @@
     "dato": "2026-10-27",
     "el_DK1": 0.69,
     "el_DK2": 0.691,
-    "benzin": 17.29,
+    "benzin": 17.19,
     "diesel": 19.39,
-    "kost_benzin": 5.7096,
-    "kost_diesel": 8.6341,
-    "prognose_benzin": 17.33,
-    "prognose_diesel": 19.35
+    "kost_benzin": 5.6188,
+    "kost_diesel": 8.5405,
+    "prognose_benzin": 17.12,
+    "prognose_diesel": 19.23
   }
 ]
