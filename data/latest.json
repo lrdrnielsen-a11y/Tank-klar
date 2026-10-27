@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-10-27T07:59+01:00",
+  "opdateret": "2026-10-27T08:01+01:00",
   "idag": "2026-10-27",
   "imorgen": "2026-10-28",
   "braendstof": {
@@ -90,8 +90,8 @@
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.681,
-    "brent_usd": 115.78,
-    "brent_pct": -0.03,
+    "brent_usd": 115.74,
+    "brent_pct": -0.06,
     "benzin_kost": 5.6831,
     "benzin_pct": 0.05,
     "benzin": 0.006,
