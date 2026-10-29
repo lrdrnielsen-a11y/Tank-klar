@@ -47,9 +47,9 @@
     "el_DK2": 2.287,
     "benzin": 17.09,
     "diesel": 19.29,
-    "kost_benzin": 5.5618,
-    "kost_diesel": 8.3355,
-    "prognose_benzin": 17.02,
-    "prognose_diesel": 19.05
+    "kost_benzin": 5.5673,
+    "kost_diesel": null,
+    "prognose_benzin": 17.09,
+    "prognose_diesel": 19.29
   }
 ]
