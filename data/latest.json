@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-10-31T07:15+01:00",
+  "opdateret": "2026-10-31T09:15+01:00",
   "idag": "2026-10-31",
   "imorgen": "2026-11-01",
   "braendstof": {
@@ -44,6 +44,13 @@
       "diesel_imorgen": 19.3
     },
     {
+      "navn": "Shell",
+      "benzin": 16.89,
+      "diesel": 19.09,
+      "benzin_imorgen": 16.92,
+      "diesel_imorgen": 19.2
+    },
+    {
       "navn": "OIL!",
       "benzin": 16.89,
       "diesel": 19.09,
@@ -70,13 +77,6 @@
       "diesel": 19.1,
       "benzin_imorgen": 16.93,
       "diesel_imorgen": 19.21
-    },
-    {
-      "navn": "Shell",
-      "benzin": 16.94,
-      "diesel": 19.12,
-      "benzin_imorgen": 16.97,
-      "diesel_imorgen": 19.23
     },
     {
       "navn": "Circle K",
