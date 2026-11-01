@@ -84,5 +84,16 @@
     "kost_diesel": 8.2635,
     "prognose_benzin": 16.89,
     "prognose_diesel": 19.09
+  },
+  {
+    "dato": "2026-11-02",
+    "el_DK1": 1.904,
+    "el_DK2": 2.118,
+    "benzin": 16.89,
+    "diesel": 19.09,
+    "kost_benzin": 5.4673,
+    "kost_diesel": 8.1455,
+    "prognose_benzin": 16.89,
+    "prognose_diesel": 19.02
   }
 ]
