@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-01T13:15+01:00",
+  "opdateret": "2026-11-01T15:15+01:00",
   "idag": "2026-11-01",
   "imorgen": "2026-11-02",
   "braendstof": {
@@ -66,10 +66,10 @@
     },
     {
       "navn": "Go'on",
-      "benzin": 16.89,
-      "diesel": 19.09,
-      "benzin_imorgen": 16.89,
-      "diesel_imorgen": 19.09
+      "benzin": 16.9,
+      "diesel": 19.1,
+      "benzin_imorgen": 16.9,
+      "diesel_imorgen": 19.1
     },
     {
       "navn": "Uno-X",
