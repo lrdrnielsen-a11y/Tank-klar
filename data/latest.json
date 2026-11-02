@@ -1,21 +1,21 @@
 {
   "demo": false,
-  "opdateret": "2026-11-02T07:15+01:00",
+  "opdateret": "2026-11-02T09:15+01:00",
   "idag": "2026-11-02",
   "imorgen": "2026-11-03",
   "braendstof": {
     "benzin": {
       "idag": 16.89,
-      "imorgen": 16.84,
-      "aendring": -0.05,
+      "imorgen": 16.81,
+      "aendring": -0.08,
       "anbefaling": "lige_meget",
       "kilde_idag": "stationerne",
       "metode": "margin"
     },
     "diesel": {
       "idag": 19.09,
-      "imorgen": 18.95,
-      "aendring": -0.14,
+      "imorgen": 18.94,
+      "aendring": -0.15,
       "anbefaling": "vent",
       "kilde_idag": "stationerne",
       "metode": "margin"
@@ -23,82 +23,82 @@
   },
   "selskaber": [
     {
+      "navn": "OK",
+      "benzin": 16.89,
+      "diesel": 19.09,
+      "benzin_imorgen": 16.81,
+      "diesel_imorgen": 18.94
+    },
+    {
       "navn": "F24",
       "benzin": 16.89,
       "diesel": 19.09,
-      "benzin_imorgen": 16.84,
-      "diesel_imorgen": 18.95
+      "benzin_imorgen": 16.81,
+      "diesel_imorgen": 18.94
     },
     {
       "navn": "Q8",
       "benzin": 16.99,
       "diesel": 19.19,
-      "benzin_imorgen": 16.94,
-      "diesel_imorgen": 19.05
+      "benzin_imorgen": 16.91,
+      "diesel_imorgen": 19.04
     },
     {
       "navn": "Shell",
       "benzin": 16.89,
       "diesel": 19.09,
-      "benzin_imorgen": 16.84,
-      "diesel_imorgen": 18.95
+      "benzin_imorgen": 16.81,
+      "diesel_imorgen": 18.94
     },
     {
       "navn": "OIL!",
       "benzin": 16.89,
       "diesel": 19.09,
-      "benzin_imorgen": 16.84,
-      "diesel_imorgen": 18.95
+      "benzin_imorgen": 16.81,
+      "diesel_imorgen": 18.94
     },
     {
       "navn": "INGO",
       "benzin": 16.89,
       "diesel": 19.09,
-      "benzin_imorgen": 16.84,
-      "diesel_imorgen": 18.95
-    },
-    {
-      "navn": "OK",
-      "benzin": 16.89,
-      "diesel": 19.09,
-      "benzin_imorgen": 16.84,
-      "diesel_imorgen": 18.95
+      "benzin_imorgen": 16.81,
+      "diesel_imorgen": 18.94
     },
     {
       "navn": "Go'on",
       "benzin": 16.9,
       "diesel": 19.1,
-      "benzin_imorgen": 16.85,
-      "diesel_imorgen": 18.96
+      "benzin_imorgen": 16.82,
+      "diesel_imorgen": 18.95
     },
     {
       "navn": "Uno-X",
       "benzin": 16.9,
       "diesel": 19.1,
-      "benzin_imorgen": 16.85,
-      "diesel_imorgen": 18.96
+      "benzin_imorgen": 16.82,
+      "diesel_imorgen": 18.95
     },
     {
       "navn": "Circle K",
       "benzin": 16.99,
       "diesel": 19.19,
-      "benzin_imorgen": 16.94,
-      "diesel_imorgen": 19.05
+      "benzin_imorgen": 16.91,
+      "diesel_imorgen": 19.04
     }
   ],
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.6895,
-    "brent_usd": 109.98,
-    "brent_pct": -3.04,
-    "benzin_kost": 5.3874,
-    "benzin_pct": -3.42,
-    "benzin": -0.265,
+    "brent_usd": 110.06,
+    "brent_pct": -2.97,
+    "benzin_kost": 5.3457,
+    "benzin_pct": -4.17,
+    "benzin": -0.317,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 8.0428,
-    "diesel_pct": -2.67,
-    "diesel": -0.315,
+    "diesel_kost": 8.0304,
+    "diesel_pct": -2.82,
+    "diesel": -0.33,
     "kilde": "CNBC"
   },
   "el": null,
