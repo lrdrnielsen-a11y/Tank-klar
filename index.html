@@ -286,6 +286,9 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 
 .usikker { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--soft); font-size: 13px; color: var(--muted); }
 
+.sikker { display: inline-flex; gap: 8px; align-items: baseline; margin-top: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 13.5px; color: #fff; }
+.sikker b { letter-spacing: 2px; font-size: 12px; }
+
 /* faneblade i bunden */
 .bundmenu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -1580,12 +1583,23 @@ function vis() {
       : r1 === "flad" ? `Forventet ændring ${ø1 ? "ca. " + ø1 + " øre" : "under 1 øre"} – mindre end usikkerheden, så tank, når det passer dig`
       : `${NAVN[mine()[0]]} ventes at ${r1 === "op" ? "stige" : "falde"} ca. ${ø1} øre i morgen`;
   }
-  const hoved = mine()[0], hx = bf(hoved), dom = { tank_i_dag: ["tank", "Tank nu"], vent: ["vent", "Vent"], lige_meget: ["flad", "Ingen klar retning"], ukendt: ["flad", "Ingen pris endnu"] }[hx.anbefaling] || ["flad", "Ingen klar retning"];
+  const hoved = mine()[0], hx = bf(hoved), dom = { tank_i_dag: ["tank", "Tank i dag"], vent: ["vent", "Vent til i morgen"], lige_meget: ["flad", "Tank, når det passer dig"], ukendt: ["flad", "Ingen pris endnu"] }[hx.anbefaling] || ["flad", "Tank, når det passer dig"];
+  const ø0 = Math.round(Math.abs(hx.aendring || 0) * 100), krTank = Math.abs(hx.aendring || 0) * st.liter;
+  const forklaring = hx.idag == null ? "Der er ingen pris endnu."
+    : hx.anbefaling === "vent" ? `Prisen ventes at falde ca. ${ø0} øre. Kan tanken holde til i morgen, sparer du ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
+    : hx.anbefaling === "tank_i_dag" ? `Prisen ventes at stige ca. ${ø0} øre i morgen. Tank i dag, og spar ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
+    : `Prognosen viser under 10 øre i forskel. Det er for usikkert til et råd, så tank, når det passer dig.`;
+  const u = usikkerhed(hoved), sikker = hx.anbefaling === "lige_meget" || hx.idag == null ? null
+    : u == null ? ["", "Sikkerheden måles endnu – prognosen har kørt for kort tid"]
+    : ø0 >= 2 * u ? ["●●●", `Ret sikker – prognosen rammer typisk ±${u} øre ved siden af`]
+    : ø0 >= u ? ["●●○", `Nogenlunde sikker – prognosen rammer typisk ±${u} øre ved siden af`]
+    : ["●○○", `Usikker – ændringen er mindre end prognosens typiske afvigelse på ±${u} øre`];
   html += `<div data-gruppe="nu"><div class="helt ${dom[0]}">
       <div class="helt-top"><div class="helt-etiket">${esc(NAVN[hoved])} · ${forældet() ? "prognose for i dag" : "i morgen, " + esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))} · ${esc(beregnet())}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
-      <h2 class="${dom[1].length > 8 ? "lang" : ""}">${dom[1]}</h2>
-      <p>${esc(opsumTekst)}.</p>
+      <h2 class="${dom[1].length > 10 ? "lang" : ""}">${dom[1]}</h2>
+      <p>${esc(mine().length === 1 && !ei ? forklaring : forklaring + " " + opsumTekst + ".")}</p>
+      ${sikker ? `<div class="sikker"><b>${sikker[0]}</b> ${esc(sikker[1])}</div>` : ""}
       ${hx.idag != null ? `<div class="helt-tal"><span class="fra">${kr(hx.idag)}</span><span class="pil">→</span><span class="til">${kr(hx.imorgen)}</span><span class="fra">kr./L</span></div>` : ""}
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
