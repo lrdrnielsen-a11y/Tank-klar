@@ -24,6 +24,8 @@ OK_URL = "https://mobility-prices.ok.dk/api/v1/fuel-prices"
 OIL_URL = "https://apim-fuel-prices-prod.azure-api.net/Oil-FuelPrices/prices"
 CIRCLEK_URL = "https://api.circlek.com/eu/prices/v1/fuel/countries/DK"
 DAWA_URL = "https://api.dataforsyningen.dk/adresser"
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+UA_LISTE = (UA, "TankKlar/1.0 (+https://tank-klar.pages.dev)", "python-urllib/3")
 
 # Produktkoder -> "benzin" (95) / "diesel" (almindelig)
 Q8_PRODUKT = {"2": "benzin", "6": "diesel"}
@@ -36,15 +38,39 @@ CIRCLEK_PRODUKT = {"1030921": "benzin", "592327": "benzin",
 POSTNR = re.compile(r"\b(\d{4})\b")
 
 
-def _hent_json(url, headere=None, timeout=40):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json", **(headere or {})})
+def _hent_json(url, headere=None, timeout=40, ua=UA):
+    req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept": "application/json", **(headere or {})})
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8", errors="replace"))
+        tekst = r.read().decode("utf-8", errors="replace")
+    try:
+        return json.loads(tekst)
+    except ValueError:
+        raise ValueError(f"svarede ikke med data (HTTP {r.status}): {tekst[:80]!r}")
+
+
+def _hent_json_robust(url, headere=None, timeout=40):
+    """Prøver flere gange og med forskellige måder at præsentere sig på."""
+    fejl = None
+    for forsøg, ua in enumerate(UA_LISTE):
+        try:
+            return _hent_json(url, headere, timeout, ua)
+        except Exception as e:
+            fejl = e
+            time.sleep(2 + forsøg * 3)
+    raise fejl
 
 
 def _tal(v):
     try:
         return round(float(str(v).replace(",", ".")), 2)
+    except (TypeError, ValueError):
+        return None
+
+
+def _koord(v):
+    """Koordinater skal have fuld præcision (2 decimaler er kun ca. 1 km)."""
+    try:
+        return round(float(str(v).replace(",", ".")), 6)
     except (TypeError, ValueError):
         return None
 
@@ -74,7 +100,7 @@ def hent_ok():
         k = r.get("coordinates") or {}
         adr = " ".join(p for p in (str(r.get("street", "")).strip(), str(r.get("house_number") or "").strip()) if p)
         st = _station(f"ok-{r.get('id') or adr}", "OK", adr, str(r.get("postal_code", "")).strip(),
-                      str(r.get("city", "")), _tal(k.get("latitude")), _tal(k.get("longitude")))
+                      str(r.get("city", "")), _koord(k.get("latitude")), _koord(k.get("longitude")))
         for p in r.get("prices", []) or []:
             n = OK_PRODUKT.get(str(p.get("product_name", "")).strip())
             if n:
@@ -109,7 +135,7 @@ def hent_shell():
         k = r.get("coordinates") or {}
         adr = " ".join(p for p in (str(r.get("street", "")).strip(), str(r.get("houseNumber") or "").strip()) if p)
         st = _station(f"shell-{r.get('stationId') or adr}", "Shell", adr, str(r.get("postalCode", "")).strip(),
-                      str(r.get("city", "")), _tal(k.get("latitude")), _tal(k.get("longitude")))
+                      str(r.get("city", "")), _koord(k.get("latitude")), _koord(k.get("longitude")))
         for p in r.get("prices", []) or []:
             n = SHELL_PRODUKT.get(str(p.get("productName", "")).strip())
             if n:
@@ -151,7 +177,7 @@ def hent_oil():
 
 def hent_circlek():
     ud = []
-    data = _hent_json(CIRCLEK_URL, {"X-App-Name": "PRICES"}, timeout=60)
+    data = _hent_json_robust(CIRCLEK_URL, {"X-App-Name": "PRICES", "Accept-Language": "da-DK,da;q=0.9"}, timeout=60)
     for r in (data or {}).get("sites", []) or []:
         a = r.get("address") or {}
         navn = str(r.get("name", "")).strip()
@@ -175,34 +201,66 @@ def _dawa(tekst, fuzzy=False):
         d = _hent_json(url, timeout=20)
     except Exception:
         return None
-    return d[0] if isinstance(d, list) and d and d[0].get("x") is not None else None
+    if isinstance(d, list) and d and d[0].get("x") is not None:
+        return float(d[0]["y"]), float(d[0]["x"]), str(d[0].get("postnr"))
+    return None
 
 
-def geokod(stationer, cache, maks=700):
-    nye = 0
+def _nominatim(**q):
+    """OpenStreetMaps adressesøgning. Højst ét opslag i sekundet, jf. deres regler."""
+    q.update({"format": "json", "limit": "1", "countrycodes": "dk", "addressdetails": "1"})
+    time.sleep(1.1)
+    try:
+        d = _hent_json(NOMINATIM_URL + "?" + urllib.parse.urlencode(q), timeout=20,
+                       ua="TankKlar/1.0 (+https://tank-klar.pages.dev)")
+    except Exception:
+        return None
+    if isinstance(d, list) and d:
+        return float(d[0]["lat"]), float(d[0]["lon"]), str((d[0].get("address") or {}).get("postcode", ""))
+    return None
+
+
+def _find_placering(st):
+    tekst = f"{st['adresse']}, {st['postnr']} {st['by']}"
+    for fn in (lambda: _dawa(tekst), lambda: _dawa(tekst, True),
+               lambda: _nominatim(street=st["adresse"], postalcode=st["postnr"], city=st["by"]),
+               lambda: _nominatim(q=tekst)):
+        h = fn()
+        if h and (not h[2] or h[2] == st["postnr"]):
+            return [round(h[0], 6), round(h[1], 6)]
+    return None
+
+
+def geokod(stationer, cache, maks=400):
+    """Placerer stationer uden koordinater. Fundne placeringer huskes for altid,
+    mislykkede prøves igen efter en uge."""
+    idag = datetime.now(timezone.utc).date()
+    nye = fundet = 0
     for st in stationer:
         if st["lat"] is not None or not st["adresse"] or not st["postnr"]:
             continue
         nøgle = f"{st['adresse']} {st['postnr']}".lower()
-        if nøgle in cache:
-            if cache[nøgle]:
-                st["lat"], st["lon"] = cache[nøgle]
+        v = cache.get(nøgle)
+        if isinstance(v, list) and len(v) == 2 and v[0] is not None:
+            st["lat"], st["lon"] = v
             continue
+        if isinstance(v, dict) and v.get("fejl"):
+            try:
+                if (idag - datetime.fromisoformat(v["fejl"]).date()).days < 7:
+                    continue
+            except ValueError:
+                pass
         if nye >= maks:
             continue
         nye += 1
-        hit = None
-        for tekst, fuzzy in ((f"{st['adresse']}, {st['postnr']} {st['by']}", False),
-                             (f"{st['adresse']}, {st['postnr']} {st['by']}", True)):
-            h = _dawa(tekst, fuzzy)
-            if h and str(h.get("postnr")) == st["postnr"]:
-                hit = h
-                break
-        cache[nøgle] = [round(hit["y"], 6), round(hit["x"], 6)] if hit else None
-        if hit:
-            st["lat"], st["lon"] = cache[nøgle]
-        time.sleep(0.05)
-    return nye
+        p = _find_placering(st)
+        if p:
+            cache[nøgle] = p
+            st["lat"], st["lon"] = p
+            fundet += 1
+        else:
+            cache[nøgle] = {"fejl": idag.isoformat()}
+    return nye, fundet
 
 
 # ---------- samlet ----------
@@ -221,9 +279,9 @@ def hent_alle(cache):
         except Exception as e:
             status[navn] = 0
             print(f"  ! {navn}: {e}")
-    nye = geokod(alle, cache)
+    nye, fundet = geokod(alle, cache)
     uden = sum(1 for s in alle if s["lat"] is None)
-    print(f"  Placeret {nye} nye adresser. Uden placering: {uden}")
+    print(f"  Slog {nye} adresser op, fandt {fundet}. Stationer uden placering: {uden}")
     return alle, status
 
 
