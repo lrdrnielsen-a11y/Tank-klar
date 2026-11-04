@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tank klar – benzin- og dieselpris i morgen</title>
 <meta name="description" content="Se morgendagens forventede benzin- og dieselpris i Danmark, priserne hos OK, Circle K, Q8, Shell m.fl. og om du skal tanke i dag.">
-<meta name="theme-color" content="#F4F1E9">
+<meta name="theme-color" content="#FFFFFF">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tank klar">
 <meta property="og:title" content="Tank klar – skal du tanke i dag eller i morgen?">
@@ -27,34 +27,35 @@
 <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F4F1E9; --card: #FFFFFF; --ink: #15291F; --muted: #5D6A60; --line: #E4DFD3; --soft: #ECE8DD;
-  --blue: #1C3F2E; --blue-dark: #122C20; --blue-soft: #EEF4DD;
-  --green: #3B7A1F; --green-soft: #EAF3D8; --red: #C2531B; --red-soft: #FBEADD;
-  --orange: #D9822B; --yellow: #F5B800; --lime: #CFE89A;
-  --flade2: #FBFAF6; --flade3: #F1EDE2; --kant: #EAE5DA; --grøn-kant: #D3E6B3; --rød-kant: #F2D2BC;
-  --benzin: #1C3F2E; --diesel: #D9822B; --el-bar: #DCE7C6; --pille-off: #D6D1C4; --pille-off-tekst: #9AA295;
+  --bg: #FFFFFF; --card: #F4F5F7; --ink: #0C0F14; --muted: #5B6270; --line: #E3E6EB; --soft: #EAECEF;
+  --blue: #0C0F14; --blue-dark: #0C0F14; --blue-soft: #F1F2F4;
+  --green: #0B8C7B; --green-soft: #E2F3F0; --red: #E3461A; --red-soft: #FDEAE3;
+  --orange: #FF6A1A; --yellow: #F5B800; --lime: #FFFFFF;
+  --flade2: #F8F9FA; --flade3: #ECEEF1; --kant: transparent; --grøn-kant: #BDE5DE; --rød-kant: #F6C8B6;
+  --benzin: #0C0F14; --diesel: #FF6A1A; --el-bar: #DADEE4; --pille-off: #D5D9DF; --pille-off-tekst: #9AA1AD;
+  --tank: #E3461A; --vent: #0B8C7B; --flad: #0C0F14;
   color-scheme: light;
-  --head: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --body: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --shadow: 0 1px 2px rgba(30,40,25,.05), 0 6px 20px rgba(30,40,25,.06);
+  --head: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --shadow: none;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0F1712; --card: #18221C; --ink: #E7ECE5; --muted: #9CAA9F; --line: #2B3930; --soft: #222E27;
-  --blue: #3F7B58; --blue-dark: #CFE89A; --blue-soft: #1E2B21;
-  --green: #A3D673; --green-soft: #1C2D1B; --red: #F2925F; --red-soft: #34221A;
-  --flade2: #141D17; --flade3: #1F2B23; --kant: #25322A; --grøn-kant: #34502C; --rød-kant: #5A3424;
-  --benzin: #A9D97B; --diesel: #F0A25A; --el-bar: #2F3F34; --pille-off: #3A473F; --pille-off-tekst: #6F7D73;
-  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.25);
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0B0D11; --card: #15181E; --ink: #F2F3F5; --muted: #9AA1AD; --line: #262B33; --soft: #1D2128;
+  --blue: #FF6A1A; --blue-dark: #FF8A4A; --blue-soft: #1D2128;
+  --green: #2EC4AE; --green-soft: #12302B; --red: #FF7A45; --red-soft: #3A1F15;
+  --flade2: #111419; --flade3: #1D2128; --kant: transparent; --grøn-kant: #1E5148; --rød-kant: #5C2A17;
+  --benzin: #F2F3F5; --diesel: #FF8A4A; --el-bar: #2A2F38; --pille-off: #343A44; --pille-off-tekst: #6E7582;
+  --tank: #E3461A; --vent: #0B8C7B; --flad: #1D2128;
   color-scheme: dark; } }
-:root[data-theme="dark"] { --bg: #0F1712; --card: #18221C; --ink: #E7ECE5; --muted: #9CAA9F; --line: #2B3930; --soft: #222E27;
-  --blue: #3F7B58; --blue-dark: #CFE89A; --blue-soft: #1E2B21;
-  --green: #A3D673; --green-soft: #1C2D1B; --red: #F2925F; --red-soft: #34221A;
-  --flade2: #141D17; --flade3: #1F2B23; --kant: #25322A; --grøn-kant: #34502C; --rød-kant: #5A3424;
-  --benzin: #A9D97B; --diesel: #F0A25A; --el-bar: #2F3F34; --pille-off: #3A473F; --pille-off-tekst: #6F7D73;
-  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.25);
+:root[data-theme="dark"] { --bg: #0B0D11; --card: #15181E; --ink: #F2F3F5; --muted: #9AA1AD; --line: #262B33; --soft: #1D2128;
+  --blue: #FF6A1A; --blue-dark: #FF8A4A; --blue-soft: #1D2128;
+  --green: #2EC4AE; --green-soft: #12302B; --red: #FF7A45; --red-soft: #3A1F15;
+  --flade2: #111419; --flade3: #1D2128; --kant: transparent; --grøn-kant: #1E5148; --rød-kant: #5C2A17;
+  --benzin: #F2F3F5; --diesel: #FF8A4A; --el-bar: #2A2F38; --pille-off: #343A44; --pille-off-tekst: #6E7582;
+  --tank: #E3461A; --vent: #0B8C7B; --flad: #1D2128;
   color-scheme: dark; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -62,16 +63,16 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid rgba(28,63,46,.35); outline-offset: 2px; border-radius: 10px; }
-.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-h1, h2, h3 { font-family: var(--head); letter-spacing: -0.02em; margin: 0; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-stretch: 112%; letter-spacing: -0.01em; }
+h1, h2, h3 { font-family: var(--head); font-stretch: 108%; letter-spacing: -0.02em; margin: 0; }
 
 /* header */
 header { background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); position: sticky; top: 0; z-index: 5; }
 .hd { max-width: 1160px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.logo { width: 48px; height: 48px; border-radius: 14px; background: var(--blue); display: grid; place-items: center; flex: none; }
+.logo { width: 44px; height: 44px; border-radius: 13px; background: var(--orange); display: grid; place-items: center; flex: none; }
 .logo svg { width: 26px; height: 26px; }
 .navn h1 { font-size: 24px; font-weight: 800; line-height: 1.1; }
-.prik { color: #8DB843; }
+.prik { color: var(--orange); }
 .navn p { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
 .handlinger { margin-left: auto; display: flex; gap: 10px; align-items: center; }
 .knap { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 8px 13px; font-size: 15px; font-weight: 500; }
@@ -83,25 +84,26 @@ header { background: var(--bg); border-bottom: 1px solid var(--line); padding-to
 .knap.drej svg { animation: drej .8s linear infinite; }
 @keyframes drej { to { transform: rotate(360deg); } }
 
-main { max-width: 1160px; margin: 0 auto; padding: 32px 20px calc(48px + env(safe-area-inset-bottom, 0px)); }
+main { max-width: 1160px; margin: 0 auto; padding: 28px 20px calc(110px + env(safe-area-inset-bottom, 0px)); }
 .for { font-size: 19px; color: var(--muted); margin: 0 0 18px; }
 .for b { color: var(--ink); font-family: var(--head); font-weight: 700; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.kort { background: var(--card); border-radius: 22px; box-shadow: var(--shadow); border: 1px solid var(--kant); padding: 28px 30px; min-width: 0; }
+.kort { background: var(--card); border-radius: 24px; border: 0; padding: 28px 30px; min-width: 0; }
 section { margin-top: 28px; }
 .sek-titel { font-size: 21px; font-weight: 700; margin-bottom: 14px; }
 .kort h2 { font-size: 22px; font-weight: 700; }
 .under { color: var(--muted); margin: 4px 0 18px; }
 
-/* helt */
-.helt { border: 1px solid #2B4A39; background: #1C3F2E; color: #F4F1E9; border-radius: 24px; padding: 28px 30px; margin-bottom: 24px; position: relative; overflow: hidden; }
-.helt::before, .helt::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(207,232,154,.18); pointer-events: none; }
-.helt::before { width: 340px; height: 340px; right: -90px; top: -120px; }
-.helt::after { width: 220px; height: 220px; right: -30px; top: -60px; }
-.helt-etiket { display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--lime); font-weight: 500; }
-.helt-etiket i { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); }
-.helt h2 { font-size: clamp(30px, 5vw, 40px); font-weight: 700; margin: 12px 0 8px; line-height: 1.1; }
-.helt p { margin: 0; color: rgba(244,241,233,.82); font-size: 17px; position: relative; }
+/* helt: svaret */
+.helt { background: var(--flad); color: #fff; border-radius: 28px; padding: 26px 28px 30px; margin-bottom: 20px; position: relative; overflow: hidden; }
+.helt.tank { background: var(--tank); } .helt.vent { background: var(--vent); }
+.helt-etiket { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.78); font-weight: 600; }
+.helt-etiket i { display: none; }
+.helt h2 { font-size: clamp(52px, 12vw, 104px); font-weight: 900; font-stretch: 118%; line-height: .92; letter-spacing: -0.03em; text-transform: uppercase; margin: 14px 0 12px; }
+.helt h2.lang { font-size: clamp(38px, 8vw, 72px); }
+.helt p { margin: 0; color: rgba(255,255,255,.88); font-size: 17px; }
+.helt-tal { display: flex; align-items: baseline; gap: 14px; margin-top: 18px; font-family: var(--mono); font-stretch: 112%; font-variant-numeric: tabular-nums; }
+.helt-tal .fra { font-size: 22px; opacity: .7; } .helt-tal .til { font-size: 40px; font-weight: 800; } .helt-tal .pil { font-size: 22px; opacity: .7; }
 
 /* store priskort */
 .pris-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -191,7 +193,7 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .st-pris .lille { font-size: 13px; color: var(--muted); }
 .st-handling { grid-column: 1 / -1; display: flex; gap: 8px; }
 .st-handling .knap { padding: 6px 12px; font-size: 14px; text-decoration: none; color: var(--ink); }
-.stjerne[aria-pressed="true"] { color: #8DB843; border-color: var(--grøn-kant); background: var(--green-soft); }
+.stjerne[aria-pressed="true"] { color: var(--orange); border-color: var(--grøn-kant); background: var(--green-soft); }
 .st-status { color: var(--muted); padding: 10px 0; }
 
 /* prisalarm */
@@ -213,9 +215,9 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 
 /* del-knap */
 .helt-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; position: relative; z-index: 1; }
-.del-knap { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 999px; padding: 8px 14px; background: var(--lime); color: #15291F; font-weight: 700; font-size: 14.5px; flex: none; }
+.del-knap { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(255,255,255,.18); color: #fff; font-weight: 700; font-size: 14.5px; flex: none; }
 .del-knap svg { width: 16px; height: 16px; }
-.del-status { font-size: 13.5px; color: var(--lime); margin-top: 8px; position: relative; }
+.del-status { font-size: 13.5px; color: #fff; margin-top: 8px; position: relative; }
 
 /* tankdagbog */
 .db-tal { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
@@ -230,6 +232,17 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .db-liste tr:has(+ tr.db-gevinst) td { border-bottom: 0; }
 .db-slet { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 2px 8px; border-radius: 8px; }
 .db-slet:hover { background: var(--soft); color: var(--red); }
+
+.resultat { background: var(--bg); border-radius: 18px; padding: 16px 18px; margin-bottom: 14px; }
+.resultat-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 15px; }
+.resultat-top span { color: var(--muted); font-size: 13.5px; }
+.resultat-tal { display: grid; grid-template-columns: auto auto 1fr; gap: 10px 18px; margin: 12px 0 8px; }
+.resultat-tal > div { display: flex; flex-direction: column; gap: 2px; }
+.resultat-tal .e { font-size: 13px; color: var(--muted); }
+.resultat-tal .mono { font-size: 20px; font-weight: 700; white-space: nowrap; }
+.resultat-tal .ialt { border-left: 1px solid var(--line); padding-left: 12px; }
+.resultat-tal .ialt .mono { font-size: 23px; }
+.resultat .l { font-size: 12.5px; color: var(--muted); margin: 0; }
 
 /* ugedag */
 .ug-række { display: grid; grid-template-columns: 44px 1fr 74px; gap: 12px; align-items: center; padding: 6px 0; }
@@ -253,6 +266,21 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .fav-linje .mono { font-weight: 700; }
 
 .usikker { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--soft); font-size: 13px; color: var(--muted); }
+
+/* faneblade i bunden */
+.bundmenu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.bundmenu-indre { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+.bundmenu button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; font-size: 12px; font-weight: 600; color: var(--muted); border-radius: 12px; }
+.bundmenu button svg { width: 24px; height: 24px; }
+.bundmenu button[aria-current="page"] { color: var(--ink); }
+.bundmenu button[aria-current="page"] svg { color: var(--orange); }
+body[data-fane="nu"] [data-gruppe]:not([data-gruppe="nu"]),
+body[data-fane="stationer"] [data-gruppe]:not([data-gruppe="stationer"]),
+body[data-fane="log"] [data-gruppe]:not([data-gruppe="log"]),
+body[data-fane="mere"] [data-gruppe]:not([data-gruppe="mere"]) { display: none; }
+[data-gruppe] > section:first-child { margin-top: 0; }
+.fane-titel { font-family: var(--head); font-stretch: 112%; font-weight: 900; font-size: 34px; letter-spacing: -0.02em; margin: 4px 0 18px; }
 
 /* metode */
 .fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 6px; }
@@ -303,10 +331,10 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
 @media (max-width: 560px) {
   .hd { padding: 10px 14px; gap: 10px; flex-wrap: nowrap; }
   .navn { min-width: 0; }
-  .prik { color: #8DB843; }
+  .prik { color: var(--orange); }
 .navn p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .logo { width: 42px; height: 42px; border-radius: 12px; }
-  .navn h1 { font-size: 21px; } .prik { color: #8DB843; }
+  .navn h1 { font-size: 21px; } .prik { color: var(--orange); }
 .navn p { font-size: 13.5px; }
   .knap .txt { display: none; }
   .knap { padding: 8px 10px; }
@@ -323,7 +351,7 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
 <header>
   <div class="hd">
     <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#CFE89A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
     </div>
     <div class="navn"><h1>Tank klar<span class="prik">.</span></h1><p>Benzin, diesel og el i Danmark</p></div>
     <div class="handlinger">
@@ -347,6 +375,13 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
 </header>
 
 <main id="indhold" aria-live="polite"><p class="under">Henter priser …</p></main>
+
+<nav class="bundmenu" aria-label="Sider"><div class="bundmenu-indre">
+  <button type="button" data-fane-knap="nu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>Nu</button>
+  <button type="button" data-fane-knap="stationer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>Stationer</button>
+  <button type="button" data-fane-knap="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2Z"/><path d="M8 7h6M8 11h6M8 15h4"/></svg>Log</button>
+  <button type="button" data-fane-knap="mere"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mere</button>
+</div></nav>
 
 <dialog id="justerDlg">
   <form method="dialog">
@@ -478,6 +513,14 @@ const st = {
 };
 let stationer = null, stStatus = "", alStatus = "", delStatus = "", elAlStatus = "";
 st.tema = hentL("tema") || "auto";
+st.fane = hentL("fane") || "nu";
+function visFane(f, rul) {
+  st.fane = f; gemL("fane", f); document.body.dataset.fane = f;
+  document.querySelectorAll("[data-fane-knap]").forEach(k => k.setAttribute("aria-current", k.dataset.faneKnap === f ? "page" : "false"));
+  if (rul) window.scrollTo({ top: 0 });
+}
+visFane(st.fane);
+document.querySelectorAll("[data-fane-knap]").forEach(k => k.addEventListener("click", () => visFane(k.dataset.faneKnap, true)));
 st.stType = hentL("stType") || "fuel";
 st.dbType = hentL("dbType") || "fuel";
 st.batteri = +hentL("batteri") || 60;
@@ -493,7 +536,7 @@ function anvendTema() {
   const r = document.documentElement;
   if (st.tema === "auto") delete r.dataset.theme; else r.dataset.theme = st.tema;
   const mørk = st.tema === "dark" || (st.tema === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelector('meta[name="theme-color"]').setAttribute("content", mørk ? "#0F1712" : "#F4F1E9");
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", mørk ? "#0B0D11" : "#FFFFFF");
 }
 anvendTema();
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", anvendTema);
@@ -1119,22 +1162,34 @@ function dagbogKort() {
     if (diff > 0 && mængde > 0) { km += diff; kmM += mængde; }
   });
   const gevinster = d.map(dagGevinst).filter(Boolean), timing = gevinster.reduce((x, g) => x + g.kr, 0);
+  const sparetSum = gevinster.filter(g => g.kr > 0).reduce((x, g) => x + g.kr, 0);
+  const ekstraSum = -gevinster.filter(g => g.kr < 0).reduce((x, g) => x + g.kr, 0);
+  const start = hentL("dagbogStart");
+  const resultat = elT || !gevinster.length ? "" : `<div class="resultat">
+      <div class="resultat-top"><b>Dit resultat indtil videre</b><span>${gevinster.length} tankning${gevinster.length === 1 ? "" : "er"}${start ? ` siden ${esc(dato(start, { day: "numeric", month: "short" }))}` : ""}</span></div>
+      <div class="resultat-tal">
+        <div><span class="e">Sparet</span><span class="mono" style="color:var(--green)">${kr(sparetSum)} kr.</span></div>
+        <div><span class="e">Kostet ekstra</span><span class="mono" style="color:var(--red)">${kr(ekstraSum)} kr.</span></div>
+        <div class="ialt"><span class="e">I alt</span><span class="mono" style="color:${timing >= 0 ? "var(--green)" : "var(--red)"}">${timing >= 0 ? "" : "−"}${kr(Math.abs(timing))} kr.</span><span class="l">${timing >= 0 ? "sparet" : "ekstra"}</span></div>
+      </div>
+      <p class="l">I forhold til hvis du havde tanket dagen før – ud fra landsprisen begge dage.</p>
+    </div>`;
   const md = nu.toLocaleDateString("da-DK", { month: "long" });
   const navnAf = b => b === "el" ? "El" : NAVN[b];
   const rækker = d.slice(-6).reverse().map(t => `<tr><td>${esc(dato(t.dato, { day: "numeric", month: "short" }))}</td><td>${navnAf(t.b)}</td>
       <td class="mono">${kr(t.liter, 1)} ${t.b === "el" ? "kWh" : "L"}</td><td class="mono pl">${kr(t.pris)}</td><td class="mono fed">${kr(t.liter * t.pris)} kr.</td>
       <td style="text-align:right"><button type="button" class="db-slet" data-slet="${esc(t.id)}" aria-label="Slet">×</button></td></tr>
-      ${(g => g && Math.abs(g.kr) >= 0.5 ? `<tr class="db-gevinst"><td colspan="6" style="color:${g.kr >= 0 ? "var(--green)" : "var(--red)"}">${g.kr >= 0 ? "↓ Sparede" : "↑ Betalte"} ca. ${kr(Math.abs(g.kr))} kr. ved at tanke denne dag frem for dagen før (${kr(g.før)} → ${kr(g.nu)} kr./L)</td></tr>` : "")(dagGevinst(t))}`).join("");
+      ${(g => g && Math.abs(g.kr) >= 0.5 ? `<tr class="db-gevinst"><td colspan="6" style="color:${g.kr >= 0 ? "var(--green)" : "var(--red)"}">${g.kr >= 0 ? `↓ Sparede ${kr(g.kr)} kr.` : `↑ Kostede ${kr(-g.kr)} kr. ekstra`} i forhold til dagen før (${kr(g.før)} → ${kr(g.nu)} kr./L)</td></tr>` : "")(dagGevinst(t))}`).join("");
   const tredje = elT
     ? `<div><div class="e">Ladet i alt</div><div class="mono">${kr(mængde, 0)} kWh</div><div class="l">${d.length} opladning${d.length === 1 ? "" : "er"}</div></div>`
-    : `<div><div class="e">${sparet >= 0 ? "Sparet" : "Betalt ekstra"}</div><div class="mono" style="color:${sparet >= 0 ? "var(--green)" : "var(--red)"}">${kr(Math.abs(sparet), 0)} kr.</div><div class="l">${sammenlignet ? "mod landsprisen samme dag" : "kræver priser fra samme dag"}</div></div>`;
+    : "";
   return `<section><div class="kort">${typeFaner("dbType", st.dbType)}<h2>${titel}</h2>
     <p class="under">Dine ${elT ? "opladninger" : "tankninger"}, gemt på denne enhed.</p>
+    ${resultat}
     <div class="db-tal">
       <div><div class="e">Brugt i ${md}</div><div class="mono">${kr(sum(iMdr), 0)} kr.</div><div class="l">${iMdr.length} ${hvad}${iMdr.length === 1 ? "" : "er"}</div></div>
       <div><div class="e">Gns. pris</div><div class="mono">${kr(sum(d) / mængde)}</div><div class="l">kr. pr. ${elT ? "kWh" : "liter"}</div></div>
       ${tredje}
-      ${!elT ? `<div style="border-color:var(--grøn-kant);background:var(--green-soft)"><div class="e">${timing >= 0 ? "Sparet i alt" : "Tabt i alt"} på valg af dag</div><div class="mono" style="color:${timing >= 0 ? "var(--green)" : "var(--red)"}">${kr(Math.abs(timing), Math.abs(timing) < 100 ? 2 : 0)} kr.</div><div class="l">${gevinster.length ? `${gevinster.length} tankning${gevinster.length === 1 ? "" : "er"} mod at tanke dagen før${hentL("dagbogStart") ? ` · siden ${esc(dato(hentL("dagbogStart"), { day: "numeric", month: "short" }))}` : ""}` : "kræver priser fra dagen før"}</div></div>` : ""}
       <div><div class="e">Kører</div><div class="mono">${kmM ? kr(km / kmM, 1) : "–"}</div><div class="l">${kmM ? `${ca ? "ca. " : ""}km pr. ${elT ? "kWh" : "liter"}` : `skriv km-tal ved to fulde ${elT ? "opladninger" : "tanke"}`}</div></div>
     </div>
     ${knap}
@@ -1159,7 +1214,7 @@ function opdaterDbHint() {
   const g = b !== "el" && dato && liter ? dagGevinst({ b, dato, liter }) : null;
   el.style.color = g ? (g.kr >= 0 ? "var(--green)" : "var(--red)") : "";
   el.textContent = g ? (Math.abs(g.kr) < 0.5 ? "Prisen er den samme som dagen før." :
-    `${g.kr >= 0 ? "Du sparer" : "Du betaler"} ca. ${kr(Math.abs(g.kr))} kr. ${g.kr >= 0 ? "" : "mere "}ved at tanke ${dato === data.idag ? "i dag frem for i går" : "denne dag frem for dagen før"} (landspris ${kr(g.før)} → ${kr(g.nu)} kr./L).`) : "";
+    `${g.kr >= 0 ? `Du sparer ca. ${kr(g.kr)} kr.` : `Det koster ca. ${kr(-g.kr)} kr. ekstra`} i forhold til ${dato === data.idag ? "i går" : "dagen før"} (landspris ${kr(g.før)} → ${kr(g.nu)} kr./L).`) : "";
 }
 function sætDbPris() {
   const b = document.getElementById("dbB").value;
@@ -1269,10 +1324,11 @@ function elHelt() {
   const opsum = !e ? "Morgendagens elpriser bliver offentliggjort omkring kl. 13."
     : (pl => pl ? `Lad kl. ${tid(pl.start)}–${tid(pl.slut)} i ${OMR[st.el]}. Din opladning på ${kr(pl.kwhBil, 0)} kWh koster så ca. ${kr(pl.pris, 0)} kr.`
       : `Billigst kl. ${to(e.start)}–${to(e.start + 3)} i ${OMR[st.el]}: ${kr(e.billig)} kr./kWh. Døgnets gennemsnit ${kr(e.imorgen)} kr.`)(ladeplan());
-  return `<div class="helt">
-      <div class="helt-top"><div class="helt-etiket"><i></i>Elpris for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))}</div>
+  const pl0 = e ? ladeplan() : null;
+  return `<div class="helt vent">
+      <div class="helt-top"><div class="helt-etiket">El · ${esc(OMR[st.el])} · ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
-      <h2>Hvornår skal du lade?</h2>
+      <h2 class="lang">${pl0 ? `Lad ${tid(pl0.start)}–${tid(pl0.slut)}` : e ? `Lad ${to(e.start)}–${to(e.start + 3)}` : "Afventer elpriser"}</h2>
       <p>${esc(opsum)}</p>
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
@@ -1350,12 +1406,18 @@ function elOmKort() {
     Derhjemme betaler du spotprisen plus nettarif, afgifter, moms og et eventuelt tillæg fra dit elselskab. Offentlige ladestandere følger ikke spotprisen time for time – her bestemmer operatøren prisen.</p>
   </div></section>`;
 }
+function opdaterMenu() {
+  const k = document.querySelector('[data-fane-knap="stationer"]');
+  if (k) k.lastChild.textContent = erEl() ? "Ladere" : "Stationer";
+}
 function visEl() {
   let html = "";
-  if (data.demo) html += `<div class="demo">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
-  html += elHelt() + elPrisKort() + elRådKort() + elSparKort() + stationKort() + alarmKort() + dagbogKort()
-    + `<section>${grafKort()}</section>` + ugedagKort() + (data.el ? elKort() : "") + elOmKort() + feedbackKort()
-    + `<div class="note"><p>Elpriser fra Energi Data Service (Energinet). Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p></div>`;
+  if (data.demo) html += `<div class="demo" data-gruppe="nu">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
+  html += `<div data-gruppe="nu">${elHelt() + elPrisKort() + elRådKort() + elSparKort()}</div>`
+    + `<div data-gruppe="stationer"><h1 class="fane-titel">Ladere</h1>${stationKort()}</div>`
+    + `<div data-gruppe="log"><h1 class="fane-titel">Log</h1>${dagbogKort() + ugedagKort()}</div>`
+    + `<div data-gruppe="mere"><h1 class="fane-titel">Mere</h1>${alarmKort() + `<section>${grafKort()}</section>` + (data.el ? elKort() : "") + elOmKort() + feedbackKort()}`
+    + `<div class="note"><p>Elpriser fra Energi Data Service (Energinet). Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p></div></div>`;
   document.getElementById("indhold").innerHTML = html;
 }
 
@@ -1383,7 +1445,7 @@ function metodeKort() {
 
 function forældet() { return data && data.imorgen <= new Date().toLocaleDateString("sv-SE"); }
 function forældetBesked() {
-  return forældet() ? `<div class="del-status" style="color:#F4F1E9;background:rgba(207,232,154,.14);border-radius:12px;padding:10px 14px;margin-top:14px">
+  return forældet() ? `<div class="del-status" style="color:#fff;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 14px;margin-top:14px">
     Prognosen er fra i går og gælder for i dag. En ny prognose for i morgen bliver beregnet i løbet af dagen – tryk ↻ øverst for at tjekke.</div>` : "";
 }
 function beregnet() {
@@ -1391,22 +1453,31 @@ function beregnet() {
   return (idag ? "i dag " : d.toLocaleDateString("da-DK", { weekday: "short" }) + " ") + "kl. " + d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 }
 function vis() {
+  opdaterMenu();
   if (erEl()) return visEl();
   const medEl = harEl() && data.el;
   let html = "";
-  if (data.demo) html += `<div class="demo">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
+  if (data.demo) html += `<div class="demo" data-gruppe="nu">Dette er eksempeldata. De rigtige priser vises, når den første opdatering har kørt.</div>`;
   const opsum = mine().map(b => { const x = bf(b), r = retning(x.aendring), ø = Math.round(Math.abs(x.aendring || 0) * 100);
     if (x.idag == null) return `Ingen pris på ${NAVN[b].toLowerCase()} endnu`;
     return r === "flad" ? `Ingen klar retning for ${NAVN[b].toLowerCase()}` : `${NAVN[b]} ventes at ${r === "op" ? "stige" : "falde"} ca. ${ø} øre`; });
   const ei = medEl ? elInfo() : null;
   const pl = ei ? ladeplan() : null;
   if (ei) opsum.push(pl ? `lad elbilen kl. ${tid(pl.start)}–${tid(pl.slut)}` : `billigste strøm kl. ${to(ei.start)}–${to(ei.start + 3)}`);
-  const opsumTekst = opsum.join(" · ");
-  html += `<div class="helt">
-      <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))} · beregnet ${esc(beregnet())}</div>
+  let opsumTekst = opsum.join(" · ");
+  if (mine().length === 1 && !ei) {
+    const x1 = bf(mine()[0]), ø1 = Math.round(Math.abs(x1.aendring || 0) * 100), r1 = retning(x1.aendring);
+    opsumTekst = x1.idag == null ? "Der er ingen pris endnu"
+      : r1 === "flad" ? `Forventet ændring ${ø1 ? "ca. " + ø1 + " øre" : "under 1 øre"} – mindre end usikkerheden, så tank, når det passer dig`
+      : `${NAVN[mine()[0]]} ventes at ${r1 === "op" ? "stige" : "falde"} ca. ${ø1} øre i morgen`;
+  }
+  const hoved = mine()[0], hx = bf(hoved), dom = { tank_i_dag: ["tank", "Tank nu"], vent: ["vent", "Vent"], lige_meget: ["flad", "Ingen klar retning"], ukendt: ["flad", "Ingen pris endnu"] }[hx.anbefaling] || ["flad", "Ingen klar retning"];
+  html += `<div data-gruppe="nu"><div class="helt ${dom[0]}">
+      <div class="helt-top"><div class="helt-etiket">${esc(NAVN[hoved])} · ${forældet() ? "prognose for i dag" : "i morgen, " + esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))} · ${esc(beregnet())}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
-      <h2>${forældet() ? "Prognosen for i dag" : medEl ? "Tanke eller lade i morgen?" : "Skal du tanke i morgen?"}</h2>
+      <h2 class="${dom[1].length > 8 ? "lang" : ""}">${dom[1]}</h2>
       <p>${esc(opsumTekst)}.</p>
+      ${hx.idag != null ? `<div class="helt-tal"><span class="fra">${kr(hx.idag)}</span><span class="pil">→</span><span class="til">${kr(hx.imorgen)}</span><span class="fra">kr./L</span></div>` : ""}
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
@@ -1416,13 +1487,15 @@ function vis() {
     ${medEl ? elRådKort() : ""}
     <section>${sparKort()}</section>
     ${medEl ? elSparKort() : ""}
-    ${stationKort()}
+    </div>
+    <div data-gruppe="stationer"><h1 class="fane-titel">Stationer</h1>${stationKort()}</div>
+    <div data-gruppe="log"><h1 class="fane-titel">Log</h1>${dagbogKort()}
+    ${ugedagKort(false)}
+    ${medEl ? ugedagKort(true) : ""}</div>
+    <div data-gruppe="mere"><h1 class="fane-titel">Mere</h1>
     ${alarmKort()}
-    ${dagbogKort()}
     <section class="grid2">${selskabKort()}${grafKort(false)}</section>
     ${medEl ? `<section>${grafKort(true)}</section>` : ""}
-    ${ugedagKort(false)}
-    ${medEl ? ugedagKort(true) : ""}
     <section><div class="kort"><h2>Hvor præcis er prognosen?</h2>
       <p class="under">Gårsdagens prognose sammenlignet med den faktiske landspris i dag – og gennemsnittet de seneste 14 dage.</p>
       <div class="${gitter()}">${mine().map(præKort).join("")}</div>
@@ -1435,7 +1508,7 @@ function vis() {
       <p>Dagens priser er tankstationernes egne pumpepriser fra kædernes officielle prisdata (OK, Q8, F24, Shell, OIL!, Circle K og INGO). Go'on og Uno-X kommer fra <a href="https://benzinsignal.dk/data">BenzinSignal</a>. Lokale rabatter og kundekort er ikke regnet med. Elpriser fra Energi Data Service (Energinet).</p>
       <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p>
       ${(data.advarsler || []).length ? `<p>Mangler: ${data.advarsler.map(esc).join(". ")}.</p>` : ""}
-    </div>`;
+    </div></div>`;
   document.getElementById("indhold").innerHTML = html;
 }
 
