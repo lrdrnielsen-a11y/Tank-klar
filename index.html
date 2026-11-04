@@ -244,6 +244,25 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .resultat-tal .ialt .mono { font-size: 23px; }
 .resultat .l { font-size: 12.5px; color: var(--muted); margin: 0; }
 
+.md-graf { display: flex; align-items: flex-end; gap: 6px; height: 170px; margin: 8px 0 16px; }
+.md-søjle { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; min-width: 0; }
+.md-område { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; min-height: 0; }
+.md-bar { width: 100%; max-width: 46px; background: var(--orange); border-radius: 8px 8px 3px 3px; }
+.md-beløb { font-size: 11px; color: var(--muted); font-family: var(--mono); font-stretch: 105%; white-space: nowrap; }
+.md-navn { font-size: 12px; color: var(--muted); }
+.md-nøgletal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+.md-nøgletal > div { background: var(--bg); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.md-nøgletal span { font-size: 13px; color: var(--muted); } .md-nøgletal b { font-size: 21px; }
+@media (max-width: 560px) { .md-beløb { display: none; } .md-graf { gap: 4px; height: 140px; } }
+
+.bil-valg { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+.bil-chip { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; border: 1.5px solid var(--line); background: var(--bg); border-radius: 14px; padding: 9px 14px; text-align: left; }
+.bil-chip .bil-navn { font-weight: 700; font-size: 15px; } .bil-chip .bil-type { font-size: 12px; color: var(--muted); }
+.bil-chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.bil-chip[aria-pressed="true"] .bil-type { color: var(--bg); opacity: .75; }
+.bil-chip[aria-pressed="true"]::after { content: "✎ ret"; font-size: 11px; opacity: .6; margin-top: 2px; }
+.bil-chip.ny { justify-content: center; color: var(--muted); border-style: dashed; font-weight: 600; }
+
 /* ugedag */
 .ug-række { display: grid; grid-template-columns: 44px 1fr 74px; gap: 12px; align-items: center; padding: 6px 0; }
 .ug-række .dag { font-weight: 500; }
@@ -443,7 +462,8 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
     <p>Gemmes kun på denne telefon eller computer.</p>
     <div class="felter">
       <div class="felt"><label for="dbDato">Dato</label><input id="dbDato" type="date"></div>
-      <div class="felt"><label for="dbB">Brændstof</label><select id="dbB"><option value="benzin">Benzin 95</option><option value="diesel">Diesel</option><option value="el">El (opladning)</option></select></div>
+      <div class="felt"><label for="dbBil">Bil</label><select id="dbBil"></select></div>
+      <input type="hidden" id="dbB">
       <div class="felt"><label for="dbLiter" id="dbLiterLbl">Liter</label><input id="dbLiter" type="number" step="0.01" min="1" max="300" inputmode="decimal" placeholder="fx 45,3"></div>
       <div class="felt"><label for="dbPris" id="dbPrisLbl">Pris pr. liter</label><input id="dbPris" type="number" step="0.01" min="5" max="40" inputmode="decimal"></div>
     </div>
@@ -453,6 +473,23 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
     <div class="knapper">
       <button class="knap" value="luk">Annullér</button>
       <button class="knap primær" value="gem">Gem tankning</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="bilerDlg">
+  <form method="dialog">
+    <h2 id="bilTitel">Tilføj bil</h2>
+    <p>Hver bil får sin egen log, så tankningerne ikke blandes sammen.</p>
+    <div class="felter">
+      <div class="felt"><label for="bilNavn">Navn</label><input id="bilNavn" type="text" maxlength="30" placeholder="fx Familiebilen"></div>
+      <div class="felt"><label for="bilB">Kører på</label><select id="bilB"><option value="benzin">Benzin</option><option value="diesel">Diesel</option><option value="el">El</option></select></div>
+    </div>
+    <p class="st-sub" id="bilFejl" style="color:var(--red);min-height:18px;margin:0 0 10px"></p>
+    <div class="knapper">
+      <button class="knap" type="button" id="bilSlet" style="margin-right:auto;color:var(--red)">Slet bil</button>
+      <button class="knap" value="luk">Luk</button>
+      <button class="knap primær" type="button" id="bilGem">Gem</button>
     </div>
   </form>
 </dialog>
@@ -1118,6 +1155,44 @@ async function sendTest() {
   vis();
 }
 
+/* ---------- biler ---------- */
+const BRÆNDSTOF = { benzin: "Benzin", diesel: "Diesel", el: "El" };
+function biler() { try { const v = JSON.parse(hentL("biler")); return Array.isArray(v) ? v : []; } catch { return []; } }
+function gemBiler(v) { gemL("biler", JSON.stringify(v)); }
+function aktivBil() { const b = biler(); return b.find(x => x.id === hentL("aktivBil")) || b[0]; }
+function sikrBiler() {   // første gang: lav biler ud fra det, man har valgt, og læg gamle tankninger på dem
+  let b = biler();
+  const d = dagbog();
+  if (!b.length) {
+    const harEl = d.some(t => t.b === "el") || erEl(), harBr = d.some(t => t.b !== "el") || mine().length;
+    if (harBr || !harEl) b.push({ id: "bil1", navn: "Min bil", b: mine()[0] || (d.find(t => t.b !== "el") || {}).b || "benzin", start: hentL("dagbogStart") || null });
+    if (harEl) b.push({ id: "bil2", navn: harBr ? "Min elbil" : "Min bil", b: "el", start: null });
+    gemBiler(b);
+  }
+  let ændret = false;
+  d.forEach(t => { if (!t.bilId || !b.some(x => x.id === t.bilId)) {
+    t.bilId = (b.find(x => (x.b === "el") === (t.b === "el")) || b[0]).id; ændret = true; } });
+  if (ændret) gemL("dagbog", JSON.stringify(d));
+  return b;
+}
+function bilValg() {
+  const b = biler(), a = aktivBil();
+  return `<div class="bil-valg">${b.map(x => `<button type="button" class="bil-chip" data-bil="${esc(x.id)}" aria-pressed="${x.id === a.id}">
+      <span class="bil-navn">${esc(x.navn)}</span><span class="bil-type">${BRÆNDSTOF[x.b]}</span></button>`).join("")}
+    <button type="button" class="bil-chip ny" data-act="ny-bil">+ Tilføj bil</button></div>`;
+}
+const bilDlg = () => document.getElementById("bilerDlg");
+function åbnBil(id) {
+  const x = biler().find(v => v.id === id), dl = bilDlg();
+  dl.dataset.id = x ? x.id : "";
+  document.getElementById("bilTitel").textContent = x ? "Ret bil" : "Tilføj bil";
+  document.getElementById("bilNavn").value = x ? x.navn : "";
+  document.getElementById("bilB").value = x ? x.b : (mine()[0] || "benzin");
+  document.getElementById("bilSlet").hidden = !x || biler().length < 2;
+  document.getElementById("bilFejl").textContent = "";
+  dl.showModal();
+}
+
 /* ---------- tankdagbog ---------- */
 function dagenFør(d) { const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); }
 function landspris(d, b) { const h = historik.find(r => r.dato === d); return h && h[b] != null ? h[b] : null; }
@@ -1133,17 +1208,48 @@ function gemGevinster() {   // gem beløbet på ældre tankninger, så det ikke 
     if (g) { t.gevinst = Math.round(g.kr * 100) / 100; t.gFør = g.før; t.gNu = g.nu; ændret = true; } } });
   if (ændret) gemL("dagbog", JSON.stringify(d));
 }
+function månedKort(d, elT) {
+  if (!d.length) return "";
+  const m = {};
+  d.forEach(t => { const k = t.dato.slice(0, 7); (m[k] ||= { kr: 0, mængde: 0, antal: 0 }); m[k].kr += t.liter * t.pris; m[k].mængde += t.liter; m[k].antal++; });
+  // vis de seneste 12 måneder i træk (også måneder uden tankninger), så søjlerne kan sammenlignes
+  const nu = new Date(), måneder = [];
+  for (let i = 11; i >= 0; i--) { const x = new Date(nu.getFullYear(), nu.getMonth() - i, 1); måneder.push(`${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}`); }
+  const første = Object.keys(m).sort()[0], vist = måneder.filter(k => k >= første);
+  const maks = Math.max(...vist.map(k => m[k]?.kr || 0), 1);
+  const navn = (k, o) => new Date(k + "-15T12:00:00").toLocaleDateString("da-DK", o);
+  const søjler = vist.map(k => `<div class="md-søjle" title="${esc(navn(k, { month: "long", year: "numeric" }))}: ${kr(m[k]?.kr || 0, 0)} kr.">
+      <span class="md-beløb">${m[k] ? kr(m[k].kr, 0) : ""}</span>
+      <span class="md-område"><span class="md-bar" style="height:${Math.max(m[k] ? 4 : 1, (m[k]?.kr || 0) / maks * 100)}%"></span></span>
+      <span class="md-navn">${esc(navn(k, { month: "short" }).replace(".", ""))}</span></div>`).join("");
+  const enhed = elT ? "kWh" : "L", hvad = elT ? "opladning" : "tankning";
+  const liste = Object.keys(m).sort().reverse().map(k => `<tr>
+      <td>${esc(navn(k, { month: "long", year: "numeric" }))}</td>
+      <td class="mono fed">${kr(m[k].kr)} kr.</td>
+      <td class="mono pl">${kr(m[k].mængde, 1)} ${enhed}</td>
+      <td class="mono pl">${kr(m[k].kr / m[k].mængde)} kr./${elT ? "kWh" : "L"}</td>
+      <td class="pl" style="color:var(--muted)">${m[k].antal} ${hvad}${m[k].antal === 1 ? "" : "er"}</td></tr>`).join("");
+  const iÅr = Object.keys(m).filter(k => k.startsWith(String(nu.getFullYear()))).reduce((x, k) => x + m[k].kr, 0);
+  const snit = vist.length ? vist.reduce((x, k) => x + (m[k]?.kr || 0), 0) / vist.length : 0;
+  return `<section><div class="kort">
+    <h2>Forbrug pr. måned</h2>
+    <p class="under">Hvad du har brugt på ${elT ? "strøm til bilen" : "brændstof"} hver måned.</p>
+    <div class="md-graf" role="img" aria-label="Forbrug pr. måned">${søjler}</div>
+    <div class="md-nøgletal"><div><span>I alt i ${nu.getFullYear()}</span><b class="mono">${kr(iÅr, 0)} kr.</b></div><div><span>Gennemsnit pr. måned</span><b class="mono">${kr(snit, 0)} kr.</b></div></div>
+    <table class="db-liste md-liste"><tbody>${liste}</tbody></table>
+  </div></section>`;
+}
 function dagbogKort() {
-  gemGevinster();
-  const elT = dagbogEl(), alle = dagbog().slice().sort((a, b) => a.dato.localeCompare(b.dato));
-  const d = alle.filter(t => elT ? t.b === "el" : t.b !== "el");
+  sikrBiler(); gemGevinster();
+  const bil = aktivBil(), elT = bil.b === "el", alle = dagbog().slice().sort((a, b) => a.dato.localeCompare(b.dato));
+  const d = alle.filter(t => t.bilId === bil.id);
   const enhed = elT ? "kWh" : "L", hvad = elT ? "opladning" : "tankning";
   const knap = `<button type="button" class="knap primær bred" data-act="tankning">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Registrér ${hvad}</button>`;
   const titel = elT ? "Ladedagbog" : "Tankdagbog";
-  if (!d.length) return `<section><div class="kort">${typeFaner("dbType", st.dbType)}<h2>${titel}</h2>
+  if (!d.length) return `<section>${bilValg()}<div class="kort"><h2>${titel} <span style="color:var(--muted);font-weight:500">· ${esc(bil.navn)}</span></h2>
     <p class="under">${elT ? "Skriv ind, når du lader. Så kan du se, hvad du bruger på strøm til bilen om måneden, din gennemsnitspris pr. kWh, og hvor langt bilen kører pr. kWh."
-      : "Skriv ind, når du tanker. Så kan du se, hvad du bruger på brændstof om måneden, hvad du sparer i forhold til landsprisen, og hvor langt bilen kører pr. liter."}</p>${knap}</div></section>`;
+      : "Skriv ind, når du tanker. Så kan du se, hvad du bruger på brændstof om måneden, hvad du sparer ved at vælge den rigtige dag, og hvor langt bilen kører pr. liter."}</p>${knap}</div></section>`;
   const nu = new Date(), mdr = `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, "0")}`;
   const iMdr = d.filter(t => t.dato.startsWith(mdr)), sum = a => a.reduce((x, t) => x + t.liter * t.pris, 0);
   const mængde = d.reduce((x, t) => x + t.liter, 0);
@@ -1152,7 +1258,7 @@ function dagbogKort() {
   // Km pr. liter/kWh: fra én fuld tank til en senere fuld tank tæller ALT, der er tanket imellem –
   // også små påfyldninger. Så må man gerne tanke fx 13 liter ind imellem.
   let km = 0, kmM = 0, ca = false;
-  (elT ? ["el"] : Object.keys(NAVN)).forEach(b => {
+  [bil.b].forEach(b => {
     const r = d.filter(t => t.b === b).sort((p, q) => p.dato.localeCompare(q.dato) || (p.km || 0) - (q.km || 0));
     let fulde = r.map((t, i) => [t, i]).filter(([t]) => t.km && t.fuld !== false);
     if (fulde.length < 2) { fulde = r.map((t, i) => [t, i]).filter(([t]) => t.km); ca = ca || fulde.length >= 2; }
@@ -1163,8 +1269,8 @@ function dagbogKort() {
   });
   const gevinster = d.map(dagGevinst).filter(Boolean), timing = gevinster.reduce((x, g) => x + g.kr, 0);
   const sparetSum = gevinster.filter(g => g.kr > 0).reduce((x, g) => x + g.kr, 0);
-  const ekstraSum = -gevinster.filter(g => g.kr < 0).reduce((x, g) => x + g.kr, 0);
-  const start = hentL("dagbogStart");
+  const ekstraSum = Math.abs(gevinster.filter(g => g.kr < 0).reduce((x, g) => x + g.kr, 0));
+  const start = bil.start;
   const resultat = elT || !gevinster.length ? "" : `<div class="resultat">
       <div class="resultat-top"><b>Dit resultat indtil videre</b><span>${gevinster.length} tankning${gevinster.length === 1 ? "" : "er"}${start ? ` siden ${esc(dato(start, { day: "numeric", month: "short" }))}` : ""}</span></div>
       <div class="resultat-tal">
@@ -1183,7 +1289,7 @@ function dagbogKort() {
   const tredje = elT
     ? `<div><div class="e">Ladet i alt</div><div class="mono">${kr(mængde, 0)} kWh</div><div class="l">${d.length} opladning${d.length === 1 ? "" : "er"}</div></div>`
     : "";
-  return `<section><div class="kort">${typeFaner("dbType", st.dbType)}<h2>${titel}</h2>
+  return `<section>${bilValg()}<div class="kort"><h2>${titel} <span style="color:var(--muted);font-weight:500">· ${esc(bil.navn)}</span></h2>
     <p class="under">Dine ${elT ? "opladninger" : "tankninger"}, gemt på denne enhed.</p>
     ${resultat}
     <div class="db-tal">
@@ -1195,13 +1301,16 @@ function dagbogKort() {
     ${knap}
     <table class="db-liste"><tbody>${rækker}</tbody></table>
     <div style="text-align:right;margin-top:14px"><button type="button" class="knap" data-act="nulstil-dagbog" style="font-size:14px;color:var(--muted)">Nulstil log</button></div>
-  </div></section>`;
+  </div></section>${månedKort(d, elT)}`;
 }
 const dbDlg = document.getElementById("dagbogDlg");
 function åbnDagbog() {
-  const b = dagbogEl() ? "el" : mine().length === 1 ? mine()[0] : "benzin";
+  sikrBiler();
+  const a = aktivBil(), vælg = document.getElementById("dbBil");
+  vælg.innerHTML = biler().map(x => `<option value="${esc(x.id)}">${esc(x.navn)} (${BRÆNDSTOF[x.b]})</option>`).join("");
+  vælg.value = a.id;
   document.getElementById("dbDato").value = new Date().toLocaleDateString("sv-SE");
-  document.getElementById("dbB").value = b;
+  document.getElementById("dbB").value = a.b;
   document.getElementById("dbLiter").value = "";
   document.getElementById("dbKm").value = "";
   document.getElementById("dbFuld").checked = true;
@@ -1527,10 +1636,15 @@ document.getElementById("indhold").addEventListener("click", e => {
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
+  if (act && act.dataset.act === "ny-bil") return åbnBil(null);
+  if (act && act.dataset.act === "ret-bil") return åbnBil(aktivBil().id);
+  const bc = e.target.closest("[data-bil]");
+  if (bc) { if (bc.getAttribute("aria-pressed") === "true") return åbnBil(bc.dataset.bil); gemL("aktivBil", bc.dataset.bil); return vis(); }
   if (act && act.dataset.act === "nulstil-dagbog") {
-    if (!confirm("Vil du slette alle tankninger og opladninger og starte forfra med det sparede beløb?\n\nDet kan ikke fortrydes.")) return;
-    try { localStorage.removeItem("dagbog"); } catch {}
-    gemL("dagbogStart", new Date().toLocaleDateString("sv-SE"));
+    const bil = aktivBil();
+    if (!confirm(`Vil du slette alle tankninger for "${bil.navn}" og starte forfra med det sparede beløb?\n\nDine andre biler bliver ikke rørt. Det kan ikke fortrydes.`)) return;
+    gemL("dagbog", JSON.stringify(dagbog().filter(t => t.bilId !== bil.id)));
+    gemBiler(biler().map(x => x.id === bil.id ? { ...x, start: new Date().toLocaleDateString("sv-SE") } : x));
     return vis();
   }
   if (act && act.dataset.act === "feedback") return åbnFeedback();
@@ -1639,7 +1753,9 @@ bDlg.addEventListener("close", () => {
   if (data) vis();
 });
 
-document.getElementById("dbB").addEventListener("change", sætDbPris);
+document.getElementById("dbBil").addEventListener("change", e => {
+  const x = biler().find(v => v.id === e.target.value); if (x) { document.getElementById("dbB").value = x.b; sætDbPris(); }
+});
 ["dbLiter", "dbDato"].forEach(id => document.getElementById(id).addEventListener("input", opdaterDbHint));
 dbDlg.addEventListener("close", () => {
   if (dbDlg.returnValue !== "gem") return;
@@ -1647,12 +1763,38 @@ dbDlg.addEventListener("close", () => {
   const liter = tal("dbLiter"), pris = tal("dbPris"), dato = document.getElementById("dbDato").value;
   if (!liter || !pris || !dato) { alert("Skriv både liter og pris for at gemme tankningen."); return; }
   const km = tal("dbKm");
-  const ny = { id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null, fuld: document.getElementById("dbFuld").checked };
+  const bilId = document.getElementById("dbBil").value, bilen = biler().find(v => v.id === bilId) || aktivBil();
+  const ny = { id: Date.now().toString(36), bilId: bilen.id, dato, b: bilen.b, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null, fuld: document.getElementById("dbFuld").checked };
   const g = dagGevinst(ny);
   if (g) { ny.gevinst = Math.round(g.kr * 100) / 100; ny.gFør = g.før; ny.gNu = g.nu; }
   const d = dagbog(); d.push(ny);
-  gemL("dagbog", JSON.stringify(d)); vis();
+  gemL("dagbog", JSON.stringify(d)); gemL("aktivBil", bilen.id); vis();
 });
+
+/* ---------- bil-dialog ---------- */
+document.getElementById("bilGem").onclick = () => {
+  const dl = bilDlg(), navn = document.getElementById("bilNavn").value.trim(), b = document.getElementById("bilB").value;
+  if (!navn) { document.getElementById("bilFejl").textContent = "Giv bilen et navn."; return; }
+  let liste = biler();
+  if (dl.dataset.id) {
+    const før = liste.find(x => x.id === dl.dataset.id);
+    if (før && før.b !== b && dagbog().some(t => t.bilId === før.id) && !confirm("Bilen har allerede tankninger. Vil du skifte brændstof alligevel? De gamle tankninger beholder deres brændstof.")) return;
+    liste = liste.map(x => x.id === dl.dataset.id ? { ...x, navn, b } : x);
+  } else {
+    const id = "bil" + Date.now().toString(36);
+    liste.push({ id, navn, b, start: null }); gemL("aktivBil", id);
+  }
+  gemBiler(liste);
+  if (!st.valgt.includes(b)) { st.valgt = [...st.valgt, b]; gemL("valgt", JSON.stringify(st.valgt)); }  // vis også priserne for bilens brændstof
+  dl.close(); vis();
+};
+document.getElementById("bilSlet").onclick = () => {
+  const dl = bilDlg(), x = biler().find(v => v.id === dl.dataset.id);
+  if (!x || !confirm(`Vil du slette "${x.navn}" og alle dens tankninger?\n\nDet kan ikke fortrydes.`)) return;
+  gemL("dagbog", JSON.stringify(dagbog().filter(t => t.bilId !== x.id)));
+  gemBiler(biler().filter(v => v.id !== x.id)); try { localStorage.removeItem("aktivBil"); } catch {}
+  dl.close(); vis();
+};
 
 /* ---------- feedback ---------- */
 const FEEDBACK_EMNE = "tankklar-feedback-588efe2e1471"; // dine beskeder: abonnér på dette navn i ntfy
