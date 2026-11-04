@@ -218,7 +218,7 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .del-status { font-size: 13.5px; color: var(--lime); margin-top: 8px; position: relative; }
 
 /* tankdagbog */
-.db-tal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.db-tal { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
 .db-tal > div { background: var(--flade2); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
 .db-tal .e { font-size: 13.5px; color: var(--muted); }
 .db-tal .mono { font-size: 21px; font-weight: 700; margin-top: 2px; }
@@ -226,6 +226,8 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .db-liste { width: 100%; border-collapse: collapse; margin-top: 16px; }
 .db-liste td { padding: 9px 6px; white-space: nowrap; border-bottom: 1px solid var(--line); }
 .db-liste tr:last-child td { border-bottom: 0; }
+.db-liste tr.db-gevinst td { font-size: 13.5px; padding-top: 0; white-space: normal; }
+.db-liste tr:has(+ tr.db-gevinst) td { border-bottom: 0; }
 .db-slet { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 2px 8px; border-radius: 8px; }
 .db-slet:hover { background: var(--soft); color: var(--red); }
 
@@ -411,6 +413,7 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
       <div class="felt"><label for="dbPris" id="dbPrisLbl">Pris pr. liter</label><input id="dbPris" type="number" step="0.01" min="5" max="40" inputmode="decimal"></div>
     </div>
     <div class="felt" style="margin-bottom:12px"><label for="dbKm">Kilometertal (valgfrit)</label><input id="dbKm" type="number" min="0" inputmode="numeric" placeholder="Bruges til at regne km/l ud"></div>
+    <p class="st-sub" id="dbHint" style="margin:-4px 0 12px"></p>
     <label class="tjek" id="dbFuldFelt" style="margin-bottom:18px"><input type="checkbox" id="dbFuld" checked> <span id="dbFuldTekst">Jeg fyldte tanken helt op</span></label>
     <div class="knapper">
       <button class="knap" value="luk">Annullér</button>
@@ -1073,7 +1076,22 @@ async function sendTest() {
 }
 
 /* ---------- tankdagbog ---------- */
+function dagenFør(d) { const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); }
+function landspris(d, b) { const h = historik.find(r => r.dato === d); return h && h[b] != null ? h[b] : null; }
+function dagGevinst(t) {   // hvad det gav at tanke netop den dag i stedet for dagen før
+  if (t.b === "el") return null;
+  if (t.gevinst != null) return { kr: t.gevinst, før: t.gFør, nu: t.gNu };   // gemt, da tankningen blev registreret
+  const før = landspris(dagenFør(t.dato), t.b), nu = landspris(t.dato, t.b) ?? (t.dato === data.idag ? data.braendstof[t.b]?.idag : null);
+  return før != null && nu != null ? { kr: (før - nu) * t.liter, før, nu } : null;
+}
+function gemGevinster() {   // gem beløbet på ældre tankninger, så det ikke forsvinder med prishistorikken
+  const d = dagbog(); let ændret = false;
+  d.forEach(t => { if (t.gevinst == null && t.b !== "el") { const g = dagGevinst(t);
+    if (g) { t.gevinst = Math.round(g.kr * 100) / 100; t.gFør = g.før; t.gNu = g.nu; ændret = true; } } });
+  if (ændret) gemL("dagbog", JSON.stringify(d));
+}
 function dagbogKort() {
+  gemGevinster();
   const elT = dagbogEl(), alle = dagbog().slice().sort((a, b) => a.dato.localeCompare(b.dato));
   const d = alle.filter(t => elT ? t.b === "el" : t.b !== "el");
   const enhed = elT ? "kWh" : "L", hvad = elT ? "opladning" : "tankning";
@@ -1100,11 +1118,13 @@ function dagbogKort() {
     const diff = sidste.km - første.km, mængde = r.slice(i0 + 1, i1 + 1).reduce((x, t) => x + t.liter, 0);
     if (diff > 0 && mængde > 0) { km += diff; kmM += mængde; }
   });
+  const gevinster = d.map(dagGevinst).filter(Boolean), timing = gevinster.reduce((x, g) => x + g.kr, 0);
   const md = nu.toLocaleDateString("da-DK", { month: "long" });
   const navnAf = b => b === "el" ? "El" : NAVN[b];
   const rækker = d.slice(-6).reverse().map(t => `<tr><td>${esc(dato(t.dato, { day: "numeric", month: "short" }))}</td><td>${navnAf(t.b)}</td>
       <td class="mono">${kr(t.liter, 1)} ${t.b === "el" ? "kWh" : "L"}</td><td class="mono pl">${kr(t.pris)}</td><td class="mono fed">${kr(t.liter * t.pris)} kr.</td>
-      <td style="text-align:right"><button type="button" class="db-slet" data-slet="${esc(t.id)}" aria-label="Slet">×</button></td></tr>`).join("");
+      <td style="text-align:right"><button type="button" class="db-slet" data-slet="${esc(t.id)}" aria-label="Slet">×</button></td></tr>
+      ${(g => g && Math.abs(g.kr) >= 0.5 ? `<tr class="db-gevinst"><td colspan="6" style="color:${g.kr >= 0 ? "var(--green)" : "var(--red)"}">${g.kr >= 0 ? "↓ Sparede" : "↑ Betalte"} ca. ${kr(Math.abs(g.kr))} kr. ved at tanke denne dag frem for dagen før (${kr(g.før)} → ${kr(g.nu)} kr./L)</td></tr>` : "")(dagGevinst(t))}`).join("");
   const tredje = elT
     ? `<div><div class="e">Ladet i alt</div><div class="mono">${kr(mængde, 0)} kWh</div><div class="l">${d.length} opladning${d.length === 1 ? "" : "er"}</div></div>`
     : `<div><div class="e">${sparet >= 0 ? "Sparet" : "Betalt ekstra"}</div><div class="mono" style="color:${sparet >= 0 ? "var(--green)" : "var(--red)"}">${kr(Math.abs(sparet), 0)} kr.</div><div class="l">${sammenlignet ? "mod landsprisen samme dag" : "kræver priser fra samme dag"}</div></div>`;
@@ -1114,10 +1134,12 @@ function dagbogKort() {
       <div><div class="e">Brugt i ${md}</div><div class="mono">${kr(sum(iMdr), 0)} kr.</div><div class="l">${iMdr.length} ${hvad}${iMdr.length === 1 ? "" : "er"}</div></div>
       <div><div class="e">Gns. pris</div><div class="mono">${kr(sum(d) / mængde)}</div><div class="l">kr. pr. ${elT ? "kWh" : "liter"}</div></div>
       ${tredje}
+      ${!elT ? `<div style="border-color:var(--grøn-kant);background:var(--green-soft)"><div class="e">${timing >= 0 ? "Sparet i alt" : "Tabt i alt"} på valg af dag</div><div class="mono" style="color:${timing >= 0 ? "var(--green)" : "var(--red)"}">${kr(Math.abs(timing), Math.abs(timing) < 100 ? 2 : 0)} kr.</div><div class="l">${gevinster.length ? `${gevinster.length} tankning${gevinster.length === 1 ? "" : "er"} mod at tanke dagen før${hentL("dagbogStart") ? ` · siden ${esc(dato(hentL("dagbogStart"), { day: "numeric", month: "short" }))}` : ""}` : "kræver priser fra dagen før"}</div></div>` : ""}
       <div><div class="e">Kører</div><div class="mono">${kmM ? kr(km / kmM, 1) : "–"}</div><div class="l">${kmM ? `${ca ? "ca. " : ""}km pr. ${elT ? "kWh" : "liter"}` : `skriv km-tal ved to fulde ${elT ? "opladninger" : "tanke"}`}</div></div>
     </div>
     ${knap}
     <table class="db-liste"><tbody>${rækker}</tbody></table>
+    <div style="text-align:right;margin-top:14px"><button type="button" class="knap" data-act="nulstil-dagbog" style="font-size:14px;color:var(--muted)">Nulstil log</button></div>
   </div></section>`;
 }
 const dbDlg = document.getElementById("dagbogDlg");
@@ -1131,6 +1153,14 @@ function åbnDagbog() {
   sætDbPris();
   dbDlg.showModal();
 }
+function opdaterDbHint() {
+  const b = document.getElementById("dbB").value, dato = document.getElementById("dbDato").value;
+  const liter = parseFloat(String(document.getElementById("dbLiter").value).replace(",", ".")) || 0, el = document.getElementById("dbHint");
+  const g = b !== "el" && dato && liter ? dagGevinst({ b, dato, liter }) : null;
+  el.style.color = g ? (g.kr >= 0 ? "var(--green)" : "var(--red)") : "";
+  el.textContent = g ? (Math.abs(g.kr) < 0.5 ? "Prisen er den samme som dagen før." :
+    `${g.kr >= 0 ? "Du sparer" : "Du betaler"} ca. ${kr(Math.abs(g.kr))} kr. ${g.kr >= 0 ? "" : "mere "}ved at tanke ${dato === data.idag ? "i dag frem for i går" : "denne dag frem for dagen før"} (landspris ${kr(g.før)} → ${kr(g.nu)} kr./L).`) : "";
+}
 function sætDbPris() {
   const b = document.getElementById("dbB").value;
   document.getElementById("dbLiterLbl").textContent = b === "el" ? "kWh" : "Liter";
@@ -1140,6 +1170,7 @@ function sætDbPris() {
   document.getElementById("dbLiter").placeholder = b === "el" ? "fx 35" : "fx 45,3";
   const v = b === "el" ? (data?.el_idag?.[st.el]?.gennemsnit ?? data?.el?.[st.el]?.gennemsnit) : data?.braendstof[b]?.idag;
   document.getElementById("dbPris").value = v != null ? v.toFixed(2) : "";
+  opdaterDbHint();
 }
 
 /* ---------- billigste ugedag ---------- */
@@ -1243,6 +1274,7 @@ function elHelt() {
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
       <h2>Hvornår skal du lade?</h2>
       <p>${esc(opsum)}</p>
+      ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>`;
 }
@@ -1349,6 +1381,11 @@ function metodeKort() {
   </div></section>`;
 }
 
+function forældet() { return data && data.imorgen <= new Date().toLocaleDateString("sv-SE"); }
+function forældetBesked() {
+  return forældet() ? `<div class="del-status" style="color:#F4F1E9;background:rgba(207,232,154,.14);border-radius:12px;padding:10px 14px;margin-top:14px">
+    Prognosen er fra i går og gælder for i dag. En ny prognose for i morgen bliver beregnet i løbet af dagen – tryk ↻ øverst for at tjekke.</div>` : "";
+}
 function beregnet() {
   const d = new Date(data.opdateret), idag = new Date().toDateString() === d.toDateString();
   return (idag ? "i dag " : d.toLocaleDateString("da-DK", { weekday: "short" }) + " ") + "kl. " + d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
@@ -1368,8 +1405,9 @@ function vis() {
   html += `<div class="helt">
       <div class="helt-top"><div class="helt-etiket"><i></i>Prognose for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "long" }))} · beregnet ${esc(beregnet())}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
-      <h2>${medEl ? "Tanke eller lade i morgen?" : "Skal du tanke i morgen?"}</h2>
+      <h2>${forældet() ? "Prognosen for i dag" : medEl ? "Tanke eller lade i morgen?" : "Skal du tanke i morgen?"}</h2>
       <p>${esc(opsumTekst)}.</p>
+      ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
     <div class="${gitter()}">${mine().map(prisKort).join("")}</div>
@@ -1416,6 +1454,12 @@ document.getElementById("indhold").addEventListener("click", e => {
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
+  if (act && act.dataset.act === "nulstil-dagbog") {
+    if (!confirm("Vil du slette alle tankninger og opladninger og starte forfra med det sparede beløb?\n\nDet kan ikke fortrydes.")) return;
+    try { localStorage.removeItem("dagbog"); } catch {}
+    gemL("dagbogStart", new Date().toLocaleDateString("sv-SE"));
+    return vis();
+  }
   if (act && act.dataset.act === "feedback") return åbnFeedback();
   if (act && act.dataset.act === "minbil") { e.preventDefault(); return document.getElementById("minbil").click(); }
   if (act && act.dataset.act === "tankning") return åbnDagbog();
@@ -1523,13 +1567,17 @@ bDlg.addEventListener("close", () => {
 });
 
 document.getElementById("dbB").addEventListener("change", sætDbPris);
+["dbLiter", "dbDato"].forEach(id => document.getElementById(id).addEventListener("input", opdaterDbHint));
 dbDlg.addEventListener("close", () => {
   if (dbDlg.returnValue !== "gem") return;
   const tal = id => { const x = parseFloat(String(document.getElementById(id).value).replace(",", ".")); return isFinite(x) && x > 0 ? x : null; };
   const liter = tal("dbLiter"), pris = tal("dbPris"), dato = document.getElementById("dbDato").value;
   if (!liter || !pris || !dato) { alert("Skriv både liter og pris for at gemme tankningen."); return; }
   const km = tal("dbKm");
-  const d = dagbog(); d.push({ id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null, fuld: document.getElementById("dbFuld").checked });
+  const ny = { id: Date.now().toString(36), dato, b: document.getElementById("dbB").value, liter: Math.round(liter * 100) / 100, pris: Math.round(pris * 100) / 100, km: km ? Math.round(km) : null, fuld: document.getElementById("dbFuld").checked };
+  const g = dagGevinst(ny);
+  if (g) { ny.gevinst = Math.round(g.kr * 100) / 100; ny.gFør = g.før; ny.gNu = g.nu; }
+  const d = dagbog(); d.push(ny);
   gemL("dagbog", JSON.stringify(d)); vis();
 });
 
