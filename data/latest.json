@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-05T08:54+01:00",
+  "opdateret": "2026-11-05T09:15+01:00",
   "idag": "2026-11-05",
   "imorgen": "2026-11-06",
   "braendstof": {
@@ -8,7 +8,7 @@
       "idag": 16.29,
       "imorgen": 16.19,
       "aendring": -0.1,
-      "anbefaling": "vent",
+      "anbefaling": "lige_meget",
       "kilde_idag": "stationerne",
       "metode": "margin"
     },
@@ -90,15 +90,15 @@
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.6334,
-    "brent_usd": 95.16,
-    "brent_pct": 0.57,
-    "benzin_kost": 4.7855,
-    "benzin_pct": 0.08,
-    "benzin": -0.042,
+    "brent_usd": 94.99,
+    "brent_pct": 0.39,
+    "benzin_kost": 4.7917,
+    "benzin_pct": 0.21,
+    "benzin": -0.034,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.3739,
-    "diesel_pct": 0.06,
-    "diesel": -0.067,
+    "diesel_kost": 7.3597,
+    "diesel_pct": -0.13,
+    "diesel": -0.084,
     "kilde": "CNBC"
   },
   "el": null,
