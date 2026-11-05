@@ -771,8 +771,10 @@ function grafKort(elT = erEl()) {
 
 function præcision(b) {
   const m = [];
+  const idagDato = new Date().toLocaleDateString("sv-SE");
   for (let i = 1; i < historik.length; i++) {
     const f = historik[i - 1], n = historik[i], p = f["prognose_" + b];
+    if (n.dato === idagDato && n.endelig === false) continue;   // dagens pris er ikke endelig før kl. 11:15
     if (p == null || n[b] == null || f[b] == null) continue;
     const forv = Math.sign(Math.round((p - f[b]) * 100)), fakt = Math.sign(Math.round((n[b] - f[b]) * 100));
     m.push({ vist: p, faktisk: n[b], fejl: Math.abs(p - n[b]), ret: forv === fakt });
@@ -788,8 +790,8 @@ function præKort(b) {
   const maks = Math.max(...m.map(v => v.fejl), 0.1);
   return `<div class="præ-kort"><h3>${NAVN[b]}</h3>
     <div class="tre">
-      <div><div class="e">Vist i går</div><div class="mono">${kr(s.vist)}</div></div>
-      <div><div class="e">Faktisk</div><div class="mono">${kr(s.faktisk)}</div></div>
+      <div><div class="e">Prognosen sagde</div><div class="mono">${kr(s.vist)}</div></div>
+      <div><div class="e">Prisen blev</div><div class="mono">${kr(s.faktisk)}</div></div>
       <div><div class="e">Ramte forbi</div><div class="mono" style="color:${øre(s.fejl) < 10 ? "var(--green)" : øre(s.fejl) < 25 ? "#B07F00" : "var(--red)"}">${øre(s.fejl)} øre</div></div>
     </div>
     <div class="præ-linje"><span>Gns. afvigelse <b>${øre(gns)} øre</b></span><span>Rigtig retning <b>${ret}%</b></span></div>
@@ -1634,7 +1636,7 @@ function vis() {
     <section class="grid2">${selskabKort()}${grafKort(false)}</section>
     ${medEl ? `<section>${grafKort(true)}</section>` : ""}
     <section><div class="kort"><h2>Hvor præcis er prognosen?</h2>
-      <p class="under">Gårsdagens prognose sammenlignet med den faktiske landspris i dag – og gennemsnittet de seneste 14 dage.</p>
+      <p class="under">Prognosen fra aftenen før sammenlignet med den faktiske landspris efter kæderne har ændret prisen kl. 11 – og gennemsnittet de seneste 14 dage. Før kl. 11:15 vises gårsdagens resultat.</p>
       <div class="${gitter()}">${mine().map(præKort).join("")}</div>
       <p class="fod">Grøn = under 10 øre fra, gul = under 25 øre, rød = mere. Den typiske afvigelse vises også ved prisen i morgen, så du kan se, hvor meget du kan regne med prognosen.</p></div></section>
     ${medEl ? elKort() : ""}
