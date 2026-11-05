@@ -36,7 +36,7 @@ NTFY = "https://ntfy.sh/"
 ALARM_PREFIX = "tankklar-q7m4"
 ALARM_TIDER = ["2000", "2030", "2100", "2130", "2200"]
 ALARM_NIVEAUER = ["alle", "10", "20", "30"]  # "alle" = hver aften, ellers kun ved stigning på mindst X øre
-APP_URL = "https://tank-klar.pages.dev"
+APP_URL = "https://tankklar.dk"
 NAVNE = {"benzin": "Benzin 95", "diesel": "Diesel"}
 
 STANDARD_ORD = {
