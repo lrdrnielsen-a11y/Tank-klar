@@ -289,6 +289,9 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .sikker { display: inline-flex; gap: 8px; align-items: baseline; margin-top: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 13.5px; color: #fff; }
 .sikker b { letter-spacing: 2px; font-size: 12px; }
 
+.helt-opdateret { margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.22); font-size: 13px; color: rgba(255,255,255,.78); }
+.helt-tal .fra { font-size: 18px; }
+
 /* faneblade i bunden */
 .bundmenu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -1438,10 +1441,11 @@ function elHelt() {
       : `Billigst kl. ${to(e.start)}–${to(e.start + 3)} i ${OMR[st.el]}: ${kr(e.billig)} kr./kWh. Døgnets gennemsnit ${kr(e.imorgen)} kr.`)(ladeplan());
   const pl0 = e ? ladeplan() : null;
   return `<div class="helt vent">
-      <div class="helt-top"><div class="helt-etiket">El · ${esc(OMR[st.el])} · ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))}</div>
+      <div class="helt-top"><div class="helt-etiket">El · ${esc(OMR[st.el])} · priser for ${esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
       <h2 class="lang">${pl0 ? `Lad ${tid(pl0.start)}–${tid(pl0.slut)}` : e ? `Lad ${to(e.start)}–${to(e.start + 3)}` : "Afventer elpriser"}</h2>
       <p>${esc(opsum)}</p>
+      ${opdateretLinje()}
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>`;
@@ -1560,6 +1564,15 @@ function forældetBesked() {
   return forældet() ? `<div class="del-status" style="color:#fff;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 14px;margin-top:14px">
     Prognosen er fra i går og gælder for i dag. En ny prognose for i morgen bliver beregnet i løbet af dagen – tryk ↻ øverst for at tjekke.</div>` : "";
 }
+const OPDATERINGER = ["07:15", "09:15", "11:15", "13:15", "15:15", "17:15", "18:20"]; // cron-job.org
+function næsteOpdatering() {
+  const nu = new Date(), hm = `${String(nu.getHours()).padStart(2, "0")}:${String(nu.getMinutes()).padStart(2, "0")}`;
+  const t = OPDATERINGER.find(x => x > hm);
+  return t ? `kl. ${t.replace(":", ".")}` : `i morgen kl. ${OPDATERINGER[0].replace(":", ".")}`;
+}
+function opdateretLinje() {
+  return `<div class="helt-opdateret">Opdateret ${esc(beregnet())} · næste opdatering ca. ${esc(næsteOpdatering())}</div>`;
+}
 function beregnet() {
   const d = new Date(data.opdateret), idag = new Date().toDateString() === d.toDateString();
   return (idag ? "i dag " : d.toLocaleDateString("da-DK", { weekday: "short" }) + " ") + "kl. " + d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
@@ -1595,12 +1608,13 @@ function vis() {
     : ø0 >= u ? ["●●○", `Nogenlunde sikker – prognosen rammer typisk ±${u} øre ved siden af`]
     : ["●○○", `Usikker – ændringen er mindre end prognosens typiske afvigelse på ±${u} øre`];
   html += `<div data-gruppe="nu"><div class="helt ${dom[0]}">
-      <div class="helt-top"><div class="helt-etiket">${esc(NAVN[hoved])} · ${forældet() ? "prognose for i dag" : "i morgen, " + esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))} · ${esc(beregnet())}</div>
+      <div class="helt-top"><div class="helt-etiket">${esc(NAVN[hoved])} · prognose for ${forældet() ? "i dag" : esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
       <h2 class="${dom[1].length > 10 ? "lang" : ""}">${dom[1]}</h2>
       <p>${esc(mine().length === 1 && !ei ? forklaring : forklaring + " " + opsumTekst + ".")}</p>
       ${sikker ? `<div class="sikker"><b>${sikker[0]}</b> ${esc(sikker[1])}</div>` : ""}
-      ${hx.idag != null ? `<div class="helt-tal"><span class="fra">${kr(hx.idag)}</span><span class="pil">→</span><span class="til">${kr(hx.imorgen)}</span><span class="fra">kr./L</span></div>` : ""}
+      ${hx.idag != null ? `<div class="helt-tal"><span class="fra">I dag ${kr(hx.idag)}</span><span class="pil">→</span><span class="til">${kr(hx.imorgen)}</span><span class="fra">kr./L i morgen</span></div>` : ""}
+      ${opdateretLinje()}
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
