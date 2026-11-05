@@ -531,7 +531,11 @@ def main():
 
     if braendstof["benzin"]["idag"] is not None or braendstof["diesel"]["idag"] is not None or el_idag:
         historik = [h for h in historik if h["dato"] != idag.isoformat()]
+        # Kæderne ændrer prisen kl. 11. Først efter kl. 11:15 er dagens pris den endelige,
+        # og kun den bruges til at måle, hvor præcis prognosen var.
+        endelig = (nu.hour, nu.minute) >= (11, 15)
         historik.append({"dato": idag.isoformat(),
+                         "endelig": endelig,
                          # dagens gennemsnitlige elpris (spotpris) pr. område
                          "el_DK1": (el_idag or {}).get("DK1", {}).get("gennemsnit"),
                          "el_DK2": (el_idag or {}).get("DK2", {}).get("gennemsnit"),
