@@ -550,7 +550,8 @@ def main():
         historik = sorted(historik, key=lambda h: h["dato"])[-90:]
 
     gem_json(DATA / "latest.json", latest)
-    send_alarmer(braendstof, nu, el)
+    # Prisalarmer via ntfy er slået fra (for besværligt at skulle hente en ekstra app).
+    # send_alarmer(braendstof, nu, el)
     gem_json(DATA / "history.json", historik)
     print(json.dumps(braendstof, ensure_ascii=False, indent=2))
     for a in advarsler:
