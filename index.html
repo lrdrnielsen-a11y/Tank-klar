@@ -10,8 +10,8 @@
 <meta property="og:site_name" content="Tank klar">
 <meta property="og:title" content="Tank klar – skal du tanke i dag eller i morgen?">
 <meta property="og:description" content="Gratis app med morgendagens benzin- og dieselpris, de billigste stationer nær dig og en ladeplan til elbilen.">
-<meta property="og:url" content="https://tank-klar.pages.dev/">
-<meta property="og:image" content="https://tank-klar.pages.dev/ikoner/del.png">
+<meta property="og:url" content="https://tankklar.dk/">
+<meta property="og:image" content="https://tankklar.dk/ikoner/del.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Tank klar – skal du tanke i dag eller i morgen?">
@@ -292,6 +292,9 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .helt-opdateret { margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.22); font-size: 13px; color: rgba(255,255,255,.78); }
 .helt-tal .fra { font-size: 18px; }
 
+.flyt-besked { margin-top: 18px; background: var(--card); border: 2px solid var(--orange); border-radius: 20px; padding: 18px 20px; }
+.flyt-besked p { margin: 6px 0 12px; color: var(--muted); }
+
 /* faneblade i bunden */
 .bundmenu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -399,6 +402,7 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
   </div>
 </header>
 
+<div id="flytplads" style="max-width:1160px;margin:0 auto;padding:0 20px"></div>
 <main id="indhold" aria-live="polite"><p class="under">Henter priser …</p></main>
 
 <nav class="bundmenu" aria-label="Sider"><div class="bundmenu-indre">
@@ -536,6 +540,50 @@ const RÅD = {
   lige_meget: (n) => ["Ingen klar retning", `Prognosen for ${n.toLowerCase()} viser under 10 øre i forskel. Det er mindre end usikkerheden, så tank, når det passer dig`],
   ukendt: () => ["Ingen anbefaling", "Der mangler priser til at lave en prognose"]
 };
+/* ---------- flytning fra tank-klar.pages.dev til tankklar.dk ---------- */
+const NY_ADRESSE = "https://tankklar.dk/";
+const GAMMEL_VÆRT = "tank-klar.pages.dev";
+function pakData() {
+  const d = {};
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); d[k] = localStorage.getItem(k); }
+  return btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+}
+function flytNu() { try { location.replace(NY_ADRESSE + "#flyt=" + encodeURIComponent(pakData())); } catch { location.replace(NY_ADRESSE); } }
+let flytBanner = "";
+(function flytning() {
+  // 1) Modtag data på den nye adresse (dataene står efter # og sendes aldrig til nogen server)
+  if (location.hash.startsWith("#flyt=")) {
+    try {
+      const d = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(location.hash.slice(6))))));
+      if (!localStorage.getItem("flyttetFra")) {
+        Object.entries(d).forEach(([k, v]) => { if (localStorage.getItem(k) === null) localStorage.setItem(k, v); });
+        localStorage.setItem("flyttetFra", GAMMEL_VÆRT);
+        flytBanner = "flyttet";
+      }
+    } catch {}
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+  // 2) På den gamle adresse: flyt videre, når tankklar.dk svarer
+  if (location.hostname === GAMMEL_VÆRT) {
+    const installeret = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    // Flyt kun, hvis tankklar.dk faktisk viser appen: hent appens ikon derfra (en fejlside er ikke et billede)
+    const test = new Image(); let færdig = false;
+    const timer = setTimeout(() => { færdig = true; }, 5000);
+    test.onload = () => { if (færdig || !test.naturalWidth) return; clearTimeout(timer);
+      if (installeret) { flytBanner = "gammel"; if (data) vis(); } else flytNu(); };
+    test.src = NY_ADRESSE + "ikoner/ikon-192.png?t=" + Date.now();
+  }
+})();
+function flytBesked() {
+  if (flytBanner === "gammel") return `<div class="flyt-besked"><b>Tank klar er flyttet til tankklar.dk</b>
+    <p>Tryk på knappen, så følger din log, dine biler og dine indstillinger med. Læg derefter appen på hjemmeskærmen igen fra den nye adresse, og slet den gamle.</p>
+    <button type="button" class="knap primær" data-act="flyt">Flyt til tankklar.dk</button></div>`;
+  if (flytBanner === "flyttet") return `<div class="flyt-besked"><b>Velkommen på tankklar.dk 👋</b>
+    <p>Dine data er flyttet med. Har du appen på hjemmeskærmen, så læg den på igen herfra med <b>Installer app</b>, og slet den gamle.</p>
+    <button type="button" class="knap" data-act="luk-flyt">OK</button></div>`;
+  return "";
+}
+
 let data = null, historik = [];
 const st = {
   spar: hentL("spar") || "benzin",
@@ -1581,6 +1629,7 @@ function beregnet() {
 }
 function vis() {
   opdaterMenu();
+  const fb = document.getElementById("flytplads"); if (fb) fb.innerHTML = flytBesked();
   if (erEl()) return visEl();
   const medEl = harEl() && data.el;
   let html = "";
@@ -1666,6 +1715,8 @@ document.getElementById("indhold").addEventListener("click", e => {
   if (act && act.dataset.act === "test") return sendTest();
   if (act && act.dataset.act === "alarm") { st.alarmVis = !st.alarmVis; return vis(); }
   if (act && act.dataset.act === "del") return del();
+  if (act && act.dataset.act === "flyt") return flytNu();
+  if (act && act.dataset.act === "luk-flyt") { flytBanner = ""; return vis(); }
   if (act && act.dataset.act === "ny-bil") return åbnBil(null);
   if (act && act.dataset.act === "ret-bil") return åbnBil(aktivBil().id);
   const bc = e.target.closest("[data-bil]");
@@ -1708,6 +1759,11 @@ document.getElementById("indhold").addEventListener("change", e => {
 });
 document.getElementById("indhold").addEventListener("input", e => { if (e.target.id === "stedInput") st.stedTekst = e.target.value; });
 document.getElementById("indhold").addEventListener("keydown", e => { if (e.target.id === "stedInput" && e.key === "Enter") { e.preventDefault(); brugSted(); } });
+document.getElementById("flytplads").addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  if (a.dataset.act === "flyt") flytNu();
+  if (a.dataset.act === "luk-flyt") { flytBanner = ""; vis(); }
+});
 document.getElementById("opdater").onclick = e => hent(e.currentTarget);
 
 const jDlg = document.getElementById("justerDlg");
