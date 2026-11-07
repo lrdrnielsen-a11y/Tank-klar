@@ -144,7 +144,7 @@
   },
   {
     "dato": "2026-11-07",
-    "endelig": false,
+    "endelig": true,
     "el_DK1": null,
     "el_DK2": null,
     "benzin": 16.09,
