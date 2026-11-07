@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-07T11:15+01:00",
+  "opdateret": "2026-11-07T13:15+01:00",
   "idag": "2026-11-07",
   "imorgen": "2026-11-08",
   "braendstof": {
@@ -66,10 +66,10 @@
     },
     {
       "navn": "Go'on",
-      "benzin": 16.1,
-      "diesel": 18.4,
-      "benzin_imorgen": 16.15,
-      "diesel_imorgen": 18.41
+      "benzin": 16.09,
+      "diesel": 18.39,
+      "benzin_imorgen": 16.14,
+      "diesel_imorgen": 18.4
     },
     {
       "navn": "Uno-X",
@@ -101,9 +101,71 @@
     "diesel": 0.031,
     "kilde": "CNBC"
   },
-  "el": null,
+  "el": {
+    "dato": "2026-11-08",
+    "DK1": {
+      "gennemsnit": 1.82,
+      "billigst_start": 10,
+      "billigst_gennemsnit": 1.592,
+      "timer": [
+        1.801,
+        1.69,
+        1.606,
+        1.612,
+        1.607,
+        1.602,
+        1.635,
+        1.664,
+        1.647,
+        1.647,
+        1.586,
+        1.592,
+        1.599,
+        1.618,
+        1.679,
+        1.887,
+        2.212,
+        2.389,
+        2.387,
+        2.383,
+        2.281,
+        2.034,
+        1.889,
+        1.641
+      ]
+    },
+    "DK2": {
+      "gennemsnit": 1.956,
+      "billigst_start": 3,
+      "billigst_gennemsnit": 1.629,
+      "timer": [
+        1.806,
+        1.722,
+        1.629,
+        1.635,
+        1.63,
+        1.622,
+        1.651,
+        1.697,
+        1.674,
+        1.683,
+        1.713,
+        1.729,
+        1.735,
+        1.986,
+        2.267,
+        2.362,
+        2.451,
+        2.599,
+        2.594,
+        2.607,
+        2.476,
+        2.072,
+        1.925,
+        1.671
+      ]
+    }
+  },
   "el_idag": null,
-  "advarsler": [
-    "Morgendagens elpriser er ikke offentliggjort endnu"
-  ]
+  "advarsler": []
 }
