@@ -1,8 +1,8 @@
 {
   "demo": false,
-  "opdateret": "2026-11-10T18:20+01:00",
-  "idag": "2026-11-10",
-  "imorgen": "2026-11-11",
+  "opdateret": "2026-11-11T01:52+01:00",
+  "idag": "2026-11-11",
+  "imorgen": "2026-11-12",
   "braendstof": {
     "benzin": {
       "idag": 16.09,
@@ -14,9 +14,9 @@
     },
     "diesel": {
       "idag": 18.09,
-      "imorgen": 17.98,
-      "aendring": -0.11,
-      "anbefaling": "vent",
+      "imorgen": 18.01,
+      "aendring": -0.08,
+      "anbefaling": "lige_meget",
       "kilde_idag": "stationerne",
       "metode": "margin"
     }
@@ -27,145 +27,83 @@
       "benzin": 16.09,
       "diesel": 18.09,
       "benzin_imorgen": 15.96,
-      "diesel_imorgen": 17.98
+      "diesel_imorgen": 18.01
     },
     {
       "navn": "F24",
       "benzin": 16.09,
       "diesel": 18.09,
       "benzin_imorgen": 15.96,
-      "diesel_imorgen": 17.98
+      "diesel_imorgen": 18.01
     },
     {
       "navn": "Q8",
       "benzin": 16.19,
       "diesel": 18.19,
       "benzin_imorgen": 16.06,
-      "diesel_imorgen": 18.08
+      "diesel_imorgen": 18.11
     },
     {
       "navn": "Shell",
       "benzin": 16.09,
       "diesel": 18.09,
       "benzin_imorgen": 15.96,
-      "diesel_imorgen": 17.98
+      "diesel_imorgen": 18.01
     },
     {
       "navn": "OIL!",
       "benzin": 16.09,
       "diesel": 18.09,
       "benzin_imorgen": 15.96,
-      "diesel_imorgen": 17.98
+      "diesel_imorgen": 18.01
     },
     {
       "navn": "INGO",
-      "benzin": 16.08,
-      "diesel": 18.08,
-      "benzin_imorgen": 15.95,
-      "diesel_imorgen": 17.97
+      "benzin": 16.09,
+      "diesel": 18.09,
+      "benzin_imorgen": 15.96,
+      "diesel_imorgen": 18.01
     },
     {
       "navn": "Go'on",
       "benzin": 16.1,
       "diesel": 18.1,
       "benzin_imorgen": 15.97,
-      "diesel_imorgen": 17.99
+      "diesel_imorgen": 18.02
     },
     {
       "navn": "Uno-X",
       "benzin": 16.1,
       "diesel": 18.1,
       "benzin_imorgen": 15.97,
-      "diesel_imorgen": 17.99
+      "diesel_imorgen": 18.02
     },
     {
       "navn": "Circle K",
       "benzin": 16.19,
       "diesel": 18.19,
       "benzin_imorgen": 16.06,
-      "diesel_imorgen": 18.08
+      "diesel_imorgen": 18.11
     }
   ],
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": {
-    "handlet_i_dag": true,
+    "handlet_i_dag": false,
     "usd_dkk": 6.6661,
-    "brent_usd": 91.88,
-    "brent_pct": -0.75,
-    "benzin_kost": 4.6133,
-    "benzin_pct": -1.18,
-    "benzin": -0.08,
+    "brent_usd": 91.49,
+    "brent_pct": 0.0,
+    "benzin_kost": 4.6113,
+    "benzin_pct": 0.38,
+    "benzin": 0.0,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.2587,
-    "diesel_pct": -2.2,
-    "diesel": -0.222,
+    "diesel_kost": 7.3032,
+    "diesel_pct": 0.39,
+    "diesel": 0.0,
     "kilde": "CNBC"
   },
-  "el": {
-    "dato": "2026-11-11",
-    "DK1": {
-      "gennemsnit": 2.359,
-      "billigst_start": 2,
-      "billigst_gennemsnit": 1.493,
-      "timer": [
-        1.601,
-        1.556,
-        1.5,
-        1.478,
-        1.502,
-        1.548,
-        1.847,
-        2.226,
-        2.674,
-        2.739,
-        2.77,
-        2.771,
-        2.769,
-        2.867,
-        2.848,
-        2.888,
-        3.073,
-        3.368,
-        3.261,
-        2.951,
-        2.637,
-        2.217,
-        1.899,
-        1.628
-      ]
-    },
-    "DK2": {
-      "gennemsnit": 2.38,
-      "billigst_start": 2,
-      "billigst_gennemsnit": 1.524,
-      "timer": [
-        1.623,
-        1.591,
-        1.537,
-        1.506,
-        1.53,
-        1.573,
-        1.866,
-        2.267,
-        2.722,
-        2.762,
-        2.79,
-        2.79,
-        2.781,
-        2.895,
-        2.885,
-        2.926,
-        3.089,
-        3.381,
-        3.268,
-        2.936,
-        2.626,
-        2.216,
-        1.915,
-        1.639
-      ]
-    }
-  },
+  "el": null,
   "el_idag": null,
-  "advarsler": []
+  "advarsler": [
+    "Morgendagens elpriser er ikke offentliggjort endnu"
+  ]
 }
