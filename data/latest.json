@@ -1,21 +1,21 @@
 {
   "demo": false,
-  "opdateret": "2026-11-12T18:20+01:00",
-  "idag": "2026-11-12",
-  "imorgen": "2026-11-13",
+  "opdateret": "2026-11-13T02:27+01:00",
+  "idag": "2026-11-13",
+  "imorgen": "2026-11-14",
   "braendstof": {
     "benzin": {
       "idag": 15.89,
-      "imorgen": 15.9,
-      "aendring": 0.01,
+      "imorgen": 15.93,
+      "aendring": 0.04,
       "anbefaling": "lige_meget",
       "kilde_idag": "stationerne",
       "metode": "margin"
     },
     "diesel": {
       "idag": 17.89,
-      "imorgen": 18.02,
-      "aendring": 0.13,
+      "imorgen": 18.12,
+      "aendring": 0.23,
       "anbefaling": "tank_i_dag",
       "kilde_idag": "stationerne",
       "metode": "margin"
@@ -26,146 +26,70 @@
       "navn": "OK",
       "benzin": 15.89,
       "diesel": 17.89,
-      "benzin_imorgen": 15.9,
-      "diesel_imorgen": 18.02
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.12
     },
     {
       "navn": "F24",
       "benzin": 15.89,
       "diesel": 17.89,
-      "benzin_imorgen": 15.9,
-      "diesel_imorgen": 18.02
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.12
     },
     {
       "navn": "Q8",
       "benzin": 15.99,
       "diesel": 17.99,
-      "benzin_imorgen": 16.0,
-      "diesel_imorgen": 18.12
+      "benzin_imorgen": 16.03,
+      "diesel_imorgen": 18.22
     },
     {
       "navn": "Shell",
       "benzin": 15.89,
       "diesel": 17.89,
-      "benzin_imorgen": 15.9,
-      "diesel_imorgen": 18.02
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.12
     },
     {
       "navn": "OIL!",
       "benzin": 15.89,
       "diesel": 17.89,
-      "benzin_imorgen": 15.9,
-      "diesel_imorgen": 18.02
-    },
-    {
-      "navn": "INGO",
-      "benzin": 15.89,
-      "diesel": 17.89,
-      "benzin_imorgen": 15.9,
-      "diesel_imorgen": 18.02
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.12
     },
     {
       "navn": "Go'on",
       "benzin": 15.9,
       "diesel": 17.9,
-      "benzin_imorgen": 15.91,
-      "diesel_imorgen": 18.03
+      "benzin_imorgen": 15.94,
+      "diesel_imorgen": 18.13
     },
     {
       "navn": "Uno-X",
       "benzin": 15.9,
       "diesel": 17.9,
-      "benzin_imorgen": 15.91,
-      "diesel_imorgen": 18.03
-    },
-    {
-      "navn": "Circle K",
-      "benzin": 15.99,
-      "diesel": 17.99,
-      "benzin_imorgen": 16.0,
-      "diesel_imorgen": 18.12
+      "benzin_imorgen": 15.94,
+      "diesel_imorgen": 18.13
     }
   ],
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": {
-    "handlet_i_dag": true,
+    "handlet_i_dag": false,
     "usd_dkk": 6.7461,
-    "brent_usd": 93.96,
-    "brent_pct": 1.29,
-    "benzin_kost": 4.6906,
-    "benzin_pct": 0.94,
-    "benzin": 0.079,
+    "brent_usd": 95.63,
+    "brent_pct": 3.09,
+    "benzin_kost": 4.7344,
+    "benzin_pct": -0.53,
+    "benzin": 0.0,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.4846,
-    "diesel_pct": -0.27,
-    "diesel": 0.013,
+    "diesel_kost": 7.6368,
+    "diesel_pct": -0.03,
+    "diesel": 0.0,
     "kilde": "CNBC"
   },
-  "el": {
-    "dato": "2026-11-13",
-    "DK1": {
-      "gennemsnit": 1.089,
-      "billigst_start": 11,
-      "billigst_gennemsnit": 0.64,
-      "timer": [
-        1.058,
-        1.067,
-        1.023,
-        1.015,
-        1.016,
-        1.056,
-        1.239,
-        1.403,
-        1.396,
-        1.03,
-        0.781,
-        0.642,
-        0.612,
-        0.665,
-        0.837,
-        1.145,
-        1.366,
-        1.495,
-        1.217,
-        1.247,
-        1.164,
-        1.05,
-        1.358,
-        1.244
-      ]
-    },
-    "DK2": {
-      "gennemsnit": 1.093,
-      "billigst_start": 11,
-      "billigst_gennemsnit": 0.657,
-      "timer": [
-        1.078,
-        1.079,
-        1.01,
-        1.002,
-        1.003,
-        1.037,
-        1.251,
-        1.438,
-        1.429,
-        1.052,
-        0.795,
-        0.659,
-        0.634,
-        0.678,
-        0.85,
-        1.166,
-        1.391,
-        1.506,
-        1.226,
-        1.236,
-        1.148,
-        1.036,
-        1.302,
-        1.221
-      ]
-    }
-  },
+  "el": null,
   "el_idag": null,
-  "advarsler": []
+  "advarsler": [
+    "Morgendagens elpriser er ikke offentliggjort endnu"
+  ]
 }
