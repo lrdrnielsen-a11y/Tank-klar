@@ -423,6 +423,35 @@ def margin_prognose(b, pris_idag, kost_idag, historik, idag):
     return max(-0.8, min(0.8, aendring)), round(normal, 3), round(nu, 3)
 
 
+def _rå_signal(P, C):
+    """Marginmodellens signal ud fra en række pumpepriser P og indkøbspriser C (sidste element = i dag)."""
+    m = [p / MOMS - c for p, c in zip(P, C)]
+    ref = m[-22:-1]
+    if len(ref) < MARGIN_DAGE_MIN:
+        return None
+    return max(-0.8, min(0.8, (statistics.median(ref) - m[-1]) * MOMS * MARGIN_TILPASNING))
+
+
+def kalibrering(b, historik, idag, dage=30):
+    """Hvor ofte har modellens 'stiger' og 'falder' holdt de seneste uger?
+    Den retning, der ikke har holdt, bliver dæmpet. Bruger kun fortiden."""
+    r = [h for h in historik if h.get(b) is not None and h.get(f"kost_{b}") is not None and h["dato"] < idag.isoformat()]
+    P = [h[b] for h in r]; C = [h[f"kost_{b}"] for h in r]
+    træf = {"op": [0, 0], "ned": [0, 0]}
+    for t in range(max(MARGIN_DAGE_MIN, len(P) - 1 - dage), len(P) - 1):
+        d = _rå_signal(P[:t + 1], C[:t + 1])
+        if d is None or abs(d) < 0.10:
+            continue
+        a = P[t + 1] - P[t]
+        k = "op" if d > 0 else "ned"
+        træf[k][1] += 1
+        if (d > 0 and a > 0.04) or (d < 0 and a < -0.04):
+            træf[k][0] += 1
+    # (rigtige + 1) / (forsøg + 2): starter forsigtigt på 50 %, og lærer efterhånden
+    faktor = {k: min(1.0, max(0.2, (v[0] + 1) / (v[1] + 2))) for k, v in træf.items()}
+    return faktor, træf
+
+
 def anbefaling(aendring):
     if aendring is None:
         return "ukendt"
@@ -493,10 +522,15 @@ def main():
         aendring = marked[b] if ok else 0.0
         metode = "marked" if ok else "uændret"
         mp = margin_prognose(b, pris_idag, (marked or {}).get(f"{b}_kost"), historik, idag) if ok else None
+        træf = None
         if mp:
             aendring, normal, nu_margin = mp
             metode = "margin"
-            print(f"  {b}: marginmodel – normal margin {normal:.2f} kr./L, i dag {nu_margin:.2f} kr./L")
+            faktor, træf = kalibrering(b, historik, idag)
+            retning_ = "op" if aendring > 0 else "ned"
+            print(f"  {b}: marginmodel – normal margin {normal:.2f}, i dag {nu_margin:.2f} kr./L; signal {aendring:+.2f}"
+                  f" × {faktor[retning_]:.2f} (træf stiger {træf['op'][0]}/{træf['op'][1]}, falder {træf['ned'][0]}/{træf['ned'][1]})")
+            aendring = aendring * faktor[retning_]
         if override.get("dato") == imorgen.isoformat() and override.get(b) is not None:
             if pris_idag is not None:
                 aendring = float(override[b]) - pris_idag
@@ -509,6 +543,7 @@ def main():
             "anbefaling": anbefaling(aendring) if pris_idag is not None else "ukendt",
             "kilde_idag": kilde,
             "metode": metode,
+            "traef": træf,   # hvor ofte 'stiger' og 'falder' har holdt de seneste uger
         }
 
     for s in selskaber:
