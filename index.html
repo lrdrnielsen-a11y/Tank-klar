@@ -1599,7 +1599,7 @@ function metodeKort() {
   const pct = v => v == null ? "–" : `${fortegn(v)}${kr(Math.abs(v))}%`;
   return `<section><div class="kort">
     <h2>Sådan beregnes prognosen</h2>
-    <p class="under">Dagens pris + ændringen i markedsprisen på benzin og diesel omregnet til kr./L med dagens dollarkurs og moms.${m.diesel_marked === "europæisk" ? " Diesel følger gasolie-kursen i London, som danske dieselpriser bygger på." : ""}${Object.values(data.braendstof).some(x => x.metode === "margin") ? " Prognosen sammenligner også pumpeprisen med indkøbsprisen: tjener kæderne mindre end normalt, er en stigning på vej – og omvendt." : " Om nogle dage begynder prognosen også at sammenligne pumpeprisen med indkøbsprisen, så den kan se prisstigninger komme."} Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
+    <p class="under">Dagens pris + ændringen i markedsprisen på benzin og diesel omregnet til kr./L med dagens dollarkurs og moms.${m.diesel_marked === "europæisk" ? " Diesel følger gasolie-kursen i London, som danske dieselpriser bygger på." : ""}${Object.values(data.braendstof).some(x => x.metode === "margin") ? " Prognosen sammenligner også pumpeprisen med indkøbsprisen: tjener kæderne mindre end normalt, er en stigning på vej – og omvendt. Den holder selv regnskab med, hvor ofte „stiger“ og „falder“ har holdt, og dæmper den retning, der har ramt dårligst." : " Om nogle dage begynder prognosen også at sammenligne pumpeprisen med indkøbsprisen, så den kan se prisstigninger komme."} Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
     <div class="fire">
       <div><div class="e">Brent råolie</div><div class="mono">${m.brent_usd != null ? "$" + kr(m.brent_usd) : "–"}</div><div class="l">${pct(m.brent_pct)}</div></div>
       <div><div class="e">Benzin-future</div><div class="mono">${pct(m.benzin_pct)}</div><div class="l">seneste handelsdag</div></div>
@@ -1653,7 +1653,11 @@ function vis() {
     : hx.anbefaling === "vent" ? `Prisen ventes at falde ca. ${ø0} øre. Kan tanken holde til i morgen, sparer du ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
     : hx.anbefaling === "tank_i_dag" ? `Prisen ventes at stige ca. ${ø0} øre i morgen. Tank i dag, og spar ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
     : `Prognosen viser under 10 øre i forskel. Det er for usikkert til et råd, så tank, når det passer dig.`;
-  const u = usikkerhed(hoved), sikker = hx.anbefaling === "lige_meget" || hx.idag == null ? null
+  const u = usikkerhed(hoved), retn = (hx.aendring || 0) > 0 ? "op" : "ned", tr = hx.traef && hx.traef[retn];
+  const ordet = retn === "op" ? "stiger" : "falder", sket = retn === "op" ? "steget" : "faldet";
+  const sikker = hx.anbefaling === "lige_meget" || hx.idag == null ? null
+    : tr && tr[1] >= 3 ? [tr[0] / tr[1] >= 0.75 ? "●●●" : tr[0] / tr[1] >= 0.5 ? "●●○" : "●○○",
+        `Når Tank klar har sagt „${ordet}“, er prisen ${sket} ${tr[0]} af ${tr[1]} gange de seneste uger`]
     : u == null ? ["", "Sikkerheden måles endnu – prognosen har kørt for kort tid"]
     : ø0 >= 2 * u ? ["●●●", `Ret sikker – prognosen rammer typisk ±${u} øre ved siden af`]
     : ø0 >= u ? ["●●○", `Nogenlunde sikker – prognosen rammer typisk ±${u} øre ved siden af`]
