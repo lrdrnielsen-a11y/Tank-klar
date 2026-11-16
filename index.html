@@ -298,6 +298,11 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .flyt-besked { margin-top: 18px; background: var(--card); border: 2px solid var(--orange); border-radius: 20px; padding: 18px 20px; }
 .flyt-besked p { margin: 6px 0 12px; color: var(--muted); }
 
+.helt-detalje { margin-top: 6px; font-size: 14.5px; color: rgba(255,255,255,.82); }
+.kort-råd { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
+.kort-råd.ned-tekst { color: var(--green); } .kort-råd.op-tekst { color: var(--red); }
+.fav-kort { padding: 16px 22px; } .fav-kort .fav-linje { margin: 0; border: 0; padding: 0; }
+
 /* faneblade i bunden */
 .bundmenu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -714,6 +719,7 @@ function prisKort(b) {
       <div><div class="etiket" style="margin:0">I dag</div><div class="mono">${kr(x.idag)} kr.</div></div>
       <div class="mono ${r === "op" ? "op-tekst" : r === "ned" ? "ned-tekst" : ""}">${fortegn(x.aendring)}${kr(Math.abs(x.aendring || 0))} kr. (${fortegn(x.aendring)}${kr(Math.abs(pct))}%)</div>
     </div>
+    <p class="kort-råd ${x.anbefaling === "vent" ? "ned-tekst" : x.anbefaling === "tank_i_dag" ? "op-tekst" : ""}"><b>${{ vent: "Vent til i morgen, hvis du kan", tank_i_dag: "Tank i dag", lige_meget: "Tank, når det passer dig" }[x.anbefaling] || "Ingen anbefaling endnu"}</b></p>
   ${favLinje(b)}
   </div>`;
 }
@@ -1650,7 +1656,11 @@ function vis() {
       : r1 === "flad" ? `Forventet ændring ${ø1 ? "ca. " + ø1 + " øre" : "under 1 øre"} – mindre end usikkerheden, så tank, når det passer dig`
       : `${NAVN[mine()[0]]} ventes at ${r1 === "op" ? "stige" : "falde"} ca. ${ø1} øre i morgen`;
   }
-  const hoved = mine()[0], hx = bf(hoved), dom = { tank_i_dag: ["tank", "Tank i dag"], vent: ["vent", "Vent til i morgen"], lige_meget: ["flad", "Tank, når det passer dig"], ukendt: ["flad", "Ingen pris endnu"] }[hx.anbefaling] || ["flad", "Tank, når det passer dig"];
+  // Den store boks viser det brændstof, hvor der er mest at hente: et klart råd først, ellers den største ændring
+  const hoved = mine().slice().sort((a, b) => {
+    const ra = bf(a).anbefaling === "lige_meget" ? 1 : 0, rb = bf(b).anbefaling === "lige_meget" ? 1 : 0;
+    return ra - rb || Math.abs(bf(b).aendring || 0) - Math.abs(bf(a).aendring || 0);
+  })[0], hx = bf(hoved), dom = { tank_i_dag: ["tank", "Tank i dag"], vent: ["vent", "Vent til i morgen"], lige_meget: ["flad", "Tank, når det passer dig"], ukendt: ["flad", "Ingen pris endnu"] }[hx.anbefaling] || ["flad", "Tank, når det passer dig"];
   const ø0 = Math.round(Math.abs(hx.aendring || 0) * 100), krTank = Math.abs(hx.aendring || 0) * st.liter;
   const forklaring = hx.idag == null ? "Der er ingen pris endnu."
     : hx.anbefaling === "vent" ? `Prisen ventes at falde ca. ${ø0} øre. Kan tanken holde til i morgen, sparer du ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
@@ -1669,16 +1679,17 @@ function vis() {
       <div class="helt-top"><div class="helt-etiket">${esc(NAVN[hoved])} · prognose for ${forældet() ? "i dag" : esc(dato(data.imorgen, { weekday: "long", day: "numeric", month: "short" }))}</div>
       <button type="button" class="del-knap" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Del</button></div>
       <h2 class="${dom[1].length > 10 ? "lang" : ""}">${dom[1]}</h2>
-      <p>${esc(mine().length === 1 && !ei ? forklaring : forklaring + " " + opsumTekst + ".")}</p>
+      <p>${esc(forklaring)}</p>
       ${sikker ? `<div class="sikker"><b>${sikker[0]}</b> ${esc(sikker[1])}</div>` : ""}
-      ${hx.idag != null ? `<div class="helt-tal"><span class="fra">I dag ${kr(hx.idag)}</span><span class="pil">→</span><span class="til">${kr(hx.imorgen)}</span><span class="fra">kr./L i morgen</span></div>` : ""}
+      ${hx.idag != null ? `<div class="helt-tal"><span class="fra">I dag ${kr(hx.idag)}</span><span class="pil">→</span><span class="til">${kr(hx.imorgen)}</span><span class="fra">kr./L i morgen</span></div>
+        <div class="helt-detalje">${fortegn(hx.aendring)}${kr(Math.abs(hx.aendring || 0))} kr. pr. liter${(u => u != null ? ` · prognosen rammer typisk ±${u} øre ved siden af` : "")(usikkerhed(hoved))}</div>` : ""}
       ${opdateretLinje()}
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
-    <div class="${gitter()}">${mine().map(prisKort).join("")}</div>
+    ${mine().length > 1 ? `<div class="${gitter()}">${mine().map(prisKort).join("")}</div>`
+      : (f => f ? `<div class="kort fav-kort">${f}</div>` : "")(favLinje(mine()[0]))}
     ${medEl ? `<section>${elPrisKort()}</section>` : ""}
-    <section><h2 class="sek-titel">Tank i dag eller i morgen?</h2><div class="${gitter()}">${mine().map(rådKort).join("")}</div></section>
     ${medEl ? elRådKort() : ""}
     <section>${sparKort()}</section>
     ${medEl ? elSparKort() : ""}
