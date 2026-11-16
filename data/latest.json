@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-16T08:10+01:00",
+  "opdateret": "2026-11-16T09:15+01:00",
   "idag": "2026-11-16",
   "imorgen": "2026-11-17",
   "braendstof": {
@@ -96,15 +96,15 @@
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.764,
-    "brent_usd": 96.41,
-    "brent_pct": 0.59,
-    "benzin_kost": 4.7304,
-    "benzin_pct": 0.99,
-    "benzin": 0.073,
+    "brent_usd": 96.19,
+    "brent_pct": 0.37,
+    "benzin_kost": 4.7225,
+    "benzin_pct": 0.82,
+    "benzin": 0.064,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.6917,
-    "diesel_pct": 1.08,
-    "diesel": 0.128,
+    "diesel_kost": 7.6606,
+    "diesel_pct": 0.67,
+    "diesel": 0.089,
     "kilde": "CNBC"
   },
   "el": null,
