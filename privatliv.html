@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privatliv – Tank klar</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" href="ikoner/ikon-192.png">
+<style>
+@font-face { font-family: "Archivo"; src: url("skrifttyper/archivo.woff2") format("woff2"); font-weight: 400 900; font-stretch: 100% 125%; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("skrifttyper/inter.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+:root { --bg: #FFFFFF; --card: #F4F5F7; --ink: #0C0F14; --muted: #5B6270; --line: #E3E6EB; --orange: #FF6A1A; --udfyld: #FFF1B8; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0B0D11; --card: #15181E; --ink: #F2F3F5; --muted: #9AA1AD; --line: #262B33; --udfyld: #4A3F10; color-scheme: dark; } }
+* { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px); }
+main { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+a { color: inherit; text-decoration-color: var(--orange); text-underline-offset: 3px; }
+.top { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; text-decoration: none; }
+.top img { width: 44px; height: 44px; border-radius: 13px; }
+.top b { font-family: "Archivo", sans-serif; font-stretch: 112%; font-weight: 800; font-size: 22px; }
+h1 { font-family: "Archivo", sans-serif; font-stretch: 112%; font-weight: 900; font-size: clamp(34px, 7vw, 48px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 10px; }
+h2 { font-family: "Archivo", sans-serif; font-stretch: 108%; font-weight: 800; font-size: 22px; margin: 36px 0 8px; letter-spacing: -0.01em; }
+.under { color: var(--muted); margin: 0 0 22px; }
+.kort { background: var(--card); border-radius: 20px; padding: 18px 22px; margin: 18px 0; }
+.kort ul { margin: 0; padding-left: 20px; }
+ul li { margin: 4px 0; }
+.lille { color: var(--muted); font-size: 14.5px; }
+.udfyld { background: var(--udfyld); padding: 0 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="top" href="./"><img src="ikoner/ikon-192.png" alt=""><b>Tank klar</b></a>
+  <h1>Privatliv</h1>
+  <p class="under">Sådan behandler Tank klar dine oplysninger. Senest opdateret november 2026.</p>
+
+  <div class="kort">
+    <b>Kort fortalt</b>
+    <ul>
+      <li>Ingen konto, ingen login og ingen reklamer.</li>
+      <li>Ingen cookies og ingen sporing på tværs af hjemmesider.</li>
+      <li>Det, du skriver i appen – tankdagbog, biler og indstillinger – gemmes kun på din egen telefon.</li>
+      <li>Din position bruges kun, når du selv søger efter stationer, og den gemmes ikke.</li>
+    </ul>
+  </div>
+
+  <h2>Hvem står bag?</h2>
+  <p>Tank klar er et gratis privat hobbyprojekt, lavet og drevet af <span class="udfyld">[DIT NAVN]</span>. Har du spørgsmål om dine oplysninger, kan du skrive til <span class="udfyld">[DIN E-MAIL]</span> eller bruge feedback-knappen i appen.</p>
+
+  <h2>Det gemmes kun på din telefon</h2>
+  <p>Appen gemmer følgende i din browser på din egen enhed. Det sendes ikke til os eller til nogen andre:</p>
+  <ul>
+    <li>Dine valg under <b>Min bil</b>: brændstof, tankstørrelse, batteri, lader, elområde og udseende.</li>
+    <li>Din <b>tankdagbog</b> og dine <b>biler</b>: dato, liter eller kWh, pris, kilometertal og det beregnede beløb, du har sparet.</li>
+    <li>Din <b>faste station</b> og hvilken fane, du sidst brugte.</li>
+  </ul>
+  <p>Du kan slette det hele ved at trykke <b>Nulstil log</b> eller ved at rydde browserdata for tankklar.dk på din telefon. Bruger du appen på flere enheder, har hver enhed sine egne data.</p>
+
+  <h2>Din position</h2>
+  <p>Positionen bruges kun, når du trykker <b>Find stationer nær mig</b> eller slår automatisk søgning til. Du bliver spurgt om lov af telefonen først.</p>
+  <ul>
+    <li><b>Tankstationer:</b> Appen henter én samlet liste over alle stationer og finder de nærmeste <b>på din telefon</b>. Din position sendes ikke nogen steder.</li>
+    <li><b>Ladestandere:</b> Her sendes positionen til OpenStreetMaps søgetjeneste (Overpass) på servere i Europa for at finde ladere i nærheden. Den gemmes ikke af appen.</li>
+    <li><b>Søg fra postnummer eller by:</b> Teksten, du skriver, sendes til OpenStreetMaps adressesøgning (Nominatim eller Photon) for at finde stedet.</li>
+    <li><b>Vis vej</b> åbner Google Maps med stationens adresse. Derefter gælder Googles egne regler.</li>
+  </ul>
+
+  <h2 id="feedback">Når du giver feedback</h2>
+  <p>Trykker du <b>Giv feedback</b>, sendes din besked via tjenesten <b>ntfy.sh</b> til en notifikation på den ansvarliges telefon. Beskeden indeholder:</p>
+  <ul>
+    <li>Det, du selv skriver, og det humør, du vælger.</li>
+    <li>Hvilke brændstoffer du har valgt, og om du bruger iPhone, Android eller computer, og om appen er installeret.</li>
+  </ul>
+  <p>Der sendes ikke navn, e-mail eller position, medmindre du selv skriver det i beskeden. ntfy.sh gemmer beskeden i cirka 12 timer, og den slettes på modtagerens telefon, når den ikke længere skal bruges.</p>
+
+  <h2>Hosting og statistik</h2>
+  <p>Appen ligger hos <b>Cloudflare</b>, som leverer siden til din telefon. Som alle hjemmesider modtager Cloudflare teknisk information som IP-adresse og browsertype for at kunne levere siden og beskytte den mod angreb. Vi bruger Cloudflares statistik uden cookies, som kun viser samlede tal – for eksempel antal besøg og lande – og ikke kan bruges til at genkende dig.</p>
+  <p>Skrifttyperne ligger på tankklar.dk selv, så der sendes ingen oplysninger til Google, når du åbner appen.</p>
+
+  <h2>Priser og andre data</h2>
+  <p>Brændstofpriser kommer fra kædernes officielle prisdata og BenzinSignal, elpriser fra Energi Data Service (Energinet) og stationsplaceringer fra OpenStreetMap. Appen henter dem automatisk flere gange om dagen. Det sker på vores side og involverer ingen oplysninger om dig.</p>
+  <p>Prognosen for morgendagens pris er et vejledende bud og ingen garanti.</p>
+
+  <h2>Dine rettigheder</h2>
+  <p>Næsten alt ligger kun på din egen telefon, og det har du fuld kontrol over. Har du sendt feedback og vil have den slettet, eller har du spørgsmål, så kontakt os som beskrevet øverst. Du kan også klage til <a href="https://www.datatilsynet.dk">Datatilsynet</a>.</p>
+
+  <p class="lille" style="margin-top:40px"><a href="./">← Tilbage til Tank klar</a></p>
+</main>
+</body>
+</html>

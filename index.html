@@ -25,10 +25,13 @@
 <meta name="apple-mobile-web-app-title" content="Tank klar">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch(e){}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="skrifttyper/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="skrifttyper/inter.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* Skrifttyperne ligger i projektet selv – så sendes der ingen oplysninger til Google */
+@font-face { font-family: "Archivo"; src: url("skrifttyper/archivo.woff2") format("woff2"); font-weight: 400 900; font-stretch: 100% 125%; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("skrifttyper/inter.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+
 :root {
   --bg: #FFFFFF; --card: #F4F5F7; --ink: #0C0F14; --muted: #5B6270; --line: #E3E6EB; --soft: #EAECEF;
   --blue: #0C0F14; --blue-dark: #0C0F14; --blue-soft: #F1F2F4;
@@ -507,7 +510,7 @@ dialog ol { padding-left: 20px; margin: 0 0 18px; } dialog li { margin-bottom: 8
 <dialog id="feedbackDlg">
   <form method="dialog">
     <h2>Hvad synes du om Tank klar?</h2>
-    <p>Din besked går direkte til den, der har lavet appen. Den er anonym, medmindre du selv skriver dit navn.</p>
+    <p>Din besked går direkte til den, der har lavet appen. Den er anonym, medmindre du selv skriver dit navn. <a href="privatliv.html#feedback">Læs mere</a></p>
     <div class="faner" id="humør" style="margin-bottom:14px">
       <button type="button" data-humør="😀 Glad">😀 Glad</button>
       <button type="button" data-humør="😐 OK">😐 OK</button>
@@ -916,7 +919,7 @@ function afstand(a, b, c, d) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
-  "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+  "https://overpass.private.coffee/api/interpreter"];
 async function medTidsgrænse(url, opt, ms) {
   const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
   try { return await fetch(url, { ...opt, signal: c.signal }); } finally { clearTimeout(t); }
@@ -1583,7 +1586,7 @@ function visEl() {
     + `<div data-gruppe="stationer"><h1 class="fane-titel">Ladere</h1>${stationKort()}</div>`
     + `<div data-gruppe="log"><h1 class="fane-titel">Log</h1>${dagbogKort() + ugedagKort()}</div>`
     + `<div data-gruppe="mere"><h1 class="fane-titel">Mere</h1>${`<section>${grafKort()}</section>` + (data.el ? elKort() : "") + elOmKort() + feedbackKort()}`
-    + `<div class="note"><p>Elpriser fra Energi Data Service (Energinet). Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p></div></div>`;
+    + `<div class="note"><p>Elpriser fra Energi Data Service (Energinet). Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}. · <a href="privatliv.html">Privatliv</a></p></div></div>`;
   document.getElementById("indhold").innerHTML = html;
 }
 
@@ -1697,7 +1700,7 @@ function vis() {
     ${feedbackKort()}
     <div class="note">
       <p>Dagens priser er tankstationernes egne pumpepriser fra kædernes officielle prisdata (OK, Q8, F24, Shell, OIL!, Circle K og INGO). Go'on og Uno-X kommer fra <a href="https://benzinsignal.dk/data">BenzinSignal</a>. Lokale rabatter og kundekort er ikke regnet med. Elpriser fra Energi Data Service (Energinet).</p>
-      <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}.</p>
+      <p>Opdateret ${esc(new Date(data.opdateret).toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" }))}. · <a href="privatliv.html">Privatliv</a></p>
       ${(data.advarsler || []).length ? `<p>Mangler: ${data.advarsler.map(esc).join(". ")}.</p>` : ""}
     </div></div>`;
   document.getElementById("indhold").innerHTML = html;
