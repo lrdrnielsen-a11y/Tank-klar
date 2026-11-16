@@ -252,14 +252,14 @@
   },
   {
     "dato": "2026-11-16",
-    "endelig": false,
+    "endelig": true,
     "el_DK1": null,
     "el_DK2": null,
-    "benzin": 15.89,
-    "diesel": 17.89,
-    "kost_benzin": 4.7225,
-    "kost_diesel": 7.6606,
-    "prognose_benzin": 15.9,
-    "prognose_diesel": 17.94
+    "benzin": 16.09,
+    "diesel": 18.29,
+    "kost_benzin": 4.7052,
+    "kost_diesel": 7.6428,
+    "prognose_benzin": 16.02,
+    "prognose_diesel": 18.29
   }
 ]
