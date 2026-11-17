@@ -1956,12 +1956,41 @@ document.getElementById("fbSend").onclick = async () => {
   const enhed = /iPhone|iPad/.test(navigator.userAgent) ? "iPhone" : /Android/.test(navigator.userAgent) ? "Android" : "Computer";
   const info = [st.valgt.join(" + "), enhed, matchMedia("(display-mode: standalone)").matches || navigator.standalone ? "installeret" : "i browser"].join(" · ");
   try {
-    const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({
-      topic: FEEDBACK_EMNE, title: `Feedback: ${fbHumør || "Ny besked"}`, message: `${tekst || "(ingen tekst)"}\n\n${info}`, tags: ["speech_balloon"] }) });
+    let r = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tekst, humør: fbHumør, info }) }).catch(() => null);
+    if (!r || r.status === 503 || r.status === 404) // serverfunktionen er ikke sat op endnu – brug den gamle vej
+      r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({
+        topic: FEEDBACK_EMNE, title: `Feedback: ${fbHumør || "Ny besked"}`, message: `${tekst || "(ingen tekst)"}\n\n${info}`, tags: ["speech_balloon"] }) });
     if (!r.ok) throw 0;
     gemL("fbSidst", Date.now()); status.textContent = "Tak! Din besked er sendt. 🙏"; setTimeout(() => fbDlg.close(), 1600);
   } catch { status.textContent = "Beskeden kunne ikke sendes. Prøv igen om lidt."; knap.disabled = false; }
 };
+
+/* ---------- anonym brugertælling ---------- */
+// Én gang om dagen sendes et tilfældigt nummer, om appen er åbnet fra hjemmeskærmen, og enhedstypen.
+// Ingen navne, positioner eller andet. Kun ejeren af appen kan se de samlede tal.
+function enhedsType() { return /iPhone|iPad/.test(navigator.userAgent) ? "iPhone" : /Android/.test(navigator.userAgent) ? "Android" : "Computer"; }
+function anonymId() {
+  let id = hentL("anonymId"), ny = false;
+  if (!id || !/^[a-z0-9]{10,40}$/.test(id)) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36) + Date.now().toString(36)).replace(/[^a-z0-9]/g, "").slice(0, 24);
+    gemL("anonymId", id); ny = true;
+  }
+  return { id, ny };
+}
+function tæl(type) {
+  if (!/^(www\.)?tankklar\.dk$/.test(location.hostname)) return;   // tæl kun på den rigtige adresse
+  const { id, ny } = anonymId();
+  const installeret = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  fetch("/api/ping", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true,
+    body: JSON.stringify({ id, ny, installeret, enhed: enhedsType(), type }) }).catch(() => {});
+}
+(function dagligTælling() {
+  const idag = new Date().toLocaleDateString("sv-SE");
+  if (hentL("taltDato") === idag) return;
+  gemL("taltDato", idag); tæl("brug");
+})();
+window.addEventListener("appinstalled", () => tæl("install"));
 
 /* ---------- installér ---------- */
 let installEvt = null;

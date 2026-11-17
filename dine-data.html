@@ -27,7 +27,6 @@ h2 { font-family: "Archivo", sans-serif; font-stretch: 108%; font-weight: 800; f
 .kort ul { margin: 0; padding-left: 20px; }
 ul li { margin: 4px 0; }
 .lille { color: var(--muted); font-size: 14.5px; }
-.udfyld { background: var(--udfyld); padding: 0 4px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -43,11 +42,12 @@ ul li { margin: 4px 0; }
       <li>Ingen cookies og ingen sporing på tværs af hjemmesider.</li>
       <li>Det, du skriver i appen – tankdagbog, biler og indstillinger – gemmes kun på din egen telefon.</li>
       <li>Din position bruges kun, når du selv søger efter stationer, og den gemmes ikke.</li>
+      <li>Appen tæller anonymt, hvor mange der bruger den – uden navne eller andet, der kan pege på dig.</li>
     </ul>
   </div>
 
   <h2>Hvem står bag?</h2>
-  <p>Tank klar er et gratis fritidsprojekt, lavet og drevet af <span class="udfyld">Lasse Jørgensen</span>. Har du spørgsmål om dine oplysninger, kan du skrive til <span class="udfyld">Lasse-roedkjaer@hotmail.com</span> eller bruge feedback-knappen i appen.</p>
+  <p>Tank klar er et gratis fritidsprojekt, lavet og drevet af Lasse Jørgensen. Har du spørgsmål om dine oplysninger, kan du skrive til Lasse-roedkjaer@hotmail.com eller bruge feedback-knappen i appen.</p>
 
   <h2>Det gemmes kun på din telefon</h2>
   <p>Appen gemmer følgende i din browser på din egen enhed. Det sendes ikke til os eller til nogen andre:</p>
@@ -68,12 +68,21 @@ ul li { margin: 4px 0; }
   </ul>
 
   <h2 id="feedback">Når du giver feedback</h2>
-  <p>Trykker du <b>Giv feedback</b>, sendes din besked via tjenesten <b>ntfy.sh</b> til en notifikation på den ansvarliges telefon. Beskeden indeholder:</p>
+  <p>Trykker du <b>Giv feedback</b>, sendes din besked via Tank klars egen server hos Cloudflare og tjenesten <b>ntfy.sh</b> til en notifikation på den ansvarliges telefon. Beskeden indeholder:</p>
   <ul>
     <li>Det, du selv skriver, og det humør, du vælger.</li>
     <li>Hvilke brændstoffer du har valgt, og om du bruger iPhone, Android eller computer, og om appen er installeret.</li>
   </ul>
   <p>Der sendes ikke navn, e-mail eller position, medmindre du selv skriver det i beskeden. ntfy.sh gemmer beskeden i cirka 12 timer, og den slettes på modtagerens telefon, når den ikke længere skal bruges.</p>
+
+  <h2>Anonym optælling af brugere</h2>
+  <p>For at vide, hvor mange der bruger appen, sender den <b>én gang om dagen</b> en lille melding med:</p>
+  <ul>
+    <li>et <b>tilfældigt nummer</b>, som din telefon selv har fundet på, og som ikke er knyttet til dig, din telefon eller din konto,</li>
+    <li>om appen er åbnet fra <b>hjemmeskærmen</b> eller i browseren, og om det er en iPhone, Android eller computer,</li>
+    <li>og en melding, hvis du installerer appen.</li>
+  </ul>
+  <p>Meldingerne gemmes hos Cloudflare og <b>slettes automatisk efter 40 dage</b>. Kun den ansvarlige for appen kan se de samlede tal. Vil du nulstille dit nummer, kan du rydde browserdata for tankklar.dk.</p>
 
   <h2>Hosting og statistik</h2>
   <p>Appen ligger hos <b>Cloudflare</b>, som leverer siden til din telefon. Som alle hjemmesider modtager Cloudflare teknisk information som IP-adresse og browsertype for at kunne levere siden og beskytte den mod angreb. Vi bruger Cloudflares statistik uden cookies, som kun viser samlede tal – for eksempel antal besøg og lande – og ikke kan bruges til at genkende dig.</p>

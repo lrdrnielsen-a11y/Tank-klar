@@ -1,5 +1,5 @@
 // Gør appen installerbar og lader den åbne uden net (viser så de sidst hentede priser).
-const CACHE = "tank-klar-v35";
+const CACHE = "tank-klar-v36";
 const FILER = ["./", "index.html", "dine-data.html", "manifest.webmanifest", "ikoner/ikon-192.png", "ikoner/ikon-512.png", "skrifttyper/archivo.woff2", "skrifttyper/inter.woff2"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILER))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
