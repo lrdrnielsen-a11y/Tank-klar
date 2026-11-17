@@ -42,7 +42,9 @@ export async function onRequestGet({ request, env }) {
   const t = await tal(env.STAT), g = t.pr_dag[1];
   const besked = `${g.brugere} brugere (${g.nye} nye) · ${g.hjemmeskaerm} fra hjemmeskærmen · ${g.installationer} nye installationer\n` +
     `${g.iphone} iPhone · ${g.android} Android · ${g.computer} computer\nSeneste 7 dage: ${t.uge_brugere} brugere`;
-  const r = await fetch("https://ntfy.sh/", { method: "POST", headers: { "Content-Type": "application/json" },
+  const r = await fetch("https://ntfy.sh/", { method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "TankKlar/1.0 (+https://tankklar.dk)" },
     body: JSON.stringify({ topic: env.NTFY_RAPPORT, title: `Tank klar i går (${g.dato})`, message: besked, tags: ["bar_chart"] }) });
-  return new Response(r.ok ? "Sendt" : "Kunne ikke sende", { status: r.ok ? 200 : 502 });
+  if (r.ok) return new Response("Sendt", { status: 200 });
+  const svar = (await r.text().catch(() => "")).slice(0, 300);
+  return new Response(`ntfy afviste beskeden (HTTP ${r.status}): ${svar}`, { status: 502, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }
