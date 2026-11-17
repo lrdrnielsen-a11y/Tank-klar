@@ -9,5 +9,5 @@ export async function onRequestPost({ request, env }) {
     body: JSON.stringify({ topic: emne, title: `Feedback: ${humør || "Ny besked"}`, message: `${tekst || "(ingen tekst)"}\n\n${info}`, tags: ["speech_balloon"] }) });
   if (r.ok) return new Response(null, { status: 204 });
   const svar = (await r.text().catch(() => "")).slice(0, 300);
-  return new Response(`ntfy afviste beskeden (HTTP ${r.status}): ${svar}`, { status: 502, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  return new Response(`FEJL: ntfy afviste beskeden (HTTP ${r.status}): ${svar}`, { status: 424, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }
