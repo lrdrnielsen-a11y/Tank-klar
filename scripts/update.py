@@ -17,7 +17,7 @@ import statistics
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -404,45 +404,82 @@ def send_alarmer(braendstof, nu, el=None):
 
 # ---------- 5. saml det hele ----------
 
+# ---------- kendte afgiftsændringer ----------
+# Beløb i kr. pr. liter UDEN moms (2 kr. med moms = 1,60 kr. uden). Ret her, hvis loven ender anderledes.
+AFGIFTSAENDRINGER = [
+    {"dato": "2027-01-01", "benzin": -1.60, "diesel": -1.60,
+     "tekst": "Afgiften på benzin og diesel sænkes 2 kr. pr. liter i hele 2027"},
+    {"dato": "2028-01-01", "benzin": +1.60, "diesel": +1.60,
+     "tekst": "Den midlertidige afgiftsnedsættelse udløber, og afgiften stiger igen 2 kr. pr. liter"},
+]
+VARSEL_DAGE = 21  # så mange dage før vises en besked i appen
+
+
+def afgift_niveau(b, dato):
+    """Summen af afgiftsændringer (uden moms), der er trådt i kraft på datoen."""
+    d = dato if isinstance(dato, str) else dato.isoformat()
+    return sum(a.get(b, 0.0) for a in AFGIFTSAENDRINGER if a["dato"] <= d)
+
+
+def afgift_spring(b, fra, til):
+    """Hvor meget pumpeprisen (med moms) ændres af afgiften mellem to datoer."""
+    return (afgift_niveau(b, til) - afgift_niveau(b, fra)) * MOMS
+
+
+def kommende_afgift(idag):
+    """Den næste afgiftsændring inden for varslingsperioden – til beskeden i appen."""
+    for a in AFGIFTSAENDRINGER:
+        dage = (date.fromisoformat(a["dato"]) - idag).days
+        if 0 < dage <= VARSEL_DAGE:
+            return {"dato": a["dato"], "dage": dage, "tekst": a["tekst"],
+                    "kr": {b: round(a[b] * MOMS, 2) for b in ("benzin", "diesel")}}
+    return None
+
+
 MARGIN_DAGE_MIN = 7      # så mange dages data skal der til, før marginmodellen bruges
 MARGIN_TILPASNING = 0.5  # hvor stor en del af afvigelsen kæderne typisk retter op på én dag
 
 
-def margin_prognose(b, pris_idag, kost_idag, historik, idag):
+def margin_prognose(b, pris_idag, kost_idag, historik, idag, kost_nøgle=None):
     """Sammenligner dagens 'margin' (pumpepris uden moms minus indkøbspris) med den normale.
     Er marginen lavere end normalt, er en stigning på vej – og omvendt."""
     if pris_idag is None or kost_idag is None:
         return None
-    marginer = [h[b] / MOMS - h[f"kost_{b}"] for h in historik[-21:]
-                if h.get(b) is not None and h.get(f"kost_{b}") is not None and h["dato"] != idag.isoformat()]
+    # afgiften trækkes fra, så en afgiftsændring ikke ligner en ændring i kædernes fortjeneste
+    k = kost_nøgle or f"kost_{b}"
+    marginer = [h[b] / MOMS - h[k] - afgift_niveau(b, h["dato"]) for h in historik[-21:]
+                if h.get(b) is not None and h.get(k) is not None and h["dato"] != idag.isoformat()]
     if len(marginer) < MARGIN_DAGE_MIN:
         return None
     normal = statistics.median(marginer)
-    nu = pris_idag / MOMS - kost_idag
+    nu = pris_idag / MOMS - kost_idag - afgift_niveau(b, idag)
     aendring = (normal - nu) * MOMS * MARGIN_TILPASNING
     return max(-0.8, min(0.8, aendring)), round(normal, 3), round(nu, 3)
 
 
-def _rå_signal(P, C):
-    """Marginmodellens signal ud fra en række pumpepriser P og indkøbspriser C (sidste element = i dag)."""
-    m = [p / MOMS - c for p, c in zip(P, C)]
+def _rå_signal(P, C, A=None):
+    """Marginmodellens signal ud fra pumpepriser P, indkøbspriser C og afgiftsniveau A (sidste element = i dag)."""
+    A = A or [0.0] * len(P)
+    m = [p / MOMS - c - a for p, c, a in zip(P, C, A)]
     ref = m[-22:-1]
     if len(ref) < MARGIN_DAGE_MIN:
         return None
     return max(-0.8, min(0.8, (statistics.median(ref) - m[-1]) * MOMS * MARGIN_TILPASNING))
 
 
-def kalibrering(b, historik, idag, dage=30):
+def kalibrering(b, historik, idag, dage=30, kost_nøgle=None):
     """Hvor ofte har modellens 'stiger' og 'falder' holdt de seneste uger?
     Den retning, der ikke har holdt, bliver dæmpet. Bruger kun fortiden."""
-    r = [h for h in historik if h.get(b) is not None and h.get(f"kost_{b}") is not None and h["dato"] < idag.isoformat()]
-    P = [h[b] for h in r]; C = [h[f"kost_{b}"] for h in r]
+    k = kost_nøgle or f"kost_{b}"
+    r = [h for h in historik if h.get(b) is not None and h.get(k) is not None and h["dato"] < idag.isoformat()]
+    P = [h[b] for h in r]; C = [h[k] for h in r]
+    A = [afgift_niveau(b, h["dato"]) for h in r]; D = [h["dato"] for h in r]
     træf = {"op": [0, 0], "ned": [0, 0]}
     for t in range(max(MARGIN_DAGE_MIN, len(P) - 1 - dage), len(P) - 1):
-        d = _rå_signal(P[:t + 1], C[:t + 1])
+        d = _rå_signal(P[:t + 1], C[:t + 1], A[:t + 1])
         if d is None or abs(d) < 0.10:
             continue
-        a = P[t + 1] - P[t]
+        a = P[t + 1] - P[t] - afgift_spring(b, D[t], D[t + 1])   # kun markedsbevægelsen
         k = "op" if d > 0 else "ned"
         træf[k][1] += 1
         if (d > 0 and a > 0.04) or (d < 0 and a < -0.04):
@@ -450,6 +487,37 @@ def kalibrering(b, historik, idag, dage=30):
     # (rigtige + 1) / (forsøg + 2): starter forsigtigt på 50 %, og lærer efterhånden
     faktor = {k: min(1.0, max(0.2, (v[0] + 1) / (v[1] + 2))) for k, v in træf.items()}
     return faktor, træf
+
+
+# ---------- skyggemodel ----------
+# Model A: indkøbsprisen ud fra de amerikanske benzin-/dieselkurser (den oprindelige).
+# Model B: indkøbsprisen ud fra den europæiske Brent-råoliepris.
+# Begge regnes hver dag. Brugerne ser den, der har ramt bedst de seneste uger.
+LITER_PR_TOENDE = 158.987
+SKYGGE_MIN_DAGE = 14     # så mange sammenlignelige dage før der kan skiftes
+SKYGGE_MARGIN = 0.005    # B skal være mindst ½ øre bedre i snit for at overtage
+
+
+def brent_kost(marked):
+    """Brent omregnet til kr. pr. liter (uden moms og afgifter)."""
+    if not marked or marked.get("brent_usd") is None or marked.get("usd_dkk") is None:
+        return None
+    return round(marked["brent_usd"] * marked["usd_dkk"] / LITER_PR_TOENDE, 4)
+
+
+def model_regnskab(b, historik, dage=21):
+    """Hvor meget har model A og B ramt ved siden af, på de dage hvor begge findes?"""
+    fejl = {"A": [], "B": []}
+    for f, n in zip(historik, historik[1:]):
+        a, bb = f.get(f"model_a_{b}"), f.get(f"model_b_{b}")
+        if a is None or bb is None or n.get(b) is None or n.get("endelig") is False:
+            continue
+        fejl["A"].append(abs(a - n[b])); fejl["B"].append(abs(bb - n[b]))
+    fejl = {k: v[-dage:] for k, v in fejl.items()}
+    dage_ = len(fejl["A"])
+    snit = {k: (round(statistics.mean(v) * 100, 1) if v else None) for k, v in fejl.items()}
+    valgt = "B" if dage_ >= SKYGGE_MIN_DAGE and statistics.mean(fejl["B"]) < statistics.mean(fejl["A"]) - SKYGGE_MARGIN else "A"
+    return {"valgt": valgt, "dage": dage_, "fejl_a": snit["A"], "fejl_b": snit["B"]}
 
 
 def anbefaling(aendring):
@@ -531,6 +599,23 @@ def main():
             print(f"  {b}: marginmodel – normal margin {normal:.2f}, i dag {nu_margin:.2f} kr./L; signal {aendring:+.2f}"
                   f" × {faktor[retning_]:.2f} (træf stiger {træf['op'][0]}/{træf['op'][1]}, falder {træf['ned'][0]}/{træf['ned'][1]})")
             aendring = aendring * faktor[retning_]
+        # skyggemodel B (Brent) – regnes altid, men vises kun hvis den har ramt bedst
+        aendring_a = aendring
+        aendring_b = None
+        kost_b = brent_kost(marked) if ok else None
+        mpb = margin_prognose(b, pris_idag, kost_b, historik, idag, kost_nøgle="kost_brent") if kost_b else None
+        if mpb:
+            fb, _ = kalibrering(b, historik, idag, kost_nøgle="kost_brent")
+            aendring_b = mpb[0] * fb["op" if mpb[0] > 0 else "ned"]
+        regnskab = model_regnskab(b, historik)
+        if regnskab["valgt"] == "B" and aendring_b is not None and metode != "manuel":
+            aendring, metode = aendring_b, "brent"
+        print(f"  {b}: model A {aendring_a:+.2f}, model B {('%+.2f' % aendring_b) if aendring_b is not None else '–'}"
+              f" · regnskab {regnskab['dage']} dage: A {regnskab['fejl_a']} øre, B {regnskab['fejl_b']} øre → bruger {regnskab['valgt']}")
+        afgift = afgift_spring(b, idag, imorgen)
+        if abs(afgift) > 0.005:
+            print(f"  {b}: afgiften ændres i morgen med {afgift:+.2f} kr./L – lagt til prognosen")
+            aendring += afgift
         if override.get("dato") == imorgen.isoformat() and override.get(b) is not None:
             if pris_idag is not None:
                 aendring = float(override[b]) - pris_idag
@@ -544,6 +629,10 @@ def main():
             "kilde_idag": kilde,
             "metode": metode,
             "traef": træf,   # hvor ofte 'stiger' og 'falder' har holdt de seneste uger
+            "afgift": r2(afgift) if abs(afgift) > 0.005 else None,   # del af ændringen, der skyldes afgiften
+            "model": regnskab,   # skyggemodel: hvilken model bruges, og hvordan de to har ramt
+            "_model_a": r2(pris_idag + aendring_a + afgift) if pris_idag is not None else None,
+            "_model_b": r2(pris_idag + aendring_b + afgift) if pris_idag is not None and aendring_b is not None else None,
         }
 
     for s in selskaber:
@@ -562,6 +651,7 @@ def main():
         "el": el,
         "el_idag": el_idag,
         "advarsler": advarsler,
+        "kommende_afgift": kommende_afgift(idag),
     }
 
     if braendstof["benzin"]["idag"] is not None or braendstof["diesel"]["idag"] is not None or el_idag:
@@ -579,11 +669,19 @@ def main():
                          # indkøbsprisen (marked) – bruges af marginmodellen
                          "kost_benzin": (marked or {}).get("benzin_kost"),
                          "kost_diesel": (marked or {}).get("diesel_kost"),
+                         "kost_brent": brent_kost(marked),
+                         # skyggemodel: begge modellers prognose for næste dag
+                         "model_a_benzin": braendstof["benzin"].pop("_model_a", None),
+                         "model_b_benzin": braendstof["benzin"].pop("_model_b", None),
+                         "model_a_diesel": braendstof["diesel"].pop("_model_a", None),
+                         "model_b_diesel": braendstof["diesel"].pop("_model_b", None),
                          # prognosen for næste dag – bruges til at måle, hvor præcis appen er
                          "prognose_benzin": braendstof["benzin"]["imorgen"],
                          "prognose_diesel": braendstof["diesel"]["imorgen"]})
         historik = sorted(historik, key=lambda h: h["dato"])[-90:]
 
+    for x in braendstof.values():   # skyggemodellens mellemregninger skal ikke med i latest.json
+        x.pop("_model_a", None); x.pop("_model_b", None)
     gem_json(DATA / "latest.json", latest)
     # Prisalarmer via ntfy er slået fra (for besværligt at skulle hente en ekstra app).
     # send_alarmer(braendstof, nu, el)
