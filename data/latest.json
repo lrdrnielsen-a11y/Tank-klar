@@ -1,13 +1,13 @@
 {
   "demo": false,
-  "opdateret": "2026-11-16T18:20+01:00",
-  "idag": "2026-11-16",
-  "imorgen": "2026-11-17",
+  "opdateret": "2026-11-17T04:08+01:00",
+  "idag": "2026-11-17",
+  "imorgen": "2026-11-18",
   "braendstof": {
     "benzin": {
       "idag": 16.09,
-      "imorgen": 15.95,
-      "aendring": -0.14,
+      "imorgen": 15.93,
+      "aendring": -0.16,
       "anbefaling": "vent",
       "kilde_idag": "stationerne",
       "metode": "margin",
@@ -24,15 +24,15 @@
     },
     "diesel": {
       "idag": 18.29,
-      "imorgen": 18.18,
-      "aendring": -0.11,
+      "imorgen": 18.11,
+      "aendring": -0.18,
       "anbefaling": "vent",
       "kilde_idag": "stationerne",
       "metode": "margin",
       "traef": {
         "op": [
-          0,
-          4
+          1,
+          5
         ],
         "ned": [
           3,
@@ -46,132 +46,70 @@
       "navn": "OK",
       "benzin": 16.09,
       "diesel": 18.29,
-      "benzin_imorgen": 15.95,
-      "diesel_imorgen": 18.18
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.11
     },
     {
       "navn": "F24",
       "benzin": 16.09,
       "diesel": 18.29,
-      "benzin_imorgen": 15.95,
-      "diesel_imorgen": 18.18
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.11
     },
     {
       "navn": "Q8",
       "benzin": 16.19,
       "diesel": 18.39,
-      "benzin_imorgen": 16.05,
-      "diesel_imorgen": 18.28
+      "benzin_imorgen": 16.03,
+      "diesel_imorgen": 18.21
     },
     {
       "navn": "Shell",
       "benzin": 16.09,
       "diesel": 18.29,
-      "benzin_imorgen": 15.95,
-      "diesel_imorgen": 18.18
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.11
     },
     {
       "navn": "OIL!",
       "benzin": 16.09,
       "diesel": 18.29,
-      "benzin_imorgen": 15.95,
-      "diesel_imorgen": 18.18
+      "benzin_imorgen": 15.93,
+      "diesel_imorgen": 18.11
     },
     {
       "navn": "Go'on",
       "benzin": 16.1,
       "diesel": 18.3,
-      "benzin_imorgen": 15.96,
-      "diesel_imorgen": 18.19
+      "benzin_imorgen": 15.94,
+      "diesel_imorgen": 18.12
     },
     {
       "navn": "Uno-X",
       "benzin": 16.1,
       "diesel": 18.3,
-      "benzin_imorgen": 15.96,
-      "diesel_imorgen": 18.19
+      "benzin_imorgen": 15.94,
+      "diesel_imorgen": 18.12
     }
   ],
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": {
-    "handlet_i_dag": true,
+    "handlet_i_dag": false,
     "usd_dkk": 6.787,
-    "brent_usd": 93.39,
-    "brent_pct": -2.56,
-    "benzin_kost": 4.5752,
-    "benzin_pct": -2.66,
-    "benzin": -0.136,
+    "brent_usd": 91.71,
+    "brent_pct": -0.79,
+    "benzin_kost": 4.5171,
+    "benzin_pct": -0.73,
+    "benzin": 0.0,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.3903,
-    "diesel_pct": -3.21,
-    "diesel": -0.274,
+    "diesel_kost": 7.2506,
+    "diesel_pct": -0.93,
+    "diesel": 0.0,
     "kilde": "CNBC"
   },
-  "el": {
-    "dato": "2026-11-17",
-    "DK1": {
-      "gennemsnit": 1.564,
-      "billigst_start": 21,
-      "billigst_gennemsnit": 1.255,
-      "timer": [
-        1.533,
-        1.533,
-        1.49,
-        1.435,
-        1.431,
-        1.486,
-        1.732,
-        1.863,
-        1.94,
-        1.922,
-        1.84,
-        1.686,
-        1.596,
-        1.525,
-        1.482,
-        1.473,
-        1.546,
-        1.685,
-        1.587,
-        1.492,
-        1.484,
-        1.361,
-        1.28,
-        1.125
-      ]
-    },
-    "DK2": {
-      "gennemsnit": 1.687,
-      "billigst_start": 21,
-      "billigst_gennemsnit": 1.33,
-      "timer": [
-        1.511,
-        1.511,
-        1.463,
-        1.409,
-        1.405,
-        1.465,
-        1.714,
-        1.915,
-        1.992,
-        1.996,
-        1.924,
-        1.85,
-        1.782,
-        1.816,
-        1.848,
-        1.868,
-        1.829,
-        1.917,
-        1.86,
-        1.772,
-        1.652,
-        1.441,
-        1.381,
-        1.169
-      ]
-    }
-  },
+  "el": null,
   "el_idag": null,
-  "advarsler": []
+  "advarsler": [
+    "Morgendagens elpriser er ikke offentliggjort endnu"
+  ]
 }
