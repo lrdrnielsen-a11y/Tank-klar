@@ -303,6 +303,13 @@ svg.graf { width: 100%; height: auto; display: block; overflow: visible; }
 .kort-råd.ned-tekst { color: var(--green); } .kort-råd.op-tekst { color: var(--red); }
 .fav-kort { padding: 16px 22px; } .fav-kort .fav-linje { margin: 0; border: 0; padding: 0; }
 
+.afgift-besked { display: flex; gap: 16px; align-items: flex-start; border-radius: 22px; padding: 20px 22px; background: var(--green-soft); border: 1.5px solid var(--grøn-kant); }
+.afgift-besked.op { background: var(--red-soft); border-color: var(--rød-kant); }
+.afgift-besked b { font-family: var(--head); font-stretch: 108%; font-size: 19px; }
+.afgift-besked p { margin: 6px 0 0; color: var(--muted); }
+.afgift-ikon { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; font-weight: 800; color: #fff; background: var(--vent); }
+.afgift-besked.op .afgift-ikon { background: var(--tank); }
+
 /* faneblade i bunden */
 .bundmenu { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -1603,12 +1610,23 @@ function feedbackKort() {
   </div></section>`;
 }
 
+function modelTekst() {
+  const linjer = mine().map(b => {
+    const m = data.braendstof[b] && data.braendstof[b].model;
+    if (!m) return "";
+    const navn = m.valgt === "B" ? "den europæiske Brent-oliepris" : (b === "diesel" ? "den amerikanske dieselkurs" : "den amerikanske benzinkurs");
+    const regnskab = m.dage >= 3 ? ` De seneste ${m.dage} dage har den amerikanske model ramt ${String(m.fejl_a).replace(".", ",")} øre ved siden af i snit, og Brent-modellen ${String(m.fejl_b).replace(".", ",")} øre.` : " Brent-modellen testes i baggrunden, indtil der er data nok til at sammenligne.";
+    return `<b>${esc(NAVN[b])}:</b> bygger på ${navn}.${regnskab}`;
+  }).filter(Boolean);
+  return linjer.length ? `<p class="under" style="margin-top:-6px">To modeller regnes hver dag, og appen bruger automatisk den, der har ramt bedst. ${linjer.join(" ")}</p>` : "";
+}
 function metodeKort() {
   const m = data.marked || {};
   const pct = v => v == null ? "–" : `${fortegn(v)}${kr(Math.abs(v))}%`;
   return `<section><div class="kort">
     <h2>Sådan beregnes prognosen</h2>
     <p class="under">Dagens pris + ændringen i markedsprisen på benzin og diesel omregnet til kr./L med dagens dollarkurs og moms.${m.diesel_marked === "europæisk" ? " Diesel følger gasolie-kursen i London, som danske dieselpriser bygger på." : ""}${Object.values(data.braendstof).some(x => x.metode === "margin") ? " Prognosen sammenligner også pumpeprisen med indkøbsprisen: tjener kæderne mindre end normalt, er en stigning på vej – og omvendt. Den holder selv regnskab med, hvor ofte „stiger“ og „falder“ har holdt, og dæmper den retning, der har ramt dårligst." : " Om nogle dage begynder prognosen også at sammenligne pumpeprisen med indkøbsprisen, så den kan se prisstigninger komme."} Prognosen er vejledende.${m.handlet_i_dag === false ? " Markedet har holdt lukket i dag, så prisen regnes som uændret." : ""}</p>
+    ${modelTekst()}
     <div class="fire">
       <div><div class="e">Brent råolie</div><div class="mono">${m.brent_usd != null ? "$" + kr(m.brent_usd) : "–"}</div><div class="l">${pct(m.brent_pct)}</div></div>
       <div><div class="e">Benzin-future</div><div class="mono">${pct(m.benzin_pct)}</div><div class="l">seneste handelsdag</div></div>
@@ -1618,6 +1636,20 @@ function metodeKort() {
   </div></section>`;
 }
 
+function afgiftBesked() {
+  const a = data && data.kommende_afgift;
+  if (!a || !mine().length || a.dage <= 1) return "";   // dagen før står det i den store boks
+  const b = mine()[0], kr1 = a.kr[b] ?? a.kr.benzin, fald = kr1 < 0, beløb = Math.abs(kr1) * st.liter;
+  const hvornår = a.dage === 1 ? "I morgen" : `Om ${a.dage} dage`;
+  const dato_ = dato(a.dato, { day: "numeric", month: "long" });
+  return `<section><div class="afgift-besked ${fald ? "ned" : "op"}">
+    <div class="afgift-ikon">${fald ? "↓" : "↑"}</div>
+    <div><b>${hvornår} ${fald ? "falder" : "stiger"} afgiften ${kr(Math.abs(kr1), 0)} kr. pr. liter</b>
+    <p>${esc(a.tekst)} fra ${esc(dato_)}. ${fald
+      ? `Kan du vente med at tanke til ${esc(dato_)}, sparer du ca. ${kr(beløb, 0)} kr. på en fuld tank på ${st.liter} liter.`
+      : `Tank inden ${esc(dato_)}, og spar ca. ${kr(beløb, 0)} kr. på en fuld tank på ${st.liter} liter.`}</p></div>
+  </div></section>`;
+}
 function forældet() { return data && data.imorgen <= new Date().toLocaleDateString("sv-SE"); }
 function forældetBesked() {
   return forældet() ? `<div class="del-status" style="color:#fff;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 14px;margin-top:14px">
@@ -1663,12 +1695,15 @@ function vis() {
   })[0], hx = bf(hoved), dom = { tank_i_dag: ["tank", "Tank i dag"], vent: ["vent", "Vent til i morgen"], lige_meget: ["flad", "Tank, når det passer dig"], ukendt: ["flad", "Ingen pris endnu"] }[hx.anbefaling] || ["flad", "Tank, når det passer dig"];
   const ø0 = Math.round(Math.abs(hx.aendring || 0) * 100), krTank = Math.abs(hx.aendring || 0) * st.liter;
   const forklaring = hx.idag == null ? "Der er ingen pris endnu."
+    : hx.afgift && hx.afgift < 0 ? `Afgiften falder ${kr(Math.abs(hx.afgift), 0)} kr. pr. liter i morgen, så prisen ventes at falde ca. ${kr(Math.abs(hx.aendring))} kr. Kan tanken holde til i morgen, sparer du ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
+    : hx.afgift && hx.afgift > 0 ? `Afgiften stiger ${kr(hx.afgift, 0)} kr. pr. liter i morgen, så prisen ventes at stige ca. ${kr(Math.abs(hx.aendring))} kr. Tank i dag, og spar ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
     : hx.anbefaling === "vent" ? `Prisen ventes at falde ca. ${ø0} øre. Kan tanken holde til i morgen, sparer du ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
     : hx.anbefaling === "tank_i_dag" ? `Prisen ventes at stige ca. ${ø0} øre i morgen. Tank i dag, og spar ca. ${kr(krTank, 0)} kr. på ${st.liter} liter.`
     : `Prognosen viser under 10 øre i forskel. Det er for usikkert til et råd, så tank, når det passer dig.`;
   const u = usikkerhed(hoved), retn = (hx.aendring || 0) > 0 ? "op" : "ned", tr = hx.traef && hx.traef[retn];
   const ordet = retn === "op" ? "stiger" : "falder", sket = retn === "op" ? "steget" : "faldet";
   const sikker = hx.anbefaling === "lige_meget" || hx.idag == null ? null
+    : hx.afgift ? ["●●●", "Sikkert – afgiftsændringen er fastsat på forhånd"]
     : tr && tr[1] >= 3 ? [tr[0] / tr[1] >= 0.75 ? "●●●" : tr[0] / tr[1] >= 0.5 ? "●●○" : "●○○",
         `Når Tank klar har sagt „${ordet}“, er prisen ${sket} ${tr[0]} af ${tr[1]} gange de seneste uger`]
     : u == null ? ["", "Sikkerheden måles endnu – prognosen har kørt for kort tid"]
@@ -1687,6 +1722,7 @@ function vis() {
       ${forældetBesked()}
       ${delStatus ? `<div class="del-status">${esc(delStatus)}</div>` : ""}
     </div>
+    ${afgiftBesked()}
     ${mine().length > 1 ? `<div class="${gitter()}">${mine().map(prisKort).join("")}</div>`
       : (f => f ? `<div class="kort fav-kort">${f}</div>` : "")(favLinje(mine()[0]))}
     ${medEl ? `<section>${elPrisKort()}</section>` : ""}
