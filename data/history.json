@@ -278,5 +278,22 @@
     "model_b_diesel": null,
     "prognose_benzin": 15.83,
     "prognose_diesel": 18.01
+  },
+  {
+    "dato": "2026-11-18",
+    "endelig": false,
+    "el_DK1": null,
+    "el_DK2": null,
+    "benzin": 15.89,
+    "diesel": 18.09,
+    "kost_benzin": 4.5301,
+    "kost_diesel": 7.2582,
+    "kost_brent": 3.9619,
+    "model_a_benzin": 15.81,
+    "model_b_benzin": null,
+    "model_a_diesel": 17.99,
+    "model_b_diesel": null,
+    "prognose_benzin": 15.81,
+    "prognose_diesel": 17.99
   }
 ]
