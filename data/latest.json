@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-18T13:15+01:00",
+  "opdateret": "2026-11-18T15:15+01:00",
   "idag": "2026-11-18",
   "imorgen": "2026-11-19",
   "braendstof": {
@@ -8,7 +8,7 @@
       "idag": 15.89,
       "imorgen": 15.79,
       "aendring": -0.1,
-      "anbefaling": "lige_meget",
+      "anbefaling": "vent",
       "kilde_idag": "stationerne",
       "metode": "margin",
       "traef": {
@@ -94,9 +94,9 @@
     {
       "navn": "Go'on",
       "benzin": 15.9,
-      "diesel": 18.1,
+      "diesel": 17.9,
       "benzin_imorgen": 15.8,
-      "diesel_imorgen": 18.09
+      "diesel_imorgen": 17.89
     },
     {
       "navn": "Uno-X",
@@ -110,15 +110,15 @@
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.8022,
-    "brent_usd": 92.7,
-    "brent_pct": -0.47,
-    "benzin_kost": 4.4972,
-    "benzin_pct": -1.27,
-    "benzin": -0.06,
+    "brent_usd": 92.74,
+    "brent_pct": -0.43,
+    "benzin_kost": 4.4933,
+    "benzin_pct": -1.36,
+    "benzin": -0.065,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.2509,
-    "diesel_pct": -0.31,
-    "diesel": -0.008,
+    "diesel_kost": 7.2453,
+    "diesel_pct": -0.38,
+    "diesel": -0.015,
     "kilde": "CNBC"
   },
   "el": {
