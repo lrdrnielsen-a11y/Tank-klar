@@ -1,14 +1,14 @@
 {
   "demo": false,
-  "opdateret": "2026-11-20T17:15+01:00",
+  "opdateret": "2026-11-20T18:20+01:00",
   "idag": "2026-11-20",
   "imorgen": "2026-11-21",
   "braendstof": {
     "benzin": {
       "idag": 15.89,
-      "imorgen": 15.79,
-      "aendring": -0.1,
-      "anbefaling": "vent",
+      "imorgen": 15.8,
+      "aendring": -0.09,
+      "anbefaling": "lige_meget",
       "kilde_idag": "stationerne",
       "metode": "margin",
       "traef": {
@@ -60,49 +60,49 @@
       "navn": "OK",
       "benzin": 15.89,
       "diesel": 17.69,
-      "benzin_imorgen": 15.79,
+      "benzin_imorgen": 15.8,
       "diesel_imorgen": 17.67
     },
     {
       "navn": "F24",
       "benzin": 15.89,
       "diesel": 17.69,
-      "benzin_imorgen": 15.79,
+      "benzin_imorgen": 15.8,
       "diesel_imorgen": 17.67
     },
     {
       "navn": "Q8",
       "benzin": 15.99,
       "diesel": 17.79,
-      "benzin_imorgen": 15.89,
+      "benzin_imorgen": 15.9,
       "diesel_imorgen": 17.77
     },
     {
       "navn": "Shell",
       "benzin": 15.89,
       "diesel": 17.69,
-      "benzin_imorgen": 15.79,
+      "benzin_imorgen": 15.8,
       "diesel_imorgen": 17.67
     },
     {
       "navn": "OIL!",
       "benzin": 15.89,
       "diesel": 17.69,
-      "benzin_imorgen": 15.79,
+      "benzin_imorgen": 15.8,
       "diesel_imorgen": 17.67
     },
     {
       "navn": "Go'on",
-      "benzin": 15.89,
-      "diesel": 17.69,
-      "benzin_imorgen": 15.79,
-      "diesel_imorgen": 17.67
+      "benzin": 15.9,
+      "diesel": 17.7,
+      "benzin_imorgen": 15.81,
+      "diesel_imorgen": 17.68
     },
     {
       "navn": "Uno-X",
       "benzin": 15.9,
       "diesel": 17.7,
-      "benzin_imorgen": 15.8,
+      "benzin_imorgen": 15.81,
       "diesel_imorgen": 17.68
     }
   ],
@@ -110,15 +110,15 @@
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.8013,
-    "brent_usd": 90.91,
-    "brent_pct": -1.16,
-    "benzin_kost": 4.4494,
-    "benzin_pct": -0.75,
-    "benzin": -0.041,
+    "brent_usd": 91.79,
+    "brent_pct": -0.21,
+    "benzin_kost": 4.4726,
+    "benzin_pct": -0.23,
+    "benzin": -0.012,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.0559,
-    "diesel_pct": -0.61,
-    "diesel": -0.052,
+    "diesel_kost": 7.0507,
+    "diesel_pct": -0.69,
+    "diesel": -0.059,
     "kilde": "CNBC"
   },
   "el": {
