@@ -340,11 +340,11 @@
     "kost_benzin": 4.4961,
     "kost_diesel": 7.078,
     "kost_brent": 3.96,
-    "model_a_benzin": 15.82,
+    "model_a_benzin": 15.83,
     "model_b_benzin": null,
     "model_a_diesel": 17.69,
     "model_b_diesel": null,
-    "prognose_benzin": 15.82,
+    "prognose_benzin": 15.83,
     "prognose_diesel": 17.69
   }
 ]
