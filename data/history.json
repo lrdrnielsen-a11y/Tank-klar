@@ -332,7 +332,7 @@
   },
   {
     "dato": "2026-11-21",
-    "endelig": false,
+    "endelig": true,
     "el_DK1": null,
     "el_DK2": null,
     "benzin": 15.89,
