@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-22T11:15+01:00",
+  "opdateret": "2026-11-22T13:15+01:00",
   "idag": "2026-11-22",
   "imorgen": "2026-11-23",
   "braendstof": {
@@ -121,10 +121,72 @@
     "diesel": 0.0,
     "kilde": "CNBC"
   },
-  "el": null,
+  "el": {
+    "dato": "2026-11-23",
+    "DK1": {
+      "gennemsnit": 1.798,
+      "billigst_start": 2,
+      "billigst_gennemsnit": 1.361,
+      "timer": [
+        1.399,
+        1.369,
+        1.363,
+        1.358,
+        1.363,
+        1.408,
+        1.627,
+        1.987,
+        2.1,
+        2.018,
+        1.832,
+        1.62,
+        1.56,
+        1.587,
+        1.818,
+        2.064,
+        2.279,
+        2.363,
+        2.372,
+        2.264,
+        2.111,
+        1.905,
+        1.781,
+        1.597
+      ]
+    },
+    "DK2": {
+      "gennemsnit": 1.786,
+      "billigst_start": 2,
+      "billigst_gennemsnit": 1.327,
+      "timer": [
+        1.374,
+        1.344,
+        1.338,
+        1.333,
+        1.311,
+        1.382,
+        1.597,
+        1.978,
+        2.1,
+        2.01,
+        1.83,
+        1.639,
+        1.573,
+        1.612,
+        1.833,
+        2.085,
+        2.245,
+        2.339,
+        2.329,
+        2.23,
+        2.106,
+        1.905,
+        1.777,
+        1.584
+      ]
+    }
+  },
   "el_idag": null,
-  "advarsler": [
-    "Morgendagens elpriser er ikke offentliggjort endnu"
-  ],
+  "advarsler": [],
   "kommende_afgift": null
 }
