@@ -1,8 +1,8 @@
 {
   "demo": false,
-  "opdateret": "2026-11-22T18:20+01:00",
-  "idag": "2026-11-22",
-  "imorgen": "2026-11-23",
+  "opdateret": "2026-11-23T02:07+01:00",
+  "idag": "2026-11-23",
+  "imorgen": "2026-11-24",
   "braendstof": {
     "benzin": {
       "idag": 15.89,
@@ -18,7 +18,7 @@
         ],
         "ned": [
           4,
-          7
+          8
         ]
       },
       "afgift": null,
@@ -110,83 +110,21 @@
   "marked": {
     "handlet_i_dag": false,
     "usd_dkk": 6.8013,
-    "brent_usd": 92.57,
-    "brent_pct": 0.0,
-    "benzin_kost": 4.4966,
-    "benzin_pct": 0.0,
+    "brent_usd": 91.8,
+    "brent_pct": -0.83,
+    "benzin_kost": 4.4738,
+    "benzin_pct": -0.51,
     "benzin": 0.0,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 7.046,
-    "diesel_pct": 0.0,
+    "diesel_kost": 7.037,
+    "diesel_pct": -0.13,
     "diesel": 0.0,
     "kilde": "CNBC"
   },
-  "el": {
-    "dato": "2026-11-23",
-    "DK1": {
-      "gennemsnit": 1.798,
-      "billigst_start": 2,
-      "billigst_gennemsnit": 1.361,
-      "timer": [
-        1.399,
-        1.369,
-        1.363,
-        1.358,
-        1.363,
-        1.408,
-        1.627,
-        1.987,
-        2.1,
-        2.018,
-        1.832,
-        1.62,
-        1.56,
-        1.587,
-        1.818,
-        2.064,
-        2.279,
-        2.363,
-        2.372,
-        2.264,
-        2.111,
-        1.905,
-        1.781,
-        1.597
-      ]
-    },
-    "DK2": {
-      "gennemsnit": 1.786,
-      "billigst_start": 2,
-      "billigst_gennemsnit": 1.327,
-      "timer": [
-        1.374,
-        1.344,
-        1.338,
-        1.333,
-        1.311,
-        1.382,
-        1.597,
-        1.978,
-        2.1,
-        2.01,
-        1.83,
-        1.639,
-        1.573,
-        1.612,
-        1.833,
-        2.085,
-        2.245,
-        2.339,
-        2.329,
-        2.23,
-        2.106,
-        1.905,
-        1.777,
-        1.584
-      ]
-    }
-  },
+  "el": null,
   "el_idag": null,
-  "advarsler": [],
+  "advarsler": [
+    "Morgendagens elpriser er ikke offentliggjort endnu"
+  ],
   "kommende_afgift": null
 }
