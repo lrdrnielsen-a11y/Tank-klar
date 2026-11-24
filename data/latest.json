@@ -1,13 +1,13 @@
 {
   "demo": false,
-  "opdateret": "2026-11-24T13:15+01:00",
+  "opdateret": "2026-11-24T15:15+01:00",
   "idag": "2026-11-24",
   "imorgen": "2026-11-25",
   "braendstof": {
     "benzin": {
       "idag": 15.79,
-      "imorgen": 15.75,
-      "aendring": -0.04,
+      "imorgen": 15.76,
+      "aendring": -0.03,
       "anbefaling": "lige_meget",
       "kilde_idag": "stationerne",
       "metode": "margin",
@@ -60,51 +60,65 @@
       "navn": "OK",
       "benzin": 15.79,
       "diesel": 17.39,
-      "benzin_imorgen": 15.75,
+      "benzin_imorgen": 15.76,
       "diesel_imorgen": 17.34
     },
     {
       "navn": "Shell",
       "benzin": 15.79,
       "diesel": 17.44,
-      "benzin_imorgen": 15.75,
+      "benzin_imorgen": 15.76,
       "diesel_imorgen": 17.39
     },
     {
       "navn": "OIL!",
       "benzin": 15.79,
       "diesel": 17.39,
-      "benzin_imorgen": 15.75,
+      "benzin_imorgen": 15.76,
       "diesel_imorgen": 17.34
     },
     {
       "navn": "Go'on",
       "benzin": 15.8,
       "diesel": 17.4,
-      "benzin_imorgen": 15.76,
+      "benzin_imorgen": 15.77,
       "diesel_imorgen": 17.35
+    },
+    {
+      "navn": "F24",
+      "benzin": 15.8,
+      "diesel": 17.41,
+      "benzin_imorgen": 15.77,
+      "diesel_imorgen": 17.36
     },
     {
       "navn": "Uno-X",
       "benzin": 15.8,
       "diesel": 17.41,
-      "benzin_imorgen": 15.76,
+      "benzin_imorgen": 15.77,
       "diesel_imorgen": 17.36
+    },
+    {
+      "navn": "Q8",
+      "benzin": 15.94,
+      "diesel": 17.57,
+      "benzin_imorgen": 15.91,
+      "diesel_imorgen": 17.52
     }
   ],
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": {
     "handlet_i_dag": true,
     "usd_dkk": 6.833,
-    "brent_usd": 89.66,
-    "brent_pct": 0.32,
-    "benzin_kost": 4.3804,
-    "benzin_pct": 0.89,
-    "benzin": 0.073,
+    "brent_usd": 90.26,
+    "brent_pct": 1.0,
+    "benzin_kost": 4.4087,
+    "benzin_pct": 1.54,
+    "benzin": 0.109,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 6.7234,
-    "diesel_pct": 0.74,
-    "diesel": 0.1,
+    "diesel_kost": 6.7221,
+    "diesel_pct": 0.72,
+    "diesel": 0.098,
     "kilde": "CNBC"
   },
   "el": {
