@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-26T15:15+01:00",
+  "opdateret": "2026-11-26T17:15+01:00",
   "idag": "2026-11-26",
   "imorgen": "2026-11-27",
   "braendstof": {
@@ -109,16 +109,16 @@
   "kilde": "BenzinSignal (benzinsignal.dk/data)",
   "marked": {
     "handlet_i_dag": true,
-    "usd_dkk": 6.8352,
-    "brent_usd": 95.88,
-    "brent_pct": 1.34,
-    "benzin_kost": 4.4158,
-    "benzin_pct": 0.13,
-    "benzin": 0.021,
+    "usd_dkk": 6.8097,
+    "brent_usd": 96.29,
+    "brent_pct": 1.78,
+    "benzin_kost": 4.4085,
+    "benzin_pct": 0.34,
+    "benzin": -0.002,
     "diesel_marked": "amerikansk",
-    "diesel_kost": 6.7283,
-    "diesel_pct": 0.64,
-    "diesel": 0.075,
+    "diesel_kost": 6.735,
+    "diesel_pct": 1.12,
+    "diesel": 0.062,
     "kilde": "CNBC"
   },
   "el": {
