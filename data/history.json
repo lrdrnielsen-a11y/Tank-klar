@@ -434,19 +434,19 @@
   },
   {
     "dato": "2026-11-27",
-    "endelig": false,
+    "endelig": true,
     "el_DK1": null,
     "el_DK2": null,
     "benzin": 15.59,
-    "diesel": 17.19,
-    "kost_benzin": 4.4473,
-    "kost_diesel": 6.7737,
-    "kost_brent": 4.1915,
+    "diesel": 17.38,
+    "kost_benzin": 4.4311,
+    "kost_diesel": 6.7194,
+    "kost_brent": 4.1585,
     "model_a_benzin": 15.62,
-    "model_b_benzin": 15.69,
-    "model_a_diesel": 17.21,
-    "model_b_diesel": 17.29,
+    "model_b_benzin": 15.68,
+    "model_a_diesel": 17.32,
+    "model_b_diesel": 17.45,
     "prognose_benzin": 15.62,
-    "prognose_diesel": 17.21
+    "prognose_diesel": 17.32
   }
 ]
