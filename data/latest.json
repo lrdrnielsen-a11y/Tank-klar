@@ -1,6 +1,6 @@
 {
   "demo": false,
-  "opdateret": "2026-11-28T11:15+01:00",
+  "opdateret": "2026-11-28T13:15+01:00",
   "idag": "2026-11-28",
   "imorgen": "2026-11-29",
   "braendstof": {
@@ -24,9 +24,9 @@
       "afgift": null,
       "model": {
         "valgt": "A",
-        "dage": 3,
-        "fejl_a": 5.7,
-        "fejl_b": 13.3
+        "dage": 4,
+        "fejl_a": 4.7,
+        "fejl_b": 11.8
       }
     },
     "diesel": {
@@ -49,9 +49,9 @@
       "afgift": null,
       "model": {
         "valgt": "A",
-        "dage": 3,
-        "fejl_a": 10.7,
-        "fejl_b": 16.3
+        "dage": 4,
+        "fejl_a": 9.7,
+        "fejl_b": 13.5
       }
     }
   },
@@ -93,10 +93,10 @@
     },
     {
       "navn": "Go'on",
-      "benzin": 15.6,
-      "diesel": 17.4,
-      "benzin_imorgen": 15.62,
-      "diesel_imorgen": 17.34
+      "benzin": 15.59,
+      "diesel": 17.39,
+      "benzin_imorgen": 15.61,
+      "diesel_imorgen": 17.33
     },
     {
       "navn": "Uno-X",
@@ -128,10 +128,72 @@
     "diesel": 0.051,
     "kilde": "CNBC"
   },
-  "el": null,
+  "el": {
+    "dato": "2026-11-29",
+    "DK1": {
+      "gennemsnit": 1.396,
+      "billigst_start": 4,
+      "billigst_gennemsnit": 1.044,
+      "timer": [
+        1.163,
+        1.103,
+        1.126,
+        1.161,
+        1.153,
+        1.034,
+        0.946,
+        1.258,
+        1.342,
+        1.358,
+        1.323,
+        1.311,
+        1.385,
+        1.436,
+        1.493,
+        1.546,
+        1.65,
+        1.78,
+        1.801,
+        1.753,
+        1.703,
+        1.607,
+        1.592,
+        1.486
+      ]
+    },
+    "DK2": {
+      "gennemsnit": 1.244,
+      "billigst_start": 4,
+      "billigst_gennemsnit": 0.939,
+      "timer": [
+        0.997,
+        0.976,
+        0.977,
+        0.978,
+        0.963,
+        0.929,
+        0.924,
+        0.98,
+        1.003,
+        1.021,
+        1.02,
+        1.023,
+        1.101,
+        1.19,
+        1.271,
+        1.388,
+        1.619,
+        1.747,
+        1.767,
+        1.72,
+        1.672,
+        1.577,
+        1.562,
+        1.458
+      ]
+    }
+  },
   "el_idag": null,
-  "advarsler": [
-    "Morgendagens elpriser er ikke offentliggjort endnu"
-  ],
+  "advarsler": [],
   "kommende_afgift": null
 }
